@@ -16,6 +16,7 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -67,7 +68,7 @@ public class MuteListener extends ListenerBase {
         }).submit(plugin);
     }
 
-    @Listener
+    @Listener(order = Order.FIRST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
         NucleusUser qs;
         try {
