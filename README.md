@@ -2,23 +2,21 @@ Essence
 ====
 
 [![GitHub license](https://img.shields.io/badge/License-MIT-brightgreen.svg?style=flat-square)](/LICENSE.txt) |
-[![GitHub license](https://img.shields.io/badge/Dependency-JitPack-brightgreen.svg)](https://jitpack.io/#EssencePowered/Essence)
+[![GitHub license](https://img.shields.io/badge/Dependency-JitPack-brightgreen.svg?style=flat-square)](https://jitpack.io/#EssencePowered/Essence) |
+[![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/master.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
 
 * [Source]
 * [Issues] | [![GitHub issues](https://img.shields.io/github/issues/EssencePowered/Essence.svg?style=flat-square)](http://www.github.com/EssencePowered/Essence/issues/)
 * [Wiki]
 * [Downloads] | [![Github Releases](https://img.shields.io/github/downloads/EssencePowered/Essence/total.svg?style=flat-square)](http://www.github.com/EssencePowered/Essence/releases)
 
-### Status
-* Master: [![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/master.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
-* Dev: [![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/develop.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
-
-Essence is meant to be exactly that, a Sponge plugin that allows you to quickly start your server with essential
-commands, events, and other tidbits that you might need. Extremely configurable, only loading up the modules you want
-(and providing a way for plugins to disable modules that they replace the functionality of), and providing a simple and
-rich API, Essence is an elite plugin for providing simple server tasks.
+Essence is a Sponge plugin that allows you to quickly start your server with essential commands, events, and other
+tidbits that you might need. Extremely configurable, only loading up the modules you want (and providing a way for
+plugins to disable modules that they replace the functionality of), and providing a simple and rich API, Essence is an
+elite plugin for providing simple server tasks.
  
-...or so I hope, soon! With a website full of documentation and everything (at http://quickstart.dualspiral.co.uk/)! I'm only just getting this off the ground as Sponge has started to stabilise!
+...or so I hope, soon! With a website full of documentation and everything (at http://quickstart.dualspiral.co.uk/)!
+I'm only just getting this off the ground as Sponge has started to stabilise!
 
 Essence currently provides:
 
