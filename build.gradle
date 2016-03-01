@@ -18,7 +18,7 @@ plugins {
 
 ext.spongeapi = '3.1.0-SNAPSHOT'
 ext.authors = ["HassanS6000", "dualspiral", "KingGoesGaming"]
-ext.description = 'Essence is a Sponge plugin that allows you to quickly start your server with essential commands, events, and other tidbits that you might need. '
+ext.descriptions = 'Essence is a Sponge plugin that allows you to quickly start your server with essential commands, events, and other tidbits that you might need. '
 ext.url = 'http://essencepowered.github.io'
 
 group 'io.github.essencepowered'
@@ -77,7 +77,7 @@ blossom {
     replaceToken '@version@', project.version, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
     replaceToken '@informativeVersion@', project.version + "+" + getGitHash(), 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
 
-    replaceToken '@description@', project.description, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@description@', project.descriptions, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
     replaceToken '@url@', project.url, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
     replaceToken '@authors@', project.authors, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
 }
