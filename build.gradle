@@ -1,15 +1,36 @@
-plugins {
-    id "com.github.hierynomus.license" version "0.12.1"
+buildscript {
+    repositories{
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+    dependencies {
+        classpath 'com.github.qixalite:SpongeStart:1.4'
+    }
 }
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    id 'com.github.hierynomus.license' version '0.12.1'
+    id 'net.ellune.blossom' version '1.0.1'
+}
+
+ext.spongeapi = '3.1.0-SNAPSHOT'
+ext.authors = ["HassanS6000", "dualspiral", "KingGoesGaming"]
+ext.description = 'Essence is a Sponge plugin that allows you to quickly start your server with essential commands, events, and other tidbits that you might need. '
+ext.url = 'http://essencepowered.github.io'
 
 group 'uk.co.drnaylor.minecraft'
 version '0.1.0-SNAPSHOT'
 
-apply plugin: 'java'
+apply plugin: 'SpongeStart'
+apply plugin: 'net.ellune.blossom'
 
 defaultTasks 'licenseFormat'
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     jcenter()
@@ -17,14 +38,11 @@ repositories {
         name 'Sponge maven repo'
         url 'http://repo.spongepowered.org/maven'
     }
-    maven {
-        name = 'forge'
-        url = 'http://files.minecraftforge.net/maven'
-    }
 }
 
 dependencies {
     compile "org.spongepowered:spongeapi:3.1.0-SNAPSHOT"
+
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-all:1.10.19"
     testCompile "org.powermock:powermock-module-junit4:1.6.4"
@@ -32,7 +50,7 @@ dependencies {
 }
 
 license {
-    ext.name = "QuickStart"
+    ext.name = project.name
 
     exclude "**/*.info"
     exclude "assets/**"
@@ -48,3 +66,49 @@ license {
         java = 'SLASHSTAR_STYLE'
     }
 }
+
+sponge{
+    eula true
+}
+
+blossom {
+    replaceToken '@id@', project.name.toLowerCase(), 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@name@', project.name, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@version@', project.version, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@informativeVersion@', project.version + "+" + getGitHash(), 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+
+    replaceToken '@description@', project.description, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@url@', project.url, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+    replaceToken '@authors@', project.authors, 'src/main/java/io/github/essencepowered/essence/PluginInfo.java'
+}
+
+jar {
+    manifest {
+        attributes  'Implementation-Title': project.name,
+                'Implementation-Version': version,
+                'SpongeAPI-Version': project.spongeapi,
+                'Git-Hash': getGitHash()
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+def private String getGitHash() {
+    def process = 'git rev-parse --short HEAD'.execute();
+    process.waitFor();
+    return process.exitValue() ? 'unknown' : process.text.trim();
+}
+
