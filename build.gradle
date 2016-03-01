@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'uk.co.drnaylor.minecraft'
-version '0.5-SNAPSHOT'
+version '0.1.0-SNAPSHOT'
 
 apply plugin: 'java'
 
