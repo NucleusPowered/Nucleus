@@ -40,6 +40,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static io.github.essencepowered.essence.PluginInfo.ERROR_MESSAGE_PREFIX;
+
 public abstract class CommandBase<T extends CommandSource> implements CommandExecutor {
 
     private final boolean isAsync = this.getClass().getAnnotation(RunAsync.class) != null;
@@ -279,7 +281,7 @@ public abstract class CommandBase<T extends CommandSource> implements CommandExe
             }
         } catch (Exception e) {
             // If it doesn't, just tell the user something went wrong.
-            src.sendMessage(Text.of(Essence.ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("command.error")));
+            src.sendMessage(Text.of(ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("command.error")));
 
             if (config.getDebugMode()) {
                 e.printStackTrace();

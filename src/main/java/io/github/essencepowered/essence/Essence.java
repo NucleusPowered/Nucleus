@@ -42,13 +42,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Plugin(id = Essence.ID, name = Essence.NAME, version = Essence.VERSION)
+import static io.github.essencepowered.essence.PluginInfo.*;
+
+@Plugin(id = ID, name = NAME, version = VERSION)
 public class Essence {
-    public final static String ID = "essence";
-    public final static String NAME = "Essence";
-    public final static String VERSION = "0.5";
-    public final static Text MESSAGE_PREFIX = Text.of(TextColors.GREEN, "[" + NAME + "] ");
-    public final static Text ERROR_MESSAGE_PREFIX = Text.of(TextColors.RED, "[" + NAME + "] ");
 
     private ModuleRegistration moduleRegistration;
     private boolean modulesLoaded = false;

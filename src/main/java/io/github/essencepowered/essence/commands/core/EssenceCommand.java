@@ -17,6 +17,8 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import static io.github.essencepowered.essence.PluginInfo.*;
+
 /**
  * Gives information about Essence.
  *
@@ -31,7 +33,7 @@ import org.spongepowered.api.text.format.TextColors;
 @RegisterCommand({ "essence" })
 public class EssenceCommand extends CommandBase<CommandSource> {
 
-    private final Text version = Text.of(Essence.MESSAGE_PREFIX, TextColors.GREEN, Essence.NAME + " version " + Essence.VERSION);
+    private final Text version = Text.of(MESSAGE_PREFIX, TextColors.GREEN, NAME + " version " + VERSION);
     private Text modules = null;
 
     @Override

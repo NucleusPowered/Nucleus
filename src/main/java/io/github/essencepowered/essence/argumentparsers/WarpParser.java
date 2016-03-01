@@ -24,6 +24,10 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.github.essencepowered.essence.PluginInfo.ERROR_MESSAGE_PREFIX;
+
+import static io.github.essencepowered.essence.PluginInfo.ERROR_MESSAGE_PREFIX;
+
 /**
  * Returns a {@link WarpData}
  */
@@ -52,11 +56,11 @@ public class WarpParser extends CommandElement {
         String warpName = args.next();
         String warp = warpName.toLowerCase();
         if (!service.warpExists(warp)) {
-            throw args.createError(Text.of(Essence.ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("args.warps.noexist")));
+            throw args.createError(Text.of(ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("args.warps.noexist")));
         }
 
         if (!checkPermission(source, warpName)) {
-            throw args.createError(Text.of(Essence.ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("args.warps.noperms")));
+            throw args.createError(Text.of(ERROR_MESSAGE_PREFIX, TextColors.RED, Util.getMessageWithFormat("args.warps.noperms")));
         }
 
         if (includeWarpData) {
