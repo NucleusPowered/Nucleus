@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.github.essencepowered.essence.PluginInfo.*;
 
-@Plugin(id = ID, name = NAME, version = VERSION)
+@Plugin(id = ID, name = NAME, version = INFORMATIVE_VERSION)
 public class Essence {
 
     private ModuleRegistration moduleRegistration;
