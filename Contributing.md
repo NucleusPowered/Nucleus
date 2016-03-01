@@ -2,13 +2,17 @@ Contributor Guidelines
 ===
 
 ## Code Style
+
+We follow the [Google's Java Code Conventions](https://google.github.io/styleguide/javaguide.html) but some of the more
+important things to note, including changes are:
+
 * Line endings
     * Use Unix line endings when committing (\n).
     * Windows users of git can do `git config --global core.autocrlf true` to
     let git convert them automatically.
 
 * Column width
-    * 80 for Javadocs
+    * 150 for Javadocs
     * 150 for code
     * Feel free to wrap when it will help with readability
 
