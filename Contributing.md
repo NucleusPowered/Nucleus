@@ -20,7 +20,7 @@ Contributor Guidelines
     etc. (i.e. after class Example {) as well as after the last member.
 
 * File headers
-    * File headers must contain the license headers for the project.
+    * File headers must contain the license headers for the project as defined in HEADER.txt.
     * You can use the `gradle licenseFormat` to automatically to do this for
     you.
 
@@ -43,7 +43,6 @@ Contributor Guidelines
     * Do not deprecate content unless you have a replacement, or if the
     provided feature is removed.
     * When deprecating, provide the month and year when it was deprecated.
-    * Anything deprecated is kept for one major version.
 
 ## Code Conventions
 * Use Optionals instead of returning null in the API.
