@@ -21,7 +21,7 @@ ext.authors = ["HassanS6000", "dualspiral", "KingGoesGaming"]
 ext.description = 'Essence is a Sponge plugin that allows you to quickly start your server with essential commands, events, and other tidbits that you might need. '
 ext.url = 'http://essencepowered.github.io'
 
-group 'uk.co.drnaylor.minecraft'
+group 'io.github.essencepowered'
 version '0.1.0-SNAPSHOT'
 
 apply plugin: 'SpongeStart'
