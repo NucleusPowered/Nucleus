@@ -11,7 +11,7 @@ Essence
 
 ### Status
 * Master: [![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/master.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
-* Dev: [![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/dev.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
+* Dev: [![Travis branch](https://img.shields.io/travis/EssencePowered/Essence/develop.svg?style=flat-square)](https://travis-ci.org/EssencePowered/Essence)
 
 Essence is meant to be exactly that, a Sponge plugin that allows you to quickly start your server with essential
 commands, events, and other tidbits that you might need. Extremely configurable, only loading up the modules you want
