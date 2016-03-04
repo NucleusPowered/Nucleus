@@ -25,7 +25,8 @@ public enum PluginModule {
     SPAWN("spawn"),
     ADMIN("admin"),
     VANISH("vanish"),
-    NICKNAME("nickname");
+    NICKNAME("nickname"),
+    WORLDS("worlds");
 
     String key;
 

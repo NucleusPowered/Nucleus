@@ -9,7 +9,7 @@ import io.github.essencepowered.essence.api.PluginModule;
 import io.github.essencepowered.essence.internal.ListenerBase;
 import io.github.essencepowered.essence.internal.annotations.Modules;
 import io.github.essencepowered.essence.internal.interfaces.InternalEssenceUser;
-import io.github.essencepowered.essence.internal.services.UserConfigLoader;
+import io.github.essencepowered.essence.internal.services.datastore.UserConfigLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;

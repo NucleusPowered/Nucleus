@@ -4,7 +4,6 @@
  */
 package io.github.essencepowered.essence.commands.core;
 
-import io.github.essencepowered.essence.Essence;
 import io.github.essencepowered.essence.api.PluginModule;
 import io.github.essencepowered.essence.api.service.EssenceModuleService;
 import io.github.essencepowered.essence.internal.CommandBase;
@@ -23,7 +22,7 @@ import static io.github.essencepowered.essence.PluginInfo.*;
  * Gives information about Essence.
  *
  * Command Usage: /essence
- * Permission: quickstart.quickstart.base
+ * Permission: essence.essence.base
  */
 @RunAsync
 @Permissions

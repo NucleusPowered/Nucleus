@@ -10,7 +10,7 @@ import io.github.essencepowered.essence.api.PluginModule;
 import io.github.essencepowered.essence.config.MainConfig;
 import io.github.essencepowered.essence.internal.ListenerBase;
 import io.github.essencepowered.essence.internal.annotations.Modules;
-import io.github.essencepowered.essence.internal.services.UserConfigLoader;
+import io.github.essencepowered.essence.internal.services.datastore.UserConfigLoader;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;

@@ -5,6 +5,7 @@
 package io.github.essencepowered.essence.internal;
 
 import com.google.common.collect.Maps;
+import io.github.essencepowered.essence.PluginInfo;
 import io.github.essencepowered.essence.internal.permissions.PermissionInformation;
 import io.github.essencepowered.essence.internal.permissions.SuggestedLevel;
 
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 public class PermissionRegistry {
 
+    public final static String PERMISSIONS_PREFIX = PluginInfo.ID + ".";
     private final Map<Class<? extends CommandBase>, CommandPermissionHandler> serviceRegistry = Maps.newHashMap();
     private final Map<String, PermissionInformation> otherPermissions = Maps.newHashMap();
 

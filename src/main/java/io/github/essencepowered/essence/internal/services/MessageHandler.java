@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 import io.github.essencepowered.essence.NameUtil;
 import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.api.data.EssenceUser;
-import io.github.essencepowered.essence.api.service.EssenceUserService;
+import io.github.essencepowered.essence.api.service.EssenceUserLoaderService;
 import io.github.essencepowered.essence.events.MessageEvent;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
@@ -74,7 +74,7 @@ public class MessageHandler {
         Text nameOfSender = getName(sender);
         Text nameOfReceiver = getName(receiver);
 
-        EssenceUserService qs = Sponge.getServiceManager().provideUnchecked(EssenceUserService.class);
+        EssenceUserLoaderService qs = Sponge.getServiceManager().provideUnchecked(EssenceUserLoaderService.class);
 
         // If a player, then mutes should be checked.
         if (sender instanceof Player) {

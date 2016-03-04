@@ -7,7 +7,7 @@ package io.github.essencepowered.essence.tests;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import io.github.essencepowered.essence.internal.CommandBase;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.annotations.Permissions;
 import io.github.essencepowered.essence.internal.annotations.RegisterCommand;
 import io.github.essencepowered.essence.tests.util.TestModule;
@@ -39,12 +39,12 @@ public class PermissionsTest {
         @Parameterized.Parameters(name = "{index}: Permission {0} on {1}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.base", PermissionOne.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "root.test.base", PermissionRoot.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.sub.base", PermissionSub.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "root.test.sub.base", PermissionRootSub.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.base", PermissionCustom.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "alias.base", PermissionAlias.class }
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.base", PermissionOne.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "root.test.base", PermissionRoot.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.sub.base", PermissionSub.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "root.test.sub.base", PermissionRootSub.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.base", PermissionCustom.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "alias.base", PermissionAlias.class }
             });
         }
 
@@ -77,12 +77,12 @@ public class PermissionsTest {
         @Parameterized.Parameters
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][] {
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test2.base", PermissionOne.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.base", PermissionRoot.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.base", PermissionSub.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.base", PermissionRootSub.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "root.test.base", PermissionRootSub.class },
-                    { CommandPermissionHandler.PERMISSIONS_PREFIX + "test.sub.base", PermissionRootSub.class }
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test2.base", PermissionOne.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.base", PermissionRoot.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.base", PermissionSub.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.base", PermissionRootSub.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "root.test.base", PermissionRootSub.class },
+                    { PermissionRegistry.PERMISSIONS_PREFIX + "test.sub.base", PermissionRootSub.class }
             });
         }
 

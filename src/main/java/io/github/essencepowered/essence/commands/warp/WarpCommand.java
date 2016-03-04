@@ -8,7 +8,7 @@ import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.api.PluginModule;
 import io.github.essencepowered.essence.argumentparsers.WarpParser;
 import io.github.essencepowered.essence.internal.CommandBase;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.annotations.Modules;
 import io.github.essencepowered.essence.internal.annotations.Permissions;
 import io.github.essencepowered.essence.internal.annotations.RegisterCommand;
@@ -44,7 +44,7 @@ public class WarpCommand extends CommandBase<Player> {
     @Override
     protected Map<String, PermissionInformation> permissionsToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
-        m.put(CommandPermissionHandler.PERMISSIONS_PREFIX + "warps", new PermissionInformation(Util.getMessageWithFormat("permissions.warps"), SuggestedLevel.ADMIN));
+        m.put(PermissionRegistry.PERMISSIONS_PREFIX + "warps", new PermissionInformation(Util.getMessageWithFormat("permissions.warps"), SuggestedLevel.ADMIN));
         return m;
     }
 

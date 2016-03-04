@@ -59,6 +59,7 @@ public class TwoPlayersArgument extends CommandElement {
         }
 
         String sp2 = osp2.get();
+
         context.putArg(key.toPlain(), Sponge.getServer().getPlayer(sp1).orElseThrow(() -> args.createError(Text.of(TextColors.RED, Util.getMessageWithFormat("args.twoplayer.noexist", sp1)))));
         context.putArg(key2.toPlain(), Sponge.getServer().getPlayer(sp2).orElseThrow(() -> args.createError(Text.of(TextColors.RED, Util.getMessageWithFormat("args.twoplayer.noexist", sp2)))));
     }

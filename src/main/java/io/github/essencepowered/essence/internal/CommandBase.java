@@ -253,6 +253,8 @@ public abstract class CommandBase<T extends CommandSource> implements CommandExe
      * @param source The source of the command.
      * @param args The arguments.
      * @return Whether to continue or not.
+     *
+     * @throws Exception Thrown if there is a problem that means the command cannot continue.
      */
     protected ContinueMode preProcessChecks(T source, CommandContext args) throws Exception {
         return ContinueMode.CONTINUE;
@@ -499,6 +501,8 @@ public abstract class CommandBase<T extends CommandSource> implements CommandExe
      * Applies a cost to the user, if required.
      *
      * @param src The {@link CommandSource}
+     * @param args The {@link CommandContext}
+     * @return Whether to continue with the command.
      */
     protected ContinueMode applyCost(Player src, CommandContext args) {
         double cost = getCost(src, args);
@@ -517,6 +521,7 @@ public abstract class CommandBase<T extends CommandSource> implements CommandExe
      * Gets the cost for this command, or zero if the player does not have to pay.
      *
      * @param src The {@link CommandSource}
+     * @param args The {@link CommandContext}
      * @return The cost.
      */
     protected double getCost(Player src, @Nullable CommandContext args) {

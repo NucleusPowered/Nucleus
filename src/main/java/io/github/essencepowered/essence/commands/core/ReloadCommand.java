@@ -14,7 +14,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-@Permissions(root = "quickstart")
+@Permissions(root = "essence")
 @NoCooldown
 @NoCost
 @NoWarmup

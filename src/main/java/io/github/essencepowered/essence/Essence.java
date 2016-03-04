@@ -21,6 +21,8 @@ import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.PluginSystemsLoader;
 import io.github.essencepowered.essence.internal.guice.QuickStartInjectorModule;
 import io.github.essencepowered.essence.internal.services.*;
+import io.github.essencepowered.essence.internal.services.datastore.UserConfigLoader;
+import io.github.essencepowered.essence.internal.services.datastore.WorldConfigLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
@@ -40,7 +42,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static io.github.essencepowered.essence.PluginInfo.*;
 
@@ -52,6 +53,7 @@ public class Essence {
     private boolean isErrored = false;
     private final ConfigMap configMap = new ConfigMap();
     private UserConfigLoader configLoader;
+    private WorldConfigLoader worldConfigLoader;
     private Injector injector;
     private MessageHandler messageHandler = new MessageHandler();
     private MailHandler mailHandler;
@@ -78,6 +80,7 @@ public class Essence {
             configMap.putConfig(ConfigMap.MAIN_CONFIG, new MainConfig(path));
             configMap.putConfig(ConfigMap.COMMANDS_CONFIG, new CommandsConfig(Paths.get(configDir.toString(), "commands.conf")));
             configLoader = new UserConfigLoader(this);
+            worldConfigLoader = new WorldConfigLoader(this);
             moduleRegistration = new ModuleRegistration(this);
             warmupManager = new WarmupManager();
         } catch (IOException | ObjectMappingException e) {
@@ -89,7 +92,7 @@ public class Essence {
         // We register the ModuleService NOW so that others can hook into it.
         game.getServiceManager().setProvider(this, EssenceModuleService.class, moduleRegistration);
         game.getServiceManager().setProvider(this, EssenceWarmupManagerService.class, warmupManager);
-        this.injector = Guice.createInjector(new QuickStartInjectorModule(this, configLoader));
+        this.injector = Guice.createInjector(new QuickStartInjectorModule(this));
     }
 
     @Listener
@@ -154,14 +157,8 @@ public class Essence {
         }
 
         // Register services
-        game.getServiceManager().setProvider(this, EssenceUserService.class, configLoader);
-
-        // Start tasks, save every thirty seconds
-        game.getScheduler().createTaskBuilder().async().name("Essence Cleanup Task").delay(30, TimeUnit.SECONDS).interval(30, TimeUnit.SECONDS)
-            .execute(() -> {
-                this.getUserLoader().purgeNotOnline();
-                this.configLoader.saveAll();
-            }).submit(this);
+        game.getServiceManager().setProvider(this, EssenceUserLoaderService.class, configLoader);
+        game.getServiceManager().setProvider(this, EssenceWorldLoaderService.class, worldConfigLoader);
     }
 
     @Listener
@@ -198,6 +195,10 @@ public class Essence {
 
     public UserConfigLoader getUserLoader() {
         return configLoader;
+    }
+
+    public WorldConfigLoader getWorldLoader() {
+        return worldConfigLoader;
     }
 
     /**

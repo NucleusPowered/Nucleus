@@ -16,7 +16,6 @@ import java.util.Map;
 
 public class CommandPermissionHandler {
 
-    public final static String PERMISSIONS_PREFIX = "quickstart.";
     private final Map<String, PermissionInformation> mssl = Maps.newHashMap();
     private final String prefix;
     private final String base;
@@ -40,7 +39,7 @@ public class CommandPermissionHandler {
             return;
         }
 
-        StringBuilder sb = new StringBuilder(PERMISSIONS_PREFIX);
+        StringBuilder sb = new StringBuilder(PermissionRegistry.PERMISSIONS_PREFIX);
         if (!c.root().isEmpty()) {
             sb.append(c.root()).append(".");
         }

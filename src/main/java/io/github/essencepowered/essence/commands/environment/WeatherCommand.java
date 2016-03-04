@@ -4,23 +4,24 @@
  */
 package io.github.essencepowered.essence.commands.environment;
 
+import com.google.inject.Inject;
 import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.api.PluginModule;
+import io.github.essencepowered.essence.api.data.EssenceWorld;
 import io.github.essencepowered.essence.argumentparsers.TimespanParser;
 import io.github.essencepowered.essence.argumentparsers.WeatherParser;
 import io.github.essencepowered.essence.internal.CommandBase;
 import io.github.essencepowered.essence.internal.annotations.Modules;
 import io.github.essencepowered.essence.internal.annotations.Permissions;
 import io.github.essencepowered.essence.internal.annotations.RegisterCommand;
+import io.github.essencepowered.essence.internal.services.datastore.WorldConfigLoader;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.source.CommandBlockSource;
+import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.World;
@@ -38,6 +39,8 @@ public class WeatherCommand extends CommandBase<CommandSource> {
     private final String weather = "weather";
     private final String duration = "duration";
     private final String timespan = "timespan";
+
+    @Inject private WorldConfigLoader loader;
 
     @Override
     public CommandSpec createSpec() {
@@ -60,14 +63,21 @@ public class WeatherCommand extends CommandBase<CommandSource> {
             w = Sponge.getServer().getWorld(wp.getUniqueId()).get();
         } else {
             // Actually, we just care about where we are.
-            if (src instanceof Player) {
-                w = ((Player) src).getWorld();
-            } else if (src instanceof CommandBlockSource) {
-                w = ((CommandBlockSource) src).getWorld();
+            if (src instanceof LocatedSource) {
+                w = ((LocatedSource) src).getWorld();
             } else {
                 // As supreme overlord of the worlds... you have to specify one.
-                throw new CommandException(Text.of("The world must be specified."));
+                src.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.specifyworld")));
+                return CommandResult.empty();
             }
+        }
+
+        // Get whether we locked the weather.
+        EssenceWorld ew = loader.getWorld(w);
+        if (ew.isLockWeather()) {
+            // Tell the user to unlock first.
+            src.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.weather.locked", w.getName())));
+            return CommandResult.empty();
         }
 
         // Houston, we have a world! Now, what was the forecast?

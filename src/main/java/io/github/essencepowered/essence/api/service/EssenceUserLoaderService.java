@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * A service that retrieves {@link EssenceUser}s.
  */
-public interface EssenceUserService {
+public interface EssenceUserLoaderService {
 
     /**
      * Gets a list of {@link EssenceUser}s that represents the online.
@@ -38,6 +38,10 @@ public interface EssenceUserService {
      *
      * @param playerUUID The {@link UUID} of the player in question.
      * @return The {@link EssenceUser}
+     *
+     * @throws NoSuchPlayerException Thrown when the player has never player on the server.
+     * @throws IOException Thrown when the file could not be read.
+     * @throws ObjectMappingException Thrown when the object mapper fails.
      */
     EssenceUser getUser(UUID playerUUID) throws NoSuchPlayerException, IOException, ObjectMappingException;
 
@@ -54,6 +58,10 @@ public interface EssenceUserService {
      *
      * @param user The {@link User} of the player in question.
      * @return The {@link EssenceUser}
+     *
+     * @throws IOException Thrown when the file could not be read.
+     * @throws ObjectMappingException Thrown when the object mapper fails.
+     *
      */
     EssenceUser getUser(User user) throws IOException, ObjectMappingException;
 }

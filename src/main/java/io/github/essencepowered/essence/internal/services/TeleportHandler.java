@@ -7,7 +7,7 @@ package io.github.essencepowered.essence.internal.services;
 import com.google.common.base.Preconditions;
 import io.github.essencepowered.essence.Essence;
 import io.github.essencepowered.essence.Util;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.interfaces.CancellableTask;
 import io.github.essencepowered.essence.internal.interfaces.InternalEssenceUser;
 import org.spongepowered.api.Sponge;
@@ -34,7 +34,7 @@ public class TeleportHandler {
     private final Essence plugin;
     private final Map<UUID, TeleportPrep> ask = new HashMap<>();
 
-    public static final String tptoggleBypassPermission = CommandPermissionHandler.PERMISSIONS_PREFIX + "teleport.tptoggle.exempt";
+    public static final String tptoggleBypassPermission = PermissionRegistry.PERMISSIONS_PREFIX + "teleport.tptoggle.exempt";
     private Text acceptDeny;
 
     public TeleportHandler(Essence plugin) {

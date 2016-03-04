@@ -9,7 +9,7 @@ import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.api.PluginModule;
 import io.github.essencepowered.essence.argumentparsers.UserParser;
 import io.github.essencepowered.essence.internal.CommandBase;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.annotations.*;
 import io.github.essencepowered.essence.internal.permissions.PermissionInformation;
 import io.github.essencepowered.essence.internal.permissions.SuggestedLevel;
@@ -37,7 +37,7 @@ import java.util.Map;
 @NoCooldown
 @NoCost
 public class BanCommand extends CommandBase<CommandSource> {
-    public static final String notifyPermission = CommandPermissionHandler.PERMISSIONS_PREFIX + "ban.notify";
+    public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "ban.notify";
     private final String user = "user";
     private final String reason = "reason";
 

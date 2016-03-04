@@ -25,6 +25,8 @@ public class AFKHandler {
 
     /**
      * Updates activity.
+     * @param user The user to update.
+     *
      * @return <code>true</code> if the user has returned from AFK.
      */
     public boolean updateUserActivity(UUID user) {

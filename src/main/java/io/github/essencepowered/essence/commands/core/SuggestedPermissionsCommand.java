@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @RunAsync
-@Permissions(root = "quickstart")
+@Permissions(root = "essence")
 @RegisterCommand(value = "printperms", subcommandOf = EssenceCommand.class)
 public class SuggestedPermissionsCommand extends CommandBase<CommandSource> {
     private final String file = "essence-perms.txt";

@@ -96,7 +96,7 @@ public class LocationNode {
     /**
      * Gets a {@link Location} from the node.
      *
-     * @return The {@link Location]}
+     * @return The Location
      * @throws NoSuchWorldException The world does not exist.
      */
     public Location<World> getLocation() throws NoSuchWorldException {

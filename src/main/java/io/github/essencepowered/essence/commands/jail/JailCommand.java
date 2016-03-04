@@ -13,7 +13,7 @@ import io.github.essencepowered.essence.argumentparsers.JailParser;
 import io.github.essencepowered.essence.argumentparsers.TimespanParser;
 import io.github.essencepowered.essence.argumentparsers.UserParser;
 import io.github.essencepowered.essence.internal.CommandBase;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.annotations.*;
 import io.github.essencepowered.essence.internal.permissions.PermissionInformation;
 import io.github.essencepowered.essence.internal.permissions.SuggestedLevel;
@@ -44,7 +44,7 @@ import java.util.Optional;
 @NoCost
 @RegisterCommand({"jail", "unjail", "togglejail"})
 public class JailCommand extends CommandBase<CommandSource> {
-    public static final String notifyPermission = CommandPermissionHandler.PERMISSIONS_PREFIX + "jail.notify";
+    public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "jail.notify";
 
     @Inject private JailHandler handler;
     private final String playerKey = "player";

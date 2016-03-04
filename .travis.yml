@@ -17,6 +17,4 @@ env:
 before_install:
   - chmod +x gradlew
 install: true
-script: "./gradlew"
-notifications:
-  email: false
+script: "./gradlew build"

@@ -36,8 +36,8 @@ public class AFKTask extends TaskBase {
     @Override
     protected Map<String, PermissionInformation> getPermissions() {
         Map<String, PermissionInformation> m = new HashMap<>();
-        m.put(CommandPermissionHandler.PERMISSIONS_PREFIX + "afk.exempt.toggle", new PermissionInformation(Util.getMessageWithFormat("permission.afk.exempt.toggle"), SuggestedLevel.NONE));
-        m.put(CommandPermissionHandler.PERMISSIONS_PREFIX + "afk.exempt.kick", new PermissionInformation(Util.getMessageWithFormat("permission.afk.exempt.kick"), SuggestedLevel.ADMIN));
+        m.put(PermissionRegistry.PERMISSIONS_PREFIX + "afk.exempt.toggle", new PermissionInformation(Util.getMessageWithFormat("permission.afk.exempt.toggle"), SuggestedLevel.NONE));
+        m.put(PermissionRegistry.PERMISSIONS_PREFIX + "afk.exempt.kick", new PermissionInformation(Util.getMessageWithFormat("permission.afk.exempt.kick"), SuggestedLevel.ADMIN));
         return m;
     }
 

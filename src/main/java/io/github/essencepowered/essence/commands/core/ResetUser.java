@@ -9,7 +9,7 @@ import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.argumentparsers.UserParser;
 import io.github.essencepowered.essence.internal.CommandBase;
 import io.github.essencepowered.essence.internal.annotations.*;
-import io.github.essencepowered.essence.internal.services.UserConfigLoader;
+import io.github.essencepowered.essence.internal.services.datastore.UserConfigLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-@Permissions(root = "quickstart")
+@Permissions(root = "essence")
 @RunAsync
 @NoWarmup
 @NoCooldown
@@ -53,15 +53,15 @@ public class ResetUser extends CommandBase<CommandSource> {
         final User user = args.<User>getOne(userKey).get();
 
         List<Text> messages = new ArrayList<>();
-        messages.add(Text.of(TextColors.DARK_RED, Util.getMessageWithFormat("command.quickstart.reset.warning")));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning2", user.getName())));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning3")));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning4")));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning5")));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning6")));
-        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.warning7")));
+        messages.add(Text.of(TextColors.DARK_RED, Util.getMessageWithFormat("command.essence.reset.warning")));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning2", user.getName())));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning3")));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning4")));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning5")));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning6")));
+        messages.add(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.warning7")));
         messages.add(
-            Text.builder(Util.getMessageWithFormat("command.quickstart.reset.reset")).color(TextColors.GREEN)
+            Text.builder(Util.getMessageWithFormat("command.essence.reset.reset")).color(TextColors.GREEN)
                 .style(TextStyles.UNDERLINE).onClick(TextActions.executeCallback(new Delete(plugin, user))).build()
         );
 
@@ -103,9 +103,9 @@ public class ResetUser extends CommandBase<CommandSource> {
                 try {
                     Path file = ucl.getUserPath(user.getUniqueId());
                     Files.delete(file);
-                    source.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.complete", user.getName())));
+                    source.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.complete", user.getName())));
                 } catch (IOException e) {
-                    source.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.quickstart.reset.failed", user.getName())));
+                    source.sendMessage(Text.of(TextColors.RED, Util.getMessageWithFormat("command.essence.reset.failed", user.getName())));
                 } finally {
                     if (!isBanned) {
                         bss.getBanFor(user.getProfile()).ifPresent(bss::removeBan);

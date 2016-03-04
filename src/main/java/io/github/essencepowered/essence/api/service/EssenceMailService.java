@@ -34,7 +34,6 @@ public interface EssenceMailService {
      * @param playerFrom The {@link User} of the player to send the message from.
      * @param playerTo The {@link User} of the player to send the message to.
      * @param message The message.
-     * @throws NoSuchPlayerException Thrown when either player has never played on the server.
      */
     void sendMail(User playerFrom, User playerTo, String message);
 
@@ -43,7 +42,6 @@ public interface EssenceMailService {
      *
      * @param playerTo The {@link User} of the player to send the message to.
      * @param message The message.
-     * @throws NoSuchPlayerException Thrown when the player has never played on the server.
      */
     void sendMailFromConsole(User playerTo, String message);
 
@@ -51,7 +49,6 @@ public interface EssenceMailService {
      * Clears the player's mail.
      *
      * @param player The {@link UUID} of the player.
-     * @throws NoSuchPlayerException Thrown when the player has never played on the server.
      */
     void clearUserMail(User player);
 

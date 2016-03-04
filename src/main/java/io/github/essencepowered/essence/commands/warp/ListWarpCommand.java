@@ -9,7 +9,7 @@ import io.github.essencepowered.essence.Util;
 import io.github.essencepowered.essence.api.service.EssenceWarpService;
 import io.github.essencepowered.essence.config.MainConfig;
 import io.github.essencepowered.essence.internal.CommandBase;
-import io.github.essencepowered.essence.internal.CommandPermissionHandler;
+import io.github.essencepowered.essence.internal.PermissionRegistry;
 import io.github.essencepowered.essence.internal.annotations.Permissions;
 import io.github.essencepowered.essence.internal.annotations.RegisterCommand;
 import io.github.essencepowered.essence.internal.annotations.RunAsync;
@@ -80,6 +80,6 @@ public class ListWarpCommand extends CommandBase<CommandSource> {
 
     private boolean canView(CommandSource src, String warp) {
         return !mainConfig.useSeparatePermissionsForWarp()
-                || src.hasPermission(CommandPermissionHandler.PERMISSIONS_PREFIX + "warps." + warp.toLowerCase());
+                || src.hasPermission(PermissionRegistry.PERMISSIONS_PREFIX + "warps." + warp.toLowerCase());
     }
 }
