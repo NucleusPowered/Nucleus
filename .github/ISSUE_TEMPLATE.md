@@ -6,6 +6,9 @@
     We categorize our issues into 2 categories:
     * Bug: Prefix your issue title with [BUG]
     * Feature Request: Prefix your issue title with [FEATURE]
+
+    Note you do not need to provide all the fields given but the more you give the better and easier for us to figure
+    out the issue.
 -->
 
 <!--
