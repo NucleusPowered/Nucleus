@@ -1,14 +1,11 @@
 <!--
-    Anything in <!-- and -> are comments and would not appear to us
--->
+    Anything in <!-- and -> are comments and will not appear in the submitted issue.
 
-<!--
-    We categorize our issues into 2 categories:
-    * Bug: Prefix your issue title with [BUG]
-    * Feature Request: Prefix your issue title with [FEATURE]
-
-    Note you do not need to provide all the fields given but the more you give the better and easier for us to figure
-    out the issue.
+    Note:
+        This template is just a suggestion for the layout for your report.
+        As a general rule this template should be followed, but feel free to modify it according to your situation.
+        However it is important that you provide as much detail as you can possibly provide so that we can address the
+        issue with minimal fuss.
 -->
 
 <!--
@@ -20,16 +17,17 @@
 * Nucleus version: <!-- Find the version using /sponge plugins Nucleus -->
 * Plugins and Mods: <!-- Plugins and Mods installed on the server, use /sponge plugins to ensure to list all of them -->
 * Expected Result: <!-- What you expected -->
-* Actual Result: <!-- What is the current situation -->
+* Actual Result: <!-- What actually happened -->
 * Steps to Reproduce:
     * <!-- How can we replicate the problem -->
     * <!-- -->
-* Comments: <!-- Anything else you want to add. Maybe any logs, media -->
+* Comments: <!-- Anything else you want to add. Maybe any logs(use pastebin or gists), media -->
 
 <!--
     This section is only for Feature Request issues
 -->
-* Request: <!-- Provide as much detail as possible -->
-* Use cases:
+* Suggestion:
+* How would it work: <!-- Provide as much detail as possible -->
+* Use cases/ justification:
     * [ ] <!-- Provide atleast one use case -->
     * [ ]
