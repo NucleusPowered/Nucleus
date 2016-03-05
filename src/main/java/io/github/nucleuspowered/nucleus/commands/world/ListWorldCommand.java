@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Lists all the worlds.
  *
- * Command Usage: /world list Permission: essence.world.list.base
+ * Command Usage: /world list Permission: nucleus.world.list.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"list", "ls"}, subcommandOf = WorldCommand.class)

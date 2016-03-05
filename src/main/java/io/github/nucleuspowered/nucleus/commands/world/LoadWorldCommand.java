@@ -30,7 +30,7 @@ import java.util.Optional;
  * Loads worlds.
  *
  * Command Usage: /world load [name] [dimension] [generator] [gamemode]
- * [difficulty] Permission: essence.world.load.base
+ * [difficulty] Permission: nucleus.world.load.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"load"}, subcommandOf = WorldCommand.class)

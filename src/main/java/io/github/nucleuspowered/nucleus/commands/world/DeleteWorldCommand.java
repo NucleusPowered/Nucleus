@@ -22,7 +22,7 @@ import org.spongepowered.api.world.storage.WorldProperties;
 /**
  * Deletes a world.
  *
- * Command Usage: /world delete [world] Permission: essence.world.delete.base
+ * Command Usage: /world delete [world] Permission: nucleus.world.delete.base
  */
 @Permissions(root = "world")
 @RegisterCommand(value = {"delete", "del"}, subcommandOf = WorldCommand.class)

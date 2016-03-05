@@ -18,7 +18,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 /**
  * Allows a user to warp to the specified warp.
  *
- * Command Usage: /world Permission: essence.world.base
+ * Command Usage: /world Permission: nucleus.world.base
  *
  */
 @Permissions(suggestedLevel = SuggestedLevel.ADMIN)

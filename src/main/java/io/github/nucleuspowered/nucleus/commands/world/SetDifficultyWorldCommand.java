@@ -26,7 +26,7 @@ import java.util.Optional;
  * Sets difficulty of world.
  *
  * Command Usage: /world setdifficulty [difficulty] [world] Permission:
- * essence.world.setdifficulty.base
+ * nucleus.world.setdifficulty.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"setdifficulty"}, subcommandOf = WorldCommand.class)

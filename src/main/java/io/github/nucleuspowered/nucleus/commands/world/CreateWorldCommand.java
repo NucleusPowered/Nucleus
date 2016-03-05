@@ -31,7 +31,7 @@ import java.util.Optional;
  * Creates world.
  *
  * Command Usage: /world create [name] [dimension] [generator] [gamemode]
- * [difficulty] Permission: essence.world.create.base
+ * [difficulty] Permission: nucleus.world.create.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"create"}, subcommandOf = WorldCommand.class)

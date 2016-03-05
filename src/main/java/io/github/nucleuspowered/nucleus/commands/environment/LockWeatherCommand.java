@@ -26,7 +26,7 @@ import java.util.Optional;
 /**
  * Locks (or unlocks) the weather.
  *
- * Permission: essence.lockweather.base
+ * Permission: nucleus.lockweather.base
  */
 @Permissions
 @RunAsync

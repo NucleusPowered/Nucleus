@@ -18,7 +18,7 @@ import org.spongepowered.api.text.Text;
 /**
  * Teleports you to the world spawn.
  *
- * Command Usage: /world spawn Permission: essence.world.spawn.base
+ * Command Usage: /world spawn Permission: nucleus.world.spawn.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"spawn"}, subcommandOf = WorldCommand.class)

@@ -21,8 +21,8 @@ import static io.github.nucleuspowered.nucleus.PluginInfo.*;
 /**
  * Gives information about Nucleus.
  *
- * Command Usage: /essence
- * Permission: essence.essence.base
+ * Command Usage: /nucleus
+ * Permission: nucleus.nucleus.base
  */
 @RunAsync
 @Permissions

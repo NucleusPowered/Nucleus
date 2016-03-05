@@ -26,7 +26,7 @@ import java.util.Optional;
  * Teleports you to the world specified.
  *
  * Command Usage: /world teleport [world] Permission:
- * essence.world.teleport.base
+ * nucleus.world.teleport.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"teleport", "tp"}, subcommandOf = WorldCommand.class)

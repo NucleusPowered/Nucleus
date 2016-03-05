@@ -26,7 +26,7 @@ import java.util.Optional;
  * Sets gamemode of world.
  *
  * Command Usage: /world setgamemode [gamemode] [world] Permission:
- * essence.world.setgamemode.base
+ * nucleus.world.setgamemode.base
  */
 @Permissions(root = "world", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"setgamemode", "setgm"}, subcommandOf = WorldCommand.class)
