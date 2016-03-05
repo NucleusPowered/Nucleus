@@ -9,7 +9,7 @@
 -->
 
 <!--
-    This section is only for Bug issues
+    This section is only for Bug Reports
 -->
 * Sponge
     * Implementation: <!-- SpongeForge or SpongeVanilla -->
@@ -24,7 +24,7 @@
 * Comments: <!-- Anything else you want to add. Maybe any logs(use pastebin or gists), media -->
 
 <!--
-    This section is only for Feature Request issues
+    This section is only for Feature Requests
 -->
 * Suggestion:
 * How would it work: <!-- Provide as much detail as possible -->
