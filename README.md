@@ -2,8 +2,8 @@ Nucleus
 ====
 
 [![GitHub license](https://img.shields.io/badge/License-MIT-brightgreen.svg?style=flat-square)](/LICENSE.txt) |
-[![JitPack](https://img.shields.io/badge/Dependency-JitPack-brightgreen.svg?style=flat-square)](https://jitpack.io/#NucleusPowered/Nucleus) |
-[![Travis branch](https://img.shields.io/travis/NucleusPowered/Nucleus/master.svg?style=flat-square)](https://travis-ci.org/NucleusPowered/Nucleus)
+[![](https://jitpack.io/v/NucleusPowered/Nucleus.svg?style=flat-square)](https://jitpack.io/#NucleusPowered/Nucleus) |
+[![Master branch](https://img.shields.io/travis/NucleusPowered/Nucleus/master.svg?style=flat-square)](https://travis-ci.org/NucleusPowered/Nucleus)
 
 * [Source]
 * [Issues] | [![GitHub issues](https://img.shields.io/github/issues/NucleusPowered/Nucleus.svg?style=flat-square)](http://www.github.com/NucleusPowered/Nucleus/issues/)
