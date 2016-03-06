@@ -124,7 +124,7 @@ public class MainConfig extends AbstractConfig<CommentedConfigurationNode, Hocon
 
         ccn.getNode("warps", "separate-permissions").setComment(Util.getMessageWithFormat("config.warps.separate")).setValue(false);
 
-        ccn.getNode("chat", "modifychat").setComment(Util.getMessageWithFormat("config.chat.modify")).setValue(false);
+        ccn.getNode("chat", "modifychat").setComment(Util.getMessageWithFormat("config.chat.modify")).setValue(true);
         ccn.getNode("chat", "template").setComment(Util.getMessageWithFormat("config.chat.template"))
                 .setValue("{{prefix}} {{name}}&f: {{message}} {{suffix}}");
 
