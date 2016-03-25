@@ -107,3 +107,5 @@ gradle-app.setting
 
 ### SpongeStart stuff
 run/
+classes/
+out/
