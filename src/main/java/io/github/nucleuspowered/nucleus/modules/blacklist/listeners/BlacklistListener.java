@@ -79,14 +79,18 @@ public class BlacklistListener extends ListenerBase {
     @Listener
     public void onPlayerPlaceBlock(ChangeBlockEvent.Place event, @First Player player) {
         for (Transaction<BlockSnapshot> transaction : event.getTransactions()) {
-            event.setCancelled(checkForBlacklist(player, transaction.getFinal().getState().getType().getId(), false));
+            if (checkForBlacklist(player, transaction.getFinal().getState().getType().getId(), false)) {
+                transaction.setCustom(transaction.getOriginal());
+            }
         }
     }
 
     @Listener
     public void onPlayerBreakBlock(ChangeBlockEvent.Break event, @First Player player) {
         for (Transaction<BlockSnapshot> transaction : event.getTransactions()) {
-            event.setCancelled(checkForBlacklist(player, transaction.getOriginal().getState().getType().getId(), false));
+            if (checkForBlacklist(player, transaction.getFinal().getState().getType().getId(), false)) {
+                transaction.setCustom(transaction.getOriginal());
+            }
         }
     }
 
