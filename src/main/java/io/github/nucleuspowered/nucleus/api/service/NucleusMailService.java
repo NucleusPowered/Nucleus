@@ -49,8 +49,9 @@ public interface NucleusMailService {
      * Clears the player's mail.
      *
      * @param player The {@link UUID} of the player.
+     * @return If there was any mail cleared
      */
-    void clearUserMail(User player);
+    boolean clearUserMail(User player);
 
     /**
      * Create a filter that restricts the mail to the senders provided.

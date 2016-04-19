@@ -46,7 +46,8 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class UserService extends AbstractSerialisableClassConfig<UserDataNode, ConfigurationNode, GsonConfigurationLoader> implements InternalNucleusUser {
+public class UserService extends AbstractSerialisableClassConfig<UserDataNode, ConfigurationNode, GsonConfigurationLoader>
+        implements InternalNucleusUser {
 
     private final Nucleus plugin;
     private final User user;
@@ -314,8 +315,13 @@ public class UserService extends AbstractSerialisableClassConfig<UserDataNode, C
     }
 
     @Override
-    public void clearMail() {
-        data.setMailDataList(Lists.newArrayList());
+    public boolean clearMail() {
+        if (!data.getMailDataList().isEmpty()) {
+            data.setMailDataList(Lists.newArrayList());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

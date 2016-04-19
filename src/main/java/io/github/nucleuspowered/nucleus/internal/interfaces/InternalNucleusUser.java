@@ -29,7 +29,7 @@ public interface InternalNucleusUser extends NucleusUser {
 
     void addMail(MailData mailData);
 
-    void clearMail();
+    boolean clearMail();
 
     /**
      * Determines whether Nucleus thinks the player should be flying, but does not look at the current status of the

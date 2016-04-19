@@ -30,8 +30,11 @@ public class ClearMailCommand extends CommandBase<Player> {
 
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
-        handler.clearUserMail(src);
-        src.sendMessage(Util.getTextMessageWithFormat("command.mail.clear"));
+        if (handler.clearUserMail(src)) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.mail.clear.success"));
+        } else {
+            src.sendMessage(Util.getTextMessageWithFormat("command.mail.clear.nomail"));
+        }
         return CommandResult.success();
     }
 }

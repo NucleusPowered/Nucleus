@@ -121,16 +121,16 @@ public class MailHandler implements NucleusMailService {
     }
 
     @Override
-    public void clearUserMail(User player) {
+    public boolean clearUserMail(User player) {
         InternalNucleusUser iqsu;
         try {
             iqsu = plugin.getUserLoader().getUser(player);
         } catch (Exception e) {
             e.printStackTrace();
-            return;
+            return false;
         }
 
-        iqsu.clearMail();
+        return iqsu.clearMail();
     }
 
     @Override
