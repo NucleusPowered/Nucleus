@@ -33,11 +33,15 @@ repositories {
         name 'drnaylor'
         url 'http://repo.drnaylor.co.uk/artifactory/list/quickstart'
     }
+	maven {
+    	url 'https://jitpack.io'
+    }
 }
 
 dependencies {
     compile "org.spongepowered:spongeapi:4.1.0-SNAPSHOT"
     compile "uk.co.drnaylor:quickstart-moduleloader:0.1.5"
+	compile "com.github.hsyyid:EssentialCmds:v8.1.0"
 
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-all:1.10.19"
