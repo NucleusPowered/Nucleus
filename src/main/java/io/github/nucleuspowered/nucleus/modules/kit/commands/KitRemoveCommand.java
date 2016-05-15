@@ -44,7 +44,7 @@ public class KitRemoveCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(new KitParser(Text.of(kit), kca, kitConfig, true))};
+        return new CommandElement[] {GenericArguments.onlyOne(new KitParser(Text.of(kit), kca, kitConfig, false))};
     }
 
     @Override

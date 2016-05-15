@@ -43,7 +43,7 @@ public class KitSetCooldownCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.seq(GenericArguments.onlyOne(new KitParser(Text.of(kit), kca, kitConfig, true)),
+        return new CommandElement[] {GenericArguments.seq(GenericArguments.onlyOne(new KitParser(Text.of(kit), kca, kitConfig, false)),
                 GenericArguments.onlyOne(new TimespanParser(Text.of(duration))))};
     }
 
