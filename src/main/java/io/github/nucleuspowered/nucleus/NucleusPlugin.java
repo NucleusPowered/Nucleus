@@ -50,10 +50,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.Order;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -189,8 +187,8 @@ public class NucleusPlugin extends Nucleus {
         }
     }
 
-    @Listener
-    public void onPostInit(GamePostInitializationEvent event) {
+    @Listener(order = Order.POST)
+    public void onInit(GameInitializationEvent event) {
         if (isErrored) {
             return;
         }

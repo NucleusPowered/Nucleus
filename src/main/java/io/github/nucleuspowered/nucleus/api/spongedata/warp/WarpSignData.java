@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus.api.spongedata.warp;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.data.value.mutable.OptionalValue;
-import org.spongepowered.api.data.value.mutable.Value;
 
 /**
  * Data that represents a sign that can warp a player.
@@ -19,7 +18,7 @@ public interface WarpSignData extends DataManipulator<WarpSignData, ImmutableWar
      *
      * @return The name of the warp.
      */
-    Value<String> warpName();
+    OptionalValue<String> warpName();
 
     /**
      * Gets the permission that is required to use this warp, if one is required.

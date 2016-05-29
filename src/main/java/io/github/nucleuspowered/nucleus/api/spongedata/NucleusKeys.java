@@ -10,7 +10,6 @@ import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.data.value.mutable.OptionalValue;
-import org.spongepowered.api.data.value.mutable.Value;
 
 /**
  * Sponge Data API keys used in Nucleus.
@@ -24,7 +23,7 @@ public final class NucleusKeys {
     /**
      * The name of the warp the sign represents.
      */
-    public final static Key<Value<String>> WARP_NAME = new FakeKey<>();
+    public final static Key<OptionalValue<String>> WARP_NAME = new FakeKey<>();
 
     /**
      * The permission for the warp.
@@ -34,7 +33,7 @@ public final class NucleusKeys {
     /**
      * The warmup for the warp.
      */
-    public final static Key<MutableBoundedValue<String>> WARP_WARMUP = new FakeKey<>();
+    public final static Key<MutableBoundedValue<Integer>> WARP_WARMUP = new FakeKey<>();
 
     /* (non-Javadoc)
      *

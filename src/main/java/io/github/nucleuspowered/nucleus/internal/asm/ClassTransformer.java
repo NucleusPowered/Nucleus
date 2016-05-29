@@ -7,6 +7,7 @@ package io.github.nucleuspowered.nucleus.internal.asm;
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Method;
 import java.util.function.Function;
 
 /**
@@ -51,25 +52,22 @@ public class ClassTransformer {
     }
 
     @SuppressWarnings("all")
-    private Class loadClass(String className, byte[] b) throws Exception {
-        //override classDefine (as it is protected) and define the class.
-        Class clazz = null;
-        ClassLoader loader = ClassLoader.getSystemClassLoader();
-        Class cls = Class.forName("java.lang.ClassLoader");
-        java.lang.reflect.Method method =
-                cls.getDeclaredMethod("defineClass", new Class[] { String.class, byte[].class, int.class, int.class });
+    private void loadClass(String className, byte[] b) throws Exception {
+        ClassLoader loader = this.getClass().getClassLoader();
 
-        // protected method invocaton
+        // Get the classloader and from it, the defineClass method.
+        Method method =
+                ClassLoader.class.getDeclaredMethod("defineClass", new Class[] { String.class, byte[].class, int.class, int.class });
+
+        boolean isAccessible = method.isAccessible();
         method.setAccessible(true);
         try {
             logger.info("Loading transformed class \"{}\"...", className);
             Object[] args = new Object[] { className, b, new Integer(0), new Integer(b.length)};
-            clazz = (Class) method.invoke(loader, args);
+            method.invoke(loader, args);
         } finally {
-            method.setAccessible(false);
+            method.setAccessible(isAccessible);
         }
-
-        return clazz;
     }
 
     /**
@@ -85,7 +83,7 @@ public class ClassTransformer {
         public FieldVisitor visitField(int access, String fieldName, String s1, String s2, Object o) {
             if ((access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
                 logger.debug("Removing final modifier from {}", fieldName);
-                return super.visitField(access & ~Opcodes.ACC_FINAL, fieldName, s1, s2, o);
+                return super.visitField(access & (~Opcodes.ACC_FINAL), fieldName, s1, s2, o);
             }
 
             return super.visitField(access, fieldName, s1, s2, o);
