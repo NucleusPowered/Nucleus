@@ -26,6 +26,7 @@ import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.TextFileController;
+import io.github.nucleuspowered.nucleus.internal.asm.ClassTransformer;
 import io.github.nucleuspowered.nucleus.internal.docgen.DocGenCache;
 import io.github.nucleuspowered.nucleus.internal.guice.QuickStartInjectorModule;
 import io.github.nucleuspowered.nucleus.internal.guice.SubInjectorModule;
@@ -93,7 +94,7 @@ public class NucleusPlugin extends Nucleus {
     private DocGenCache docGenCache = null;
 
     private InternalServiceManager serviceManager = new InternalServiceManager(this);
-    private MessageProvider messageProvider = new ResourceMessageProvider(ResourceMessageProvider.messagesBundle);
+    private MessageProvider messageProvider;
     private MessageProvider commandMessageProvider = new ResourceMessageProvider(ResourceMessageProvider.commandMessagesBundle);
 
     private WarmupManager warmupManager;
@@ -105,15 +106,25 @@ public class NucleusPlugin extends Nucleus {
     private final Map<String, TextFileController> textFileControllers = Maps.newHashMap();
 
     @Inject private Game game;
-    @Inject private Logger logger;
+    private final Logger logger;
     private Path configDir;
     private Path dataDir;
 
     // We inject this into the constructor so we can build the config path ourselves.
     @Inject
-    public NucleusPlugin(@ConfigDir(sharedRoot = true) Path configDir) {
+    public NucleusPlugin(@ConfigDir(sharedRoot = true) Path configDir, Logger logger) {
         Nucleus.setNucleus(this);
+        this.messageProvider = new ResourceMessageProvider(ResourceMessageProvider.messagesBundle);
+        logger.info(messageProvider.getMessageWithFormat("startup.construct", PluginInfo.NAME));
         this.configDir = configDir.resolve(PluginInfo.ID);
+
+        this.logger = logger;
+        try {
+            new ClassTransformer(logger).loadClasses();
+        } catch (Exception e) {
+            e.printStackTrace();
+            isErrored = true;
+        }
     }
 
     @Listener
