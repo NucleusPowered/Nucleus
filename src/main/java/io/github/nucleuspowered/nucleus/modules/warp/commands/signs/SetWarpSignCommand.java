@@ -13,7 +13,6 @@ import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.warp.handlers.WarpHandler;
 import io.github.nucleuspowered.nucleus.modules.warp.spongedata.manipulators.WarpData;
 import org.spongepowered.api.block.tileentity.Sign;
 import org.spongepowered.api.command.CommandResult;
@@ -38,7 +37,6 @@ public class SetWarpSignCommand extends CommandBase<Player> {
 
     private final Pattern permissionPattern = Pattern.compile("^[A-Za-z0-9\\.\\-]+$");
 
-    @Inject private WarpHandler handler;
     @Inject private WarpConfigAdapter wca;
 
     @Override
