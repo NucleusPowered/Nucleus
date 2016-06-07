@@ -11,12 +11,10 @@ import io.github.nucleuspowered.nucleus.api.data.WarpLocation;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.WarpSignData;
 import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
-import io.github.nucleuspowered.nucleus.modules.back.handlers.BackHandler;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warp.handlers.WarpHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.Sign;
-import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.action.InteractEvent;
@@ -79,21 +77,10 @@ public class WarpSignListener extends ListenerBase {
 
     private void warpPlayer(Player player, String warp, Location<World> worldLocation, Vector3d rotation) {
         player.sendMessage(Util.getTextMessageWithFormat("command.warps.start", warp));
-        Transform<World> currentLocation = player.getTransform();
 
         // Warp them.
          if (!player.setLocationAndRotationSafely(worldLocation, rotation)) {
             player.sendMessage(Util.getTextMessageWithFormat("command.warps.nosafe"));
-        } else {
-             setLastLocation(player, currentLocation);
-         }
-    }
-
-    @SuppressWarnings("deprecation")
-    private void setLastLocation(Player player, Transform<World> location) {
-        Optional<BackHandler> backHandler = plugin.getInternalServiceManager().getService(BackHandler.class);
-        if (backHandler.isPresent()) {
-            backHandler.get().setLastLocationInternal(player, location);
         }
     }
 }
