@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.NoCostArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.NoWarmupArgument;
-import io.github.nucleuspowered.nucleus.argumentparsers.TwoPlayersArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConfigCommandAlias;
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
@@ -52,7 +51,7 @@ public class TeleportCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-       return new CommandElement[]{
+       return new CommandElement[] {
                 GenericArguments.flags().flag("f")
                         .valueFlag(GenericArguments.requiringPermission(GenericArguments.bool(Text.of(quietKey)), permissions.getPermissionWithSuffix("quiet")), "q")
                         .buildWith(GenericArguments.none()),
@@ -60,11 +59,16 @@ public class TeleportCommand extends CommandBase<CommandSource> {
                 // Either we get two arguments, or we get one.
                 GenericArguments.firstParsing(
                         // <player> <player>
-                        new NoCostArgument(new NoWarmupArgument(new TwoPlayersArgument(Text.of(playerFromKey), Text.of(playerKey),
-                                permissions.getPermissionWithSuffix("others")))),
-
+                        GenericArguments.requiringPermission(
+                                new NoCostArgument(new NoWarmupArgument(
+                                    GenericArguments.seq(
+                                            GenericArguments.player(Text.of(playerFromKey)),
+                                            GenericArguments.player(Text.of(playerKey))
+                                    ))), permissions.getPermissionWithSuffix("others")),
                 // <player>
-                GenericArguments.onlyOne(GenericArguments.player(Text.of(playerKey))))};
+                GenericArguments.onlyOne(GenericArguments.player(Text.of(playerKey)))
+            )
+       };
     }
 
     @Override
