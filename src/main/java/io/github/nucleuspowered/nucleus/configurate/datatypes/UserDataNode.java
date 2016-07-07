@@ -184,7 +184,9 @@ public class UserDataNode {
     }
 
     public void setKitLastUsedTime(Map<String, Long> kitLastUsedTime) {
-        this.kitLastUsedTime = kitLastUsedTime;
+        Map<String, Long> msl = Maps.newHashMap();
+        kitLastUsedTime.forEach((k, v) -> msl.put(k.toLowerCase(), v));
+        this.kitLastUsedTime = msl;
     }
 
     public Map<String, List<String>> getPowertools() {

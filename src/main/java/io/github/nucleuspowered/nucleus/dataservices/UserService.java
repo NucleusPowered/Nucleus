@@ -378,19 +378,19 @@ public class UserService extends Service<UserDataNode>
 
     public Map<String, Instant> getKitLastUsedTime() {
         final Map<String, Instant> r = Maps.newHashMap();
-        data.getKitLastUsedTime().forEach((k, v) -> r.put(k, Instant.ofEpochSecond(v)));
+        data.getKitLastUsedTime().forEach((k, v) -> r.put(k.toLowerCase(), Instant.ofEpochSecond(v)));
         return r;
     }
 
     public void addKitLastUsedTime(String kitName, Instant lastTime) {
         Map<String, Long> kitLastUsedTime = data.getKitLastUsedTime();
-        kitLastUsedTime.put(kitName, lastTime.getEpochSecond());
+        kitLastUsedTime.put(kitName.toLowerCase(), lastTime.getEpochSecond());
         data.setKitLastUsedTime(kitLastUsedTime);
     }
 
     public void removeKitLastUsedTime(String kitName) {
         Map<String, Long> kitLastUsedTime = data.getKitLastUsedTime();
-        kitLastUsedTime.remove(kitName);
+        kitLastUsedTime.remove(kitName.toLowerCase());
         data.setKitLastUsedTime(kitLastUsedTime);
     }
 
