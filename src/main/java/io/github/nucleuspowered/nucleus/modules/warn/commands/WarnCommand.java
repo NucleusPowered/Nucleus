@@ -57,16 +57,15 @@ public class WarnCommand extends CommandBase<CommandSource> {
     public CommandElement[] getArguments() {
         return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
                 GenericArguments.onlyOne(GenericArguments.optionalWeak(new TimespanArgument(Text.of(durationKey)))),
-                GenericArguments.optional(GenericArguments.onlyOne(GenericArguments.remainingJoinedStrings(Text.of(reasonKey))))};
+                GenericArguments.onlyOne(GenericArguments.onlyOne(GenericArguments.remainingJoinedStrings(Text.of(reasonKey))))};
     }
 
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         User user = args.<User>getOne(playerKey).get();
         Optional<Long> optDuration = args.getOne(durationKey);
-        Optional<String> optReason = args.getOne(reasonKey);
+        String reason = args.<String>getOne(reasonKey).get();
 
-        String reason = optReason.orElse(Util.getMessageWithFormat("command.warn.defaultreason"));
         UUID warner = Util.consoleFakeUUID;
         if (src instanceof Player) {
             warner = ((Player) src).getUniqueId();
