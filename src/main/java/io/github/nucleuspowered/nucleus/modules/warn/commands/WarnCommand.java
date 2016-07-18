@@ -91,8 +91,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
                     user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("warn.playernotify.time", warnData.getReason(), time));
                 }
             } else {
-                String time= Util.getTimeStringFromSeconds(optDuration.get());
-                messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.time", user.getName(), src.getName(), time, warnData.getReason()));
+                messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.norm", user.getName(), src.getName(), warnData.getReason()));
 
                 if (user.isOnline()) {
                     user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("mute.playernotify.standard", warnData.getReason()));
