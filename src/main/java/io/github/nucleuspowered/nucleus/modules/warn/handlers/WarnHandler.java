@@ -75,4 +75,21 @@ public class WarnHandler implements NucleusWarnService {
 
         return false;
     }
+
+    @Override
+    public boolean updateWarnings(User user) {
+        Optional<UserService> userService = userDataManager.get(user);
+        if (!userService.isPresent()) {
+            return false;
+        }
+
+        for (WarnData warning : getWarnings(user)) {
+            warning.nextLoginToTimestamp();
+
+            if (warning.getEndTimestamp().isPresent() && warning.getEndTimestamp().get().isBefore(Instant.now())) {
+                removeWarning(user, warning);
+            }
+        }
+        return true;
+    }
 }

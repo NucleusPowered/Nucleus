@@ -56,6 +56,7 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
             src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.none", user.getName()));
             return CommandResult.success();
         }
+        handler.updateWarnings(user);
 
         int index = 0;
         for (WarnData warning : warnings) {

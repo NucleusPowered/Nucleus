@@ -47,4 +47,12 @@ public interface NucleusWarnService {
      * @return <code>true</code> if all warnings were removed.
      */
     boolean clearWarnings(User user);
+
+    /**
+     * Updates a current users warnings
+     *
+     * @param user The {@link User} to update.
+     * @return <code>true</code> if all warnings were updated.
+     */
+    boolean updateWarnings(User user);
 }
