@@ -73,7 +73,7 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
             } else if (warning.getTimeFromNextLogin().isPresent()) {
                 time = Util.getTimeStringFromSeconds(warning.getTimeFromNextLogin().get().getSeconds());
             } else {
-                time = "the rest of time";
+                time = Util.getMessageWithFormat("standard.restoftime");
             }
 
             src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
