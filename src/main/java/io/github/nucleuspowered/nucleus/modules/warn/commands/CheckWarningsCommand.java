@@ -68,17 +68,15 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
             }
 
             String time = "";
-            String forString = "";
             if (warning.getEndTimestamp().isPresent()) {
                 time = Util.getTimeStringFromSeconds(Instant.now().until(warning.getEndTimestamp().get(), ChronoUnit.SECONDS));
-                forString = " " + Util.getMessageWithFormat("standard.for") + " ";
             } else if (warning.getTimeFromNextLogin().isPresent()) {
                 time = Util.getTimeStringFromSeconds(warning.getTimeFromNextLogin().get().getSeconds());
-                forString = " " + Util.getMessageWithFormat("standard.for") + " ";
+            } else {
+                time = "the rest of time";
             }
 
-            src.sendMessage(Util.getTextMessageWithFormat("command.checkmute.mute", String.valueOf(index + 1), user.getName(), name, forString, time));
-            src.sendMessage(Util.getTextMessageWithFormat("standard.reason", warning.getReason()));
+            src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
             index++;
         }
         return CommandResult.success();
