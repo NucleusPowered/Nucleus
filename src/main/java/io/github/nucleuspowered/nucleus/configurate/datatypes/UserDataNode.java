@@ -25,6 +25,9 @@ public class UserDataNode {
     @Setting("warnings")
     private List<WarnData> warnings = Lists.newArrayList();
 
+    @Setting("expired-warnings")
+    private List<WarnData> expiredWarnings = Lists.newArrayList();
+
     @Setting
     private boolean socialspy;
 
@@ -89,6 +92,10 @@ public class UserDataNode {
 
     public List<WarnData> getWarnings() {
         return warnings;
+    }
+
+    public List<WarnData> getExpiredWarnings() {
+        return expiredWarnings;
     }
 
     public void setWarnings(List<WarnData> warnings) {

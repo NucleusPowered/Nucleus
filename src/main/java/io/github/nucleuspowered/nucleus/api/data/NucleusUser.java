@@ -43,6 +43,40 @@ public interface NucleusUser {
     @NonnullByDefault UUID getUniqueID();
 
     /**
+     * Gets the active warnings of the user
+     *
+     * @return The {@link List} of {@link WarnData}s that represent the users active warnings.
+     */
+    List<WarnData> getWarnings();
+
+    /**
+     * Gets the expired warnings of the user
+     *
+     * @return The {@link List} of {@link WarnData}s that represent the users expired warnings.
+     */
+    List<WarnData> getExpiredWarnings();
+
+    /**
+     * Adds a {@link WarnData} to the users active warnings
+     *
+     * @param warning The warning to add.
+     */
+    void addWarning(WarnData warning);
+
+    /**
+     * Removes a {@link WarnData} from the users active warnings
+     *
+     * @param warning The warning to remove.
+     * @return <code>true</code> if successful.
+     */
+    boolean removeWarning(WarnData warning);
+
+    /**
+     * Clears all of the users active warnings
+     */
+    boolean clearWarnings();
+
+    /**
      * Gets whether Nucleus thinks the player should be invulnerable. Note, this means the player has been subject to
      * the /god command.
      *

@@ -83,10 +83,21 @@ public class UserService extends Service<UserDataNode>
         data.setMuteData(mData);
     }
 
+    public void removeMuteData() {
+        data.setMuteData(null);
+    }
+
+    @Override
     public List<WarnData> getWarnings() {
         return ImmutableList.copyOf(data.getWarnings());
     }
 
+    @Override
+    public List<WarnData> getExpiredWarnings() {
+        return ImmutableList.copyOf(data.getExpiredWarnings());
+    }
+
+    @Override
     public void addWarning(WarnData warning) {
         List<WarnData> warnings = data.getWarnings();
         if (warnings == null) {
@@ -97,10 +108,13 @@ public class UserService extends Service<UserDataNode>
         data.setWarnings(warnings);
     }
 
+    @Override
     public boolean removeWarning(WarnData warning) {
         List<WarnData> warnings = data.getWarnings();
         if (warnings.removeIf(x -> x.getEndTimestamp().equals(warning.getEndTimestamp()) &&
-                x.getReason().equals(warning.getReason()) && x.getTimeFromNextLogin().equals(warning.getTimeFromNextLogin()) && x.getWarner().equals(warning.getWarner()))) {
+                x.getReason().equals(warning.getReason()) &&
+                x.getTimeFromNextLogin().equals(warning.getTimeFromNextLogin()) &&
+                x.getWarner().equals(warning.getWarner()))) {
             data.setWarnings(warnings);
             return true;
         }
@@ -108,6 +122,7 @@ public class UserService extends Service<UserDataNode>
         return false;
     }
 
+    @Override
     public boolean clearWarnings() {
         if (!data.getWarnings().isEmpty()) {
             data.setWarnings(Lists.newArrayList());
@@ -115,10 +130,6 @@ public class UserService extends Service<UserDataNode>
         } else {
             return false;
         }
-    }
-
-    public void removeMuteData() {
-        data.setMuteData(null);
     }
 
     public boolean isSocialSpy() {
