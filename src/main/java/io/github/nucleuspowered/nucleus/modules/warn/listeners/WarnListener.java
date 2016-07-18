@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.WarnData;
 import io.github.nucleuspowered.nucleus.internal.ListenerBase;
+import io.github.nucleuspowered.nucleus.modules.warn.config.WarnConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warn.handlers.WarnHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -21,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 public class WarnListener extends ListenerBase {
 
-    @Inject
-    private WarnHandler handler;
+    @Inject private WarnHandler handler;
+    @Inject private WarnConfigAdapter wca;
 
     /**
      * At the time the player joins, check to see if the player has been warned.
@@ -41,11 +42,13 @@ public class WarnListener extends ListenerBase {
                     if (warning.getEndTimestamp().isPresent() && warning.getEndTimestamp().get().isBefore(Instant.now())) {
                         handler.removeWarning(player, warning);
                     } else {
-                        if (warning.getEndTimestamp().isPresent()) {
-                            player.sendMessage(Util.getTextMessageWithFormat("warn.playernotify.time", warning.getReason(),
-                                    Util.getTimeStringFromSeconds(Instant.now().until(warning.getEndTimestamp().get(), ChronoUnit.SECONDS))));
-                        } else {
-                            player.sendMessage(Util.getTextMessageWithFormat("warn.playernotify.standard", warning.getReason()));
+                        if (wca.getNodeOrDefault().isShowOnLogin()) {
+                            if (warning.getEndTimestamp().isPresent()) {
+                                player.sendMessage(Util.getTextMessageWithFormat("warn.playernotify.time", warning.getReason(),
+                                        Util.getTimeStringFromSeconds(Instant.now().until(warning.getEndTimestamp().get(), ChronoUnit.SECONDS))));
+                            } else {
+                                player.sendMessage(Util.getTextMessageWithFormat("warn.playernotify.standard", warning.getReason()));
+                            }
                         }
                     }
                 }

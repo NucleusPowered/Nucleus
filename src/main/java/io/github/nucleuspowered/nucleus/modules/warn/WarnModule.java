@@ -6,17 +6,23 @@ package io.github.nucleuspowered.nucleus.modules.warn;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWarnService;
-import io.github.nucleuspowered.nucleus.internal.qsml.module.StandardModule;
+import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
+import io.github.nucleuspowered.nucleus.modules.warn.config.WarnConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warn.handlers.WarnHandler;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 
 @ModuleData(id = "warn", name = "Warn")
-public class WarnModule extends StandardModule {
+public class WarnModule extends ConfigurableModule<WarnConfigAdapter> {
 
     @Inject private Game game;
     @Inject private Logger logger;
+
+    @Override
+    public WarnConfigAdapter getAdapter() {
+        return new WarnConfigAdapter();
+    }
 
     @Override
     protected void performPreTasks() throws Exception {
