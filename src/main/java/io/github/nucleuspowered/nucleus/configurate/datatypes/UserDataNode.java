@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.api.data.JailData;
 import io.github.nucleuspowered.nucleus.api.data.MuteData;
+import io.github.nucleuspowered.nucleus.api.data.NoteData;
 import io.github.nucleuspowered.nucleus.api.data.WarnData;
 import io.github.nucleuspowered.nucleus.api.data.mail.MailData;
 import ninja.leaping.configurate.objectmapping.Setting;
@@ -27,6 +28,9 @@ public class UserDataNode {
 
     @Setting("expired-warnings")
     private List<WarnData> expiredWarnings = Lists.newArrayList();
+
+    @Setting("notes")
+    private List<NoteData> notes = Lists.newArrayList();
 
     @Setting
     private boolean socialspy;
@@ -94,12 +98,24 @@ public class UserDataNode {
         return warnings;
     }
 
+    public void setWarnings(List<WarnData> warnings) {
+        this.warnings = warnings;
+    }
+
     public List<WarnData> getExpiredWarnings() {
         return expiredWarnings;
     }
 
-    public void setWarnings(List<WarnData> warnings) {
-        this.warnings = warnings;
+    public void setExpiredWarnings(List<WarnData> expiredWarnings) {
+        this.expiredWarnings = expiredWarnings;
+    }
+
+    public List<NoteData> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<NoteData> notes) {
+        this.notes = notes;
     }
 
     public boolean isSocialspy() {

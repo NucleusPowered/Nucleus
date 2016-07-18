@@ -73,8 +73,39 @@ public interface NucleusUser {
 
     /**
      * Clears all of the users active warnings
+     *
+     * @return <code>true</code> if successful.
      */
     boolean clearWarnings();
+
+    /**
+     * Gets the notes of the user
+     *
+     * @return The {@link List} of {@link NoteData}s that represent the users notes.
+     */
+    List<NoteData> getNotes();
+
+    /**
+     * Adds a {@link NoteData} to the users notes
+     *
+     * @param note The note to add.
+     */
+    void addNote(NoteData note);
+
+    /**
+     * Removes a {@link NoteData} from the users notes
+     *
+     * @param note The note to remove.
+     * @return <code>true</code> if successful.
+     */
+    boolean removeNote(NoteData note);
+
+    /**
+     * Clears all of the users notes
+     *
+     * @return <code>true</code> if successful.
+     */
+    boolean clearNotes();
 
     /**
      * Gets whether Nucleus thinks the player should be invulnerable. Note, this means the player has been subject to

@@ -36,7 +36,7 @@ import java.util.UUID;
 @NoWarmup
 @NoCooldown
 @NoCost
-@RegisterCommand({"warn", "warning"})
+@RegisterCommand({"warn", "warning", "addwarning"})
 public class WarnCommand extends CommandBase<CommandSource> {
 
     public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "warn.notify";

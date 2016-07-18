@@ -28,8 +28,7 @@ public class WarnData extends EndTimestamp {
     @Setting
     private Long timeFromNextLogin;
 
-    public WarnData() {
-    }
+    public WarnData() { }
 
     public WarnData(UUID warner, String reason) {
         this.warner = warner;

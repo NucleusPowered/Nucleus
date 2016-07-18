@@ -132,6 +132,39 @@ public class UserService extends Service<UserDataNode>
         }
     }
 
+    public List<NoteData> getNotes() {
+        return ImmutableList.copyOf(data.getNotes());
+    }
+
+    public void addNote(NoteData note) {
+        List<NoteData> notes = data.getNotes();
+        if (notes == null) {
+            notes = Lists.newArrayList();
+        }
+
+        notes.add(note);
+        data.setNotes(notes);
+    }
+
+    public boolean removeNote(NoteData note) {
+        List<NoteData> notes = data.getNotes();
+        if (notes.removeIf(x -> x.getNoter().equals(note.getNoter()) && x.getNote().equals(note.getNote()))) {
+            data.setNotes(notes);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean clearNotes() {
+        if (!data.getNotes().isEmpty()) {
+            data.setNotes(Lists.newArrayList());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isSocialSpy() {
         // Only a spy if they have the permission!
         Optional<CommandPermissionHandler> ps = plugin.getPermissionRegistry().getService(SocialSpyCommand.class);
