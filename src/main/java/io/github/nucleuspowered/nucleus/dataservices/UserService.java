@@ -12,10 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
-import io.github.nucleuspowered.nucleus.api.data.JailData;
-import io.github.nucleuspowered.nucleus.api.data.MuteData;
-import io.github.nucleuspowered.nucleus.api.data.NucleusUser;
-import io.github.nucleuspowered.nucleus.api.data.WarpLocation;
+import io.github.nucleuspowered.nucleus.api.data.*;
 import io.github.nucleuspowered.nucleus.api.data.mail.MailData;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchWorldException;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
@@ -84,6 +81,40 @@ public class UserService extends Service<UserDataNode>
 
     public void setMuteData(MuteData mData) {
         data.setMuteData(mData);
+    }
+
+    public List<WarnData> getWarnings() {
+        return ImmutableList.copyOf(data.getWarnings());
+    }
+
+    public void addWarning(WarnData warning) {
+        List<WarnData> warnings = data.getWarnings();
+        if (warnings == null) {
+            warnings = Lists.newArrayList();
+        }
+
+        warnings.add(warning);
+        data.setWarnings(warnings);
+    }
+
+    public boolean removeWarning(WarnData warning) {
+        List<WarnData> warnings = data.getWarnings();
+        if (warnings.removeIf(x -> x.getEndTimestamp().equals(warning.getEndTimestamp()) &&
+                x.getReason().equals(warning.getReason()) && x.getTimeFromNextLogin().equals(warning.getTimeFromNextLogin()) && x.getWarner().equals(warning.getWarner()))) {
+            data.setWarnings(warnings);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean clearWarnings() {
+        if (!data.getWarnings().isEmpty()) {
+            data.setWarnings(Lists.newArrayList());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void removeMuteData() {

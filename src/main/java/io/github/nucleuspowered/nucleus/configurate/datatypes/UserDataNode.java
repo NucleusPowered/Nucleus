@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.api.data.JailData;
 import io.github.nucleuspowered.nucleus.api.data.MuteData;
+import io.github.nucleuspowered.nucleus.api.data.WarnData;
 import io.github.nucleuspowered.nucleus.api.data.mail.MailData;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
@@ -20,6 +21,9 @@ import java.util.UUID;
 public class UserDataNode {
     @Setting
     private MuteData muteData;
+
+    @Setting("warnings")
+    private List<WarnData> warnings = Lists.newArrayList();
 
     @Setting
     private boolean socialspy;
@@ -81,6 +85,14 @@ public class UserDataNode {
 
     public void setMuteData(MuteData muteData) {
         this.muteData = muteData;
+    }
+
+    public List<WarnData> getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(List<WarnData> warnings) {
+        this.warnings = warnings;
     }
 
     public boolean isSocialspy() {
