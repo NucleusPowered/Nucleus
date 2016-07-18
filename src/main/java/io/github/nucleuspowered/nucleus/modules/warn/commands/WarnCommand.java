@@ -94,7 +94,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
                 messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.norm", user.getName(), src.getName(), warnData.getReason()));
 
                 if (user.isOnline()) {
-                    user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("mute.playernotify.standard", warnData.getReason()));
+                    user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("warn.playernotify.standard", warnData.getReason()));
                 }
             }
             return CommandResult.success();
