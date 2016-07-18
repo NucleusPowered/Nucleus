@@ -34,7 +34,7 @@ public class WarnModule extends ConfigurableModule<WarnConfigAdapter> {
             game.getServiceManager().setProvider(nucleus, NucleusWarnService.class, warnHandler);
             serviceManager.registerService(WarnHandler.class, warnHandler);
         } catch (Exception ex) {
-            logger.warn("Could not load the mute module for the reason below.");
+            logger.warn("Could not load the warn module for the reason below.");
             ex.printStackTrace();
             throw ex;
         }
