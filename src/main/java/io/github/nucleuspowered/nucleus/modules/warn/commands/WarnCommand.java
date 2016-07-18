@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.warn.config.WarnConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warn.handlers.WarnHandler;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -45,6 +46,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
     private final String reasonKey = "reason";
 
     @Inject private WarnHandler warnHandler;
+    @Inject private WarnConfigAdapter wca;
 
     @Override
     public Map<String, PermissionInformation> permissionsToRegister() {
@@ -76,6 +78,23 @@ public class WarnCommand extends CommandBase<CommandSource> {
             warnData = new WarnData(warner, reason, Duration.ofSeconds(optDuration.get()));
         } else {
             warnData = new WarnData(warner, reason);
+        }
+
+        //Check if too long
+        if (!optDuration.isPresent()) {
+            if (wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
+                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
+                return CommandResult.success();
+            }
+        } else if (optDuration.get() > wca.getNodeOrDefault().getMaximumWarnLength() &&  wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
+            return CommandResult.success();
+        }
+
+        //Check if too short
+        if (optDuration.get() < wca.getNodeOrDefault().getMinimumWarnLength() &&  wca.getNodeOrDefault().getMinimumWarnLength() != -1){
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
+            return CommandResult.success();
         }
 
         if (warnHandler.addWarning(user, warnData)) {
