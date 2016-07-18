@@ -36,7 +36,7 @@ import java.util.Optional;
 @NoWarmup
 @NoCooldown
 @NoCost
-@RegisterCommand({"checkwarnings", "checkwarn"})
+@RegisterCommand({"checkwarnings", "checkwarn", "warnings"})
 public class CheckWarningsCommand extends CommandBase<CommandSource> {
 
     @Inject private WarnHandler handler;
