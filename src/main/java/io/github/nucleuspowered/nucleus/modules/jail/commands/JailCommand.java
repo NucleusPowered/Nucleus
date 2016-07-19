@@ -57,6 +57,13 @@ public class JailCommand extends CommandBase<CommandSource> {
     }
 
     @Override
+    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.jail.offline"), SuggestedLevel.ADMIN));
+        return m;
+    }
+
+    @Override
     public CommandElement[] getArguments() {
         return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
                 GenericArguments.optional(GenericArguments.onlyOne(new JailArgument(Text.of(jailKey), handler))),
@@ -68,6 +75,11 @@ public class JailCommand extends CommandBase<CommandSource> {
     public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         // Get the player.
         User pl = args.<User>getOne(playerKey).get();
+        if (!pl.isOnline() && !permissions.testSuffix(src, "offline")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.jail.offline.noperms"));
+            return CommandResult.empty();
+        }
+
         if (handler.isPlayerJailed(pl)) {
             return onUnjail(src, args, pl);
         } else {
