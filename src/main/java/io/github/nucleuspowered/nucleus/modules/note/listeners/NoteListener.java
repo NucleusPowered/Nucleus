@@ -47,7 +47,7 @@ public class NoteListener extends ListenerBase {
         Sponge.getScheduler().createTaskBuilder().async().delay(500, TimeUnit.MILLISECONDS).execute(() -> {
             Player player = event.getTargetEntity();
             List<NoteData> notes = handler.getNotes(player);
-            if (notes != null) {
+            if (notes != null && !notes.isEmpty()) {
                 MutableMessageChannel messageChannel = MessageChannel.permission(showOnLogin).asMutable();
                 messageChannel.send(Util.getTextMessageWithFormat("note.login.notify", player.getName()));
                 int noteNumber = 1;
