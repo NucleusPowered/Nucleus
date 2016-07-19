@@ -8,6 +8,8 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.NoteData;
+import io.github.nucleuspowered.nucleus.dataservices.UserService;
+import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
@@ -23,12 +25,14 @@ import org.spongepowered.api.text.channel.MutableMessageChannel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class NoteListener extends ListenerBase {
 
     @Inject private NoteHandler handler;
     @Inject private NoteConfigAdapter nca;
+    @Inject private UserDataManager userDataManager;
     private final String showOnLogin = PermissionRegistry.PERMISSIONS_PREFIX + "note.showonlogin";
 
 
@@ -52,7 +56,14 @@ public class NoteListener extends ListenerBase {
                 messageChannel.send(Util.getTextMessageWithFormat("note.login.notify", player.getName()));
                 int noteNumber = 1;
                 for (NoteData note : notes) {
-                    messageChannel.send(Util.getTextMessageWithFormat("note.login.note", String.valueOf(noteNumber), note.getNote()));
+                    Optional<UserService> optUserService = userDataManager.get(note.getNoter());
+                    if (!optUserService.isPresent()) {
+                        messageChannel.send(Util.getTextMessageWithFormat("note.login.nonoter", String.valueOf(noteNumber), note.getNote()));
+                        continue;
+                    }
+                    UserService userService = optUserService.get();
+
+                    messageChannel.send(Util.getTextMessageWithFormat("note.login.note", String.valueOf(noteNumber), note.getNote(), userService.getUser().getName()));
                     noteNumber++;
                 }
             }
