@@ -33,6 +33,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.util.ban.BanTypes;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -58,6 +59,13 @@ public class BanCommand extends CommandBase<CommandSource> {
         Map<String, PermissionInformation> ps = Maps.newHashMap();
         ps.put(notifyPermission, new PermissionInformation(Util.getMessageWithFormat("permission.ban.notify"), SuggestedLevel.MOD));
         return ps;
+    }
+
+    @Override
+    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.ban.offline"), SuggestedLevel.MOD));
+        return m;
     }
 
     @Override
@@ -116,6 +124,13 @@ public class BanCommand extends CommandBase<CommandSource> {
 
     private CommandResult executeBan(CommandSource src, GameProfile u, String r) {
         BanService service = Sponge.getServiceManager().provideUnchecked(BanService.class);
+
+        UserStorageService uss = Sponge.getServiceManager().provideUnchecked(UserStorageService.class);
+        User user = uss.get(u).get();
+        if (!user.isOnline() && !permissions.testSuffix(src, "offline")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.ban.offline.noperms"));
+            return CommandResult.empty();
+        }
 
         if (service.isBanned(u)) {
             src.sendMessage(Util.getTextMessageWithFormat("command.ban.alreadyset", u.getName().orElse(Util.getMessageWithFormat("standard.unknown"))));

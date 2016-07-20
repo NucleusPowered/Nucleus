@@ -12,10 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
-import io.github.nucleuspowered.nucleus.api.data.JailData;
-import io.github.nucleuspowered.nucleus.api.data.MuteData;
-import io.github.nucleuspowered.nucleus.api.data.NucleusUser;
-import io.github.nucleuspowered.nucleus.api.data.WarpLocation;
+import io.github.nucleuspowered.nucleus.api.data.*;
 import io.github.nucleuspowered.nucleus.api.data.mail.MailData;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchWorldException;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
@@ -88,6 +85,84 @@ public class UserService extends Service<UserDataNode>
 
     public void removeMuteData() {
         data.setMuteData(null);
+    }
+
+    @Override
+    public List<WarnData> getWarnings() {
+        return ImmutableList.copyOf(data.getWarnings());
+    }
+
+    @Override
+    public List<WarnData> getExpiredWarnings() {
+        return ImmutableList.copyOf(data.getExpiredWarnings());
+    }
+
+    @Override
+    public void addWarning(WarnData warning) {
+        List<WarnData> warnings = data.getWarnings();
+        if (warnings == null) {
+            warnings = Lists.newArrayList();
+        }
+
+        warnings.add(warning);
+        data.setWarnings(warnings);
+    }
+
+    @Override
+    public boolean removeWarning(WarnData warning) {
+        List<WarnData> warnings = data.getWarnings();
+        if (warnings.removeIf(x -> x.getEndTimestamp().equals(warning.getEndTimestamp()) &&
+                x.getReason().equals(warning.getReason()) &&
+                x.getTimeFromNextLogin().equals(warning.getTimeFromNextLogin()) &&
+                x.getWarner().equals(warning.getWarner()))) {
+            data.setWarnings(warnings);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean clearWarnings() {
+        if (!data.getWarnings().isEmpty()) {
+            data.setWarnings(Lists.newArrayList());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public List<NoteData> getNotes() {
+        return ImmutableList.copyOf(data.getNotes());
+    }
+
+    public void addNote(NoteData note) {
+        List<NoteData> notes = data.getNotes();
+        if (notes == null) {
+            notes = Lists.newArrayList();
+        }
+
+        notes.add(note);
+        data.setNotes(notes);
+    }
+
+    public boolean removeNote(NoteData note) {
+        List<NoteData> notes = data.getNotes();
+        if (notes.removeIf(x -> x.getNoter().equals(note.getNoter()) && x.getNote().equals(note.getNote()))) {
+            data.setNotes(notes);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean clearNotes() {
+        if (!data.getNotes().isEmpty()) {
+            data.setNotes(Lists.newArrayList());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean isSocialSpy() {

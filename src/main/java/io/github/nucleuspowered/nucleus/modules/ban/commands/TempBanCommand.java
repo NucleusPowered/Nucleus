@@ -8,6 +8,7 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
+import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -26,6 +27,8 @@ import org.spongepowered.api.util.ban.BanTypes;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 @RegisterCommand("tempban")
 @Permissions(suggestedLevel = SuggestedLevel.MOD)
@@ -37,6 +40,13 @@ public class TempBanCommand extends CommandBase<CommandSource> {
     private final String user = "user";
     private final String reason = "reason";
     private final String duration = "duration";
+
+    @Override
+    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.offline"), SuggestedLevel.MOD));
+        return m;
+    }
 
     @Override
     public CommandElement[] getArguments() {
@@ -51,6 +61,11 @@ public class TempBanCommand extends CommandBase<CommandSource> {
         User u = args.<User>getOne(user).get();
         Long time = args.<Long>getOne(duration).get();
         String r = args.<String>getOne(reason).orElse(Util.getMessageWithFormat("ban.defaultreason"));
+
+        if (!u.isOnline() && !permissions.testSuffix(src, "offline")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.tempban.offline.noperms"));
+            return CommandResult.empty();
+        }
 
         BanService service = Sponge.getServiceManager().provideUnchecked(BanService.class);
 
