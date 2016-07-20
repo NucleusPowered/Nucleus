@@ -44,7 +44,7 @@ public class TempBanCommand extends CommandBase<CommandSource> {
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
-        m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.offline"), SuggestedLevel.ADMIN));
+        m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.offline"), SuggestedLevel.MOD));
         return m;
     }
 
