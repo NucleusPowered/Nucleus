@@ -93,11 +93,6 @@ public class UserService extends Service<UserDataNode>
     }
 
     @Override
-    public List<WarnData> getExpiredWarnings() {
-        return ImmutableList.copyOf(data.getExpiredWarnings());
-    }
-
-    @Override
     public void addWarning(WarnData warning) {
         List<WarnData> warnings = data.getWarnings();
         if (warnings == null) {

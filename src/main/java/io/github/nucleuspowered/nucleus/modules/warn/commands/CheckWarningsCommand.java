@@ -44,14 +44,23 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey)))};
+        return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
+                GenericArguments.flags().flag("all", "a").flag("expired", "e").buildWith(GenericArguments.none())};
     }
 
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         User user = args.<User>getOne(playerKey).get();
 
-        List<WarnData> warnings = handler.getWarnings(user);
+        List<WarnData> warnings;
+        if (args.hasAny("all") || args.hasAny("a")) {
+            warnings = handler.getWarnings(user);
+        } else if (args.hasAny("expired") || args.hasAny("e")) {
+            warnings = handler.getWarnings(user, true);
+        } else {
+            warnings = handler.getWarnings(user, false);
+        }
+
         if (warnings.isEmpty()) {
             src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.none", user.getName()));
             return CommandResult.success();
@@ -77,7 +86,11 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
                 time = Util.getMessageWithFormat("standard.restoftime");
             }
 
-            src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
+            if (warning.isExpired()) {
+                src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.expired", String.valueOf(index + 1), user.getName(), name, warning.getReason()));
+            } else {
+                src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
+            }
             index++;
         }
         return CommandResult.success();

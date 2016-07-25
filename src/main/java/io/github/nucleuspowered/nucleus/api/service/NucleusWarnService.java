@@ -23,6 +23,15 @@ public interface NucleusWarnService {
     List<WarnData> getWarnings(User user);
 
     /**
+     * Gets warnings for a specific user
+     *
+     * @param user The {@link User} to get warnings from.
+     * @param expired If expired warnings should be returned.
+     * @return A list of {@link WarnData}.
+     */
+    List<WarnData> getWarnings(User user, boolean expired);
+
+    /**
      * Adds a warning to a player for a specified duration.
      *
      * @param user The {@link User} to warn.

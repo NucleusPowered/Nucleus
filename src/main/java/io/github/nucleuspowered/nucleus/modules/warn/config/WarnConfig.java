@@ -13,6 +13,9 @@ public class WarnConfig {
     @Setting(value = "show-login", comment = "loc:config.warn.showonlogin")
     private boolean showOnLogin = true;
 
+    @Setting(value = "expire-warnings", comment = "loc:config.warn.expire")
+    private boolean expireWarnings = true;
+
     @Setting(value = "minimum-warn-length", comment = "loc:config.warn.minwarnlength")
     private long minWarnLength = -1;
 
@@ -21,6 +24,10 @@ public class WarnConfig {
 
     public boolean isShowOnLogin() {
         return showOnLogin;
+    }
+
+    public boolean isExpireWarnings() {
+        return expireWarnings;
     }
 
     public long getMinimumWarnLength() {

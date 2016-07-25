@@ -11,16 +11,19 @@ import io.github.nucleuspowered.nucleus.api.data.WarnData;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWarnService;
 import io.github.nucleuspowered.nucleus.dataservices.UserService;
 import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
+import io.github.nucleuspowered.nucleus.modules.warn.config.WarnConfigAdapter;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class WarnHandler implements NucleusWarnService {
 
     private final Nucleus nucleus;
     @Inject private UserDataManager userDataManager;
+    @Inject private WarnConfigAdapter wca;
 
     public WarnHandler(Nucleus nucleus) {
         this.nucleus = nucleus;
@@ -31,6 +34,15 @@ public class WarnHandler implements NucleusWarnService {
         Optional<UserService> userService = userDataManager.get(user);
         if (userService.isPresent()) {
             return userService.get().getWarnings();
+        }
+        return null;
+    }
+
+    @Override
+    public List<WarnData> getWarnings(User user, boolean expired) {
+        Optional<UserService> userService = userDataManager.get(user);
+        if (userService.isPresent()) {
+            return userService.get().getWarnings().stream().filter(warnData -> warnData.isExpired() == expired).collect(Collectors.toList());
         }
         return null;
     }
@@ -59,6 +71,9 @@ public class WarnHandler implements NucleusWarnService {
         Optional<UserService> userService = userDataManager.get(user);
         if (userService.isPresent()) {
             userService.get().removeWarning(warning);
+            if (wca.getNodeOrDefault().isExpireWarnings()) {
+                userService.get().addWarning(new WarnData(warning.getWarner(), warning.getReason(), true));
+            }
             return true;
         }
 

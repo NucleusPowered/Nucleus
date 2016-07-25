@@ -50,13 +50,6 @@ public interface NucleusUser {
     List<WarnData> getWarnings();
 
     /**
-     * Gets the expired warnings of the user
-     *
-     * @return The {@link List} of {@link WarnData}s that represent the users expired warnings.
-     */
-    List<WarnData> getExpiredWarnings();
-
-    /**
      * Adds a {@link WarnData} to the users active warnings
      *
      * @param warning The warning to add.

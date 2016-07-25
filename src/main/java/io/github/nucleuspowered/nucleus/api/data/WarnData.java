@@ -28,12 +28,22 @@ public class WarnData extends EndTimestamp {
     @Setting
     private Long timeFromNextLogin;
 
+    @Setting
+    private boolean expired = false;
+
     public WarnData() { }
 
     public WarnData(UUID warner, String reason) {
         this.warner = warner;
         this.reason = reason;
     }
+
+    public WarnData(UUID warner, String reason, boolean expired) {
+        this.warner = warner;
+        this.reason = reason;
+        this.expired = expired;
+    }
+
 
     /**
      * Creates the data.
@@ -86,5 +96,9 @@ public class WarnData extends EndTimestamp {
         }
 
         return Optional.of(Duration.of(timeFromNextLogin, ChronoUnit.SECONDS));
+    }
+
+    public boolean isExpired() {
+        return expired;
     }
 }
