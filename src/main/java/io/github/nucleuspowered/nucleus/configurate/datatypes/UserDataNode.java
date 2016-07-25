@@ -26,9 +26,6 @@ public class UserDataNode {
     @Setting("warnings")
     private List<WarnData> warnings = Lists.newArrayList();
 
-    @Setting("expired-warnings")
-    private List<WarnData> expiredWarnings = Lists.newArrayList();
-
     @Setting("notes")
     private List<NoteData> notes = Lists.newArrayList();
 
@@ -100,14 +97,6 @@ public class UserDataNode {
 
     public void setWarnings(List<WarnData> warnings) {
         this.warnings = warnings;
-    }
-
-    public List<WarnData> getExpiredWarnings() {
-        return expiredWarnings;
-    }
-
-    public void setExpiredWarnings(List<WarnData> expiredWarnings) {
-        this.expiredWarnings = expiredWarnings;
     }
 
     public List<NoteData> getNotes() {
