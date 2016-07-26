@@ -37,6 +37,9 @@ public class WarnListener extends ListenerBase {
             List<WarnData> warnings = handler.getWarnings(player);
             if (warnings != null) {
                 for (WarnData warning : warnings) {
+                    if (warning.isExpired()) {
+                        return;
+                    }
                     warning.nextLoginToTimestamp();
 
                     if (warning.getEndTimestamp().isPresent() && warning.getEndTimestamp().get().isBefore(Instant.now())) {

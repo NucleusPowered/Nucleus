@@ -26,10 +26,11 @@ public interface NucleusWarnService {
      * Gets warnings for a specific user
      *
      * @param user The {@link User} to get warnings from.
-     * @param expired If expired warnings should be returned.
+     * @param includeActive If active warnings should be included.
+     * @param includeExpired If expired warnings should be included.
      * @return A list of {@link WarnData}.
      */
-    List<WarnData> getWarnings(User user, boolean expired);
+    List<WarnData> getWarnings(User user, boolean includeActive, boolean includeExpired);
 
     /**
      * Adds a warning to a player for a specified duration.
@@ -50,12 +51,24 @@ public interface NucleusWarnService {
     boolean removeWarning(User user, WarnData warning);
 
     /**
-     * Clears all warnings from a player.
+     * Removes a warning from a player.
+     *
+     * @param user The {@link User} to remove a warning from.
+     * @param warning The {@link WarnData} to remove.
+     * @param permanent If the warning should be removed permanently.
+     * @return <code>true</code> if the warning was removed.
+     */
+    boolean removeWarning(User user, WarnData warning, boolean permanent);
+
+    /**
+     * Clears warnings from a player.
      *
      * @param user The {@link User} to remove all warnings from.
+     * @param clearActive If active warnings should be removed.
+     * @param clearExpired If expired warnings should be removed.
      * @return <code>true</code> if all warnings were removed.
      */
-    boolean clearWarnings(User user);
+    boolean clearWarnings(User user, boolean clearActive, boolean clearExpired);
 
     /**
      * Updates a current users warnings

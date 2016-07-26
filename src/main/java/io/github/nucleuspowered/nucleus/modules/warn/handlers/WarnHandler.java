@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.warn.handlers;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.data.WarnData;
@@ -31,20 +32,23 @@ public class WarnHandler implements NucleusWarnService {
 
     @Override
     public List<WarnData> getWarnings(User user) {
-        Optional<UserService> userService = userDataManager.get(user);
-        if (userService.isPresent()) {
-            return userService.get().getWarnings();
-        }
-        return null;
+        return getWarnings(user, true, true);
     }
 
     @Override
-    public List<WarnData> getWarnings(User user, boolean expired) {
+    public List<WarnData> getWarnings(User user, boolean includeActive, boolean includeExpired) {
         Optional<UserService> userService = userDataManager.get(user);
         if (userService.isPresent()) {
-            return userService.get().getWarnings().stream().filter(warnData -> warnData.isExpired() == expired).collect(Collectors.toList());
+            List<WarnData> warnings = userService.get().getWarnings();
+            if (!includeActive) {
+                warnings = warnings.stream().filter(warnData -> warnData.isExpired()).collect(Collectors.toList());
+            }
+            if (!includeExpired) {
+                warnings = warnings.stream().filter(warnData -> !warnData.isExpired()).collect(Collectors.toList());
+            }
+            return warnings;
         }
-        return null;
+        return Lists.newArrayList();
     }
 
     @Override
@@ -68,10 +72,15 @@ public class WarnHandler implements NucleusWarnService {
 
     @Override
     public boolean removeWarning(User user, WarnData warning) {
+        return removeWarning(user, warning, false);
+    }
+
+    @Override
+    public boolean removeWarning(User user, WarnData warning, boolean permanent) {
         Optional<UserService> userService = userDataManager.get(user);
         if (userService.isPresent()) {
             userService.get().removeWarning(warning);
-            if (wca.getNodeOrDefault().isExpireWarnings()) {
+            if (wca.getNodeOrDefault().isExpireWarnings() && !warning.isExpired() && !permanent) {
                 userService.get().addWarning(new WarnData(warning.getWarner(), warning.getReason(), true));
             }
             return true;
@@ -81,11 +90,27 @@ public class WarnHandler implements NucleusWarnService {
     }
 
     @Override
-    public boolean clearWarnings(User user) {
+    public boolean clearWarnings(User user, boolean clearActive, boolean clearExpired) {
         Optional<UserService> userService = userDataManager.get(user);
         if (userService.isPresent()) {
-            userService.get().clearWarnings();
-            return true;
+            List<WarnData> warnings = userService.get().getWarnings();
+
+            if (!warnings.isEmpty()) {
+                if (!clearActive && !clearExpired) {
+                    warnings.stream().filter(warnData -> !warnData.isExpired()).forEach(warnData -> removeWarning(user, warnData));
+                    return true;
+                }
+
+                if (clearActive) {
+                    warnings.stream().filter(warnData -> !warnData.isExpired()).forEach(warnData -> removeWarning(user, warnData, true));
+                }
+                if (clearExpired) {
+                    warnings.stream().filter(warnData -> warnData.isExpired()).forEach(warnData -> removeWarning(user, warnData, true));
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         return false;

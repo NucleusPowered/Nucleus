@@ -36,13 +36,18 @@ public class RemoveWarningCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(new WarningArgument(Text.of(warningKey), plugin, handler))};
+        return new CommandElement[] {GenericArguments.flags().flag("-remove", "r").buildWith(
+                GenericArguments.onlyOne(new WarningArgument(Text.of(warningKey), plugin, handler)))};
     }
 
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         WarningArgument.Result result = args.<WarningArgument.Result>getOne(warningKey).get();
         User user = result.user;
+        boolean removePermanently = false;
+        if (args.hasAny("remove")) {
+            removePermanently = true;
+        }
 
         List<WarnData> warnings = handler.getWarnings(user);
         if (warnings.isEmpty()) {
@@ -50,7 +55,7 @@ public class RemoveWarningCommand extends CommandBase<CommandSource> {
             return CommandResult.success();
         }
 
-        if (handler.removeWarning(user, result.warnData)) {
+        if (handler.removeWarning(user, result.warnData, removePermanently)) {
             src.sendMessage(Util.getTextMessageWithFormat("command.removewarning.success", user.getName()));
             return CommandResult.success();
         }

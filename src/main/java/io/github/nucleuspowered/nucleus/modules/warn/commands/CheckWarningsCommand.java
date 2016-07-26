@@ -44,8 +44,8 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
-                GenericArguments.flags().flag("all", "a").flag("expired", "e").buildWith(GenericArguments.none())};
+        return new CommandElement[] {GenericArguments.flags().flag("-all", "a").flag("-expired", "e").buildWith(
+                GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))))};
     }
 
     @Override
@@ -53,12 +53,12 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
         User user = args.<User>getOne(playerKey).get();
 
         List<WarnData> warnings;
-        if (args.hasAny("all") || args.hasAny("a")) {
+        if (args.hasAny("all")) {
             warnings = handler.getWarnings(user);
-        } else if (args.hasAny("expired") || args.hasAny("e")) {
-            warnings = handler.getWarnings(user, true);
+        } else if (args.hasAny("expired")) {
+            warnings = handler.getWarnings(user, false, true);
         } else {
-            warnings = handler.getWarnings(user, false);
+            warnings = handler.getWarnings(user, true, false);
         }
 
         if (warnings.isEmpty()) {
@@ -77,7 +77,7 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
                 name = ou.isPresent() ? ou.get().getName() : Util.getMessageWithFormat("standard.unknown");
             }
 
-            String time = "";
+            String time;
             if (warning.getEndTimestamp().isPresent()) {
                 time = Util.getTimeStringFromSeconds(Instant.now().until(warning.getEndTimestamp().get(), ChronoUnit.SECONDS));
             } else if (warning.getTimeFromNextLogin().isPresent()) {

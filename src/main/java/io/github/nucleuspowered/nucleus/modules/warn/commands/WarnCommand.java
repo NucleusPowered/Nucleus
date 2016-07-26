@@ -89,10 +89,8 @@ public class WarnCommand extends CommandBase<CommandSource> {
         } else if (optDuration.get() > wca.getNodeOrDefault().getMaximumWarnLength() &&  wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
             src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
             return CommandResult.success();
-        }
-
         //Check if too short
-        if (optDuration.get() < wca.getNodeOrDefault().getMinimumWarnLength() &&  wca.getNodeOrDefault().getMinimumWarnLength() != -1){
+        } else if (optDuration.get() < wca.getNodeOrDefault().getMinimumWarnLength() &&  wca.getNodeOrDefault().getMinimumWarnLength() != -1){
             src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
             return CommandResult.success();
         }

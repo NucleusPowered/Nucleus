@@ -50,6 +50,13 @@ public interface NucleusUser {
     List<WarnData> getWarnings();
 
     /**
+     * Sets the {@link List} of {@link WarnData}s that represent the users active warnings
+     *
+     * @param warnings The new {@link List} of {@link WarnData}s.
+     */
+    void setWarnings(List<WarnData> warnings);
+
+    /**
      * Adds a {@link WarnData} to the users active warnings
      *
      * @param warning The warning to add.

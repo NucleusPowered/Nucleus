@@ -34,7 +34,8 @@ public class ClearWarningsCommand extends CommandBase<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey)))};
+        return new CommandElement[] {GenericArguments.flags().flag("-all", "a").flag("-remove", "r").flag("-expired", "e").buildWith(
+                        GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))))};
     }
 
     @Override
@@ -47,8 +48,27 @@ public class ClearWarningsCommand extends CommandBase<CommandSource> {
             return CommandResult.success();
         }
 
-        if (handler.clearWarnings(user)) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.clearwarnings.success", user.getName()));
+        //By default expire all active warnings.
+        //If the flag --all is used then remove all warnings
+        //If the flag --expired is used then remove all expired warnings.
+        //If the flag --remove is used then remove all active warnings.
+        boolean removeActive = false;
+        boolean removeExpired = false;
+        Text message = Util.getTextMessageWithFormat("command.clearwarnings.success", user.getName());
+        if (args.hasAny("all")) {
+            removeActive = true;
+            removeExpired = true;
+            message = Util.getTextMessageWithFormat("command.clearwarnings.all", user.getName());
+        } else if (args.hasAny("remove")) {
+            removeActive = true;
+            message = Util.getTextMessageWithFormat("command.clearwarnings.remove", user.getName());
+        } else if (args.hasAny("expired")) {
+            removeExpired = true;
+            message = Util.getTextMessageWithFormat("command.clearwarnings.expired", user.getName());
+        }
+
+        if (handler.clearWarnings(user, removeActive, removeExpired)) {
+            src.sendMessage(message);
             return CommandResult.success();
         }
 

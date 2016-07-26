@@ -92,6 +92,10 @@ public class UserService extends Service<UserDataNode>
         return ImmutableList.copyOf(data.getWarnings());
     }
 
+    public void setWarnings(List<WarnData> warnings) {
+        data.setWarnings(warnings);
+    }
+
     @Override
     public void addWarning(WarnData warning) {
         List<WarnData> warnings = data.getWarnings();
@@ -100,6 +104,7 @@ public class UserService extends Service<UserDataNode>
         }
 
         warnings.add(warning);
+        warnings.sort((x, y) -> Boolean.compare(x.isExpired(), y.isExpired()));
         data.setWarnings(warnings);
     }
 
@@ -369,14 +374,14 @@ public class UserService extends Service<UserDataNode>
     }
 
     public boolean removeMail(MailData mailData) {
-         List<MailData> lmd = data.getMailDataList();
-         if (lmd.removeIf(x -> x.getDate().equals(mailData.getDate()) &&
+        List<MailData> lmd = data.getMailDataList();
+        if (lmd.removeIf(x -> x.getDate().equals(mailData.getDate()) &&
                 x.getMessage().equals(mailData.getMessage()) && x.getUuid().equals(mailData.getUuid()))) {
-             data.setMailDataList(lmd);
-             return true;
-         }
+            data.setMailDataList(lmd);
+            return true;
+        }
 
-         return false;
+        return false;
     }
 
     public boolean clearMail() {
