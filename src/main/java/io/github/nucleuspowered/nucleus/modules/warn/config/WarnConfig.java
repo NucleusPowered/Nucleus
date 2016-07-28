@@ -22,6 +22,9 @@ public class WarnConfig {
     @Setting(value = "maximum-warn-length", comment = "loc:config.warn.maxwarnlength")
     private long maxWarnLength = -1;
 
+    @Setting(value = "default-length", comment = "loc:config.warn.defaultlength")
+    private long defaultLength = -1;
+
     public boolean isShowOnLogin() {
         return showOnLogin;
     }
@@ -36,5 +39,9 @@ public class WarnConfig {
 
     public long getMaximumWarnLength() {
         return maxWarnLength;
+    }
+
+    public long getDefaultLength() {
+        return defaultLength;
     }
 }

@@ -68,6 +68,11 @@ public class WarnCommand extends CommandBase<CommandSource> {
         Optional<Long> optDuration = args.getOne(durationKey);
         String reason = args.<String>getOne(reasonKey).get();
 
+        //Set default duration if no duration given
+        if (wca.getNodeOrDefault().getDefaultLength() != -1 && !optDuration.isPresent()) {
+            optDuration = Optional.of(wca.getNodeOrDefault().getDefaultLength());
+        }
+
         UUID warner = Util.consoleFakeUUID;
         if (src instanceof Player) {
             warner = ((Player) src).getUniqueId();
@@ -101,7 +106,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
 
             if (optDuration.isPresent()) {
                 String time= Util.getTimeStringFromSeconds(optDuration.get());
-                messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.time", user.getName(), src.getName(), time, warnData.getReason()));
+                messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.time", user.getName(), src.getName(), warnData.getReason(), time));
 
                 if (user.isOnline()) {
                     user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("warn.playernotify.time", warnData.getReason(), time));
