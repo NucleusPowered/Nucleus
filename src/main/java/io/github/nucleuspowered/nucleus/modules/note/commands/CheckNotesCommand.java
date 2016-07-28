@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.note.commands;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.NoteData;
@@ -18,8 +19,10 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +59,7 @@ public class CheckNotesCommand extends CommandBase<CommandSource> {
         }
 
         int index = 0;
+        List<Text> messages = Lists.newArrayList();
         for (NoteData note : notes) {
             String name;
             if (note.getNoter().equals(Util.consoleFakeUUID)) {
@@ -65,9 +69,25 @@ public class CheckNotesCommand extends CommandBase<CommandSource> {
                 name = ou.isPresent() ? ou.get().getName() : Util.getMessageWithFormat("standard.unknown");
             }
 
-            src.sendMessage(Util.getTextMessageWithFormat("command.checknotes.note", String.valueOf(index + 1), note.getNote(), name));
+            messages.add(Util.getTextMessageWithFormat("command.checknotes.note", String.valueOf(index + 1), note.getNote(), name));
             index++;
         }
+
+        PaginationService paginationService = Sponge.getGame().getServiceManager().provideUnchecked(PaginationService.class);
+        paginationService.builder()
+                .title(
+                        Text.builder()
+                        .color(TextColors.GOLD)
+                        .append(Text.of(user.getName() + "'s notes"))
+                        .build())
+                .padding(
+                        Text.builder()
+                        .color(TextColors.YELLOW)
+                        .append(Text.of("="))
+                        .build())
+                .contents(messages)
+                .sendTo(src);
+
         return CommandResult.success();
     }
 }

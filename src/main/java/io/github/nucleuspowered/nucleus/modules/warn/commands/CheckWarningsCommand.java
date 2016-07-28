@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.warn.commands;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.WarnData;
@@ -18,8 +19,10 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -68,6 +71,7 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
         handler.updateWarnings(user);
 
         int index = 0;
+        List<Text> messages = Lists.newArrayList();
         for (WarnData warning : warnings) {
             String name;
             if (warning.getWarner().equals(Util.consoleFakeUUID)) {
@@ -87,12 +91,28 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
             }
 
             if (warning.isExpired()) {
-                src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.expired", String.valueOf(index + 1), user.getName(), name, warning.getReason()));
+                messages.add(Util.getTextMessageWithFormat("command.checkwarnings.expired", String.valueOf(index + 1), user.getName(), name, warning.getReason()));
             } else {
-                src.sendMessage(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
+                messages.add(Util.getTextMessageWithFormat("command.checkwarnings.warn", String.valueOf(index + 1), user.getName(), name, time, warning.getReason()));
             }
             index++;
         }
+
+        PaginationService paginationService = Sponge.getGame().getServiceManager().provideUnchecked(PaginationService.class);
+        paginationService.builder()
+                .title(
+                        Text.builder()
+                        .color(TextColors.GOLD)
+                        .append(Text.of(user.getName() + "'s warnings"))
+                        .build())
+                .padding(
+                        Text.builder()
+                        .color(TextColors.YELLOW)
+                        .append(Text.of("="))
+                        .build())
+                .contents(messages)
+                .sendTo(src);
+
         return CommandResult.success();
     }
 }
