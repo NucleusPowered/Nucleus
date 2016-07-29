@@ -38,7 +38,7 @@ public class WarnListener extends ListenerBase {
             if (warnings != null) {
                 for (WarnData warning : warnings) {
                     if (warning.isExpired()) {
-                        return;
+                        continue;
                     }
                     warning.nextLoginToTimestamp();
 

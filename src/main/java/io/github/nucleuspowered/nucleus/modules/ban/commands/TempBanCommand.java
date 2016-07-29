@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus.modules.ban.commands;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
-import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
@@ -45,19 +44,12 @@ public class TempBanCommand extends CommandBase<CommandSource> {
     private final String reason = "reason";
     private final String duration = "duration";
 
-    private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "tempban.bypass";
-
-    @Override
-    public Map<String, PermissionInformation> permissionsToRegister() {
-        Map<String, PermissionInformation> m = new HashMap<>();
-        m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.tempban.bypass"), SuggestedLevel.MOD));
-        return m;
-    }
-
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
         m.put("offline", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.offline"), SuggestedLevel.MOD));
+        m.put("exempt.target", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.exempt.target"), SuggestedLevel.MOD));
+        m.put("exempt.length", new PermissionInformation(Util.getMessageWithFormat("permission.tempban.exempt.length"), SuggestedLevel.MOD));
         return m;
     }
 
@@ -75,12 +67,17 @@ public class TempBanCommand extends CommandBase<CommandSource> {
         Long time = args.<Long>getOne(duration).get();
         String r = args.<String>getOne(reason).orElse(Util.getMessageWithFormat("ban.defaultreason"));
 
-        if (!u.isOnline() && !permissions.testSuffix(src, "offline")) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.tempban.offline.noperms"));
-            return CommandResult.empty();
+        if (permissions.testSuffix(u, "exempt.target")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.tempban.exempt", u.getName()));
+            return CommandResult.success();
         }
 
-        if (time > bca.getNodeOrDefault().getMaximumTempBanLength() &&  bca.getNodeOrDefault().getMaximumTempBanLength() != -1 && !src.hasPermission(bypassMaximumLength)) {
+        if (!u.isOnline() && !permissions.testSuffix(src, "offline")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.tempban.offline.noperms"));
+            return CommandResult.success();
+        }
+
+        if (time > bca.getNodeOrDefault().getMaximumTempBanLength() &&  bca.getNodeOrDefault().getMaximumTempBanLength() != -1 && !permissions.testSuffix(src, "exempt.length")) {
             src.sendMessage(Util.getTextMessageWithFormat("command.tempban.length.toolong", Util.getTimeStringFromSeconds(bca.getNodeOrDefault().getMaximumTempBanLength())));
             return CommandResult.success();
         }

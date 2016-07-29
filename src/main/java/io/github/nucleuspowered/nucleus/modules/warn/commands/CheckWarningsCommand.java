@@ -103,7 +103,7 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
                 .title(
                         Text.builder()
                         .color(TextColors.GOLD)
-                        .append(Text.of(user.getName() + "'s warnings"))
+                        .append(Text.of(user.getName() + Util.getMessageWithFormat("command.checkwarnings.header")))
                         .build())
                 .padding(
                         Text.builder()

@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.note.handlers;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.data.NoteData;
@@ -32,7 +33,7 @@ public class NoteHandler implements NucleusNoteService {
         if (userService.isPresent()) {
             return userService.get().getNotes();
         }
-        return null;
+        return Lists.newArrayList();
     }
 
     @Override

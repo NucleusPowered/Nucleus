@@ -42,23 +42,30 @@ import java.util.UUID;
 public class WarnCommand extends CommandBase<CommandSource> {
 
     public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "warn.notify";
-    private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "warn.bypass";
-    private final String warningExempt = PermissionRegistry.PERMISSIONS_PREFIX + "warn.exempt";
 
     private final String playerKey = "player";
     private final String durationKey = "duration";
     private final String reasonKey = "reason";
 
-    @Inject private WarnHandler warnHandler;
-    @Inject private WarnConfigAdapter wca;
-    @Inject private ChatUtil chatUtil;
+    @Inject
+    private WarnHandler warnHandler;
+    @Inject
+    private WarnConfigAdapter wca;
+    @Inject
+    private ChatUtil chatUtil;
+
+    @Override
+    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put("exempt.length", new PermissionInformation(Util.getMessageWithFormat("permission.warn.exempt.length"), SuggestedLevel.MOD));
+        m.put("exempt.target", new PermissionInformation(Util.getMessageWithFormat("permission.warn.exempt.target"), SuggestedLevel.MOD));
+        return m;
+    }
 
     @Override
     public Map<String, PermissionInformation> permissionsToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
         m.put(notifyPermission, new PermissionInformation(Util.getMessageWithFormat("permission.warn.notify"), SuggestedLevel.MOD));
-        m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.warn.bypass"), SuggestedLevel.MOD));
-        m.put(warningExempt, new PermissionInformation(Util.getMessageWithFormat("permission.warn.exempt"), SuggestedLevel.MOD));
         return m;
     }
 
@@ -75,7 +82,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
         Optional<Long> optDuration = args.getOne(durationKey);
         String reason = args.<String>getOne(reasonKey).get();
 
-        if (user.hasPermission(warningExempt)) {
+        if (permissions.testSuffix(user, "exempt.target")) {
             src.sendMessage(Util.getTextMessageWithFormat("command.warn.exempt", user.getName()));
             return CommandResult.success();
         }
@@ -97,25 +104,23 @@ public class WarnCommand extends CommandBase<CommandSource> {
             warnData = new WarnData(warner, reason);
         }
 
-        if (!src.hasPermission(bypassMaximumLength)) {
-            //Check if too long (No duration provided, it is infinite)
-            if (!optDuration.isPresent() && wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
-                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
-                return CommandResult.success();
-            }
+        //Check if too long (No duration provided, it is infinite)
+        if (!optDuration.isPresent() && wca.getNodeOrDefault().getMaximumWarnLength() != -1 && !permissions.testSuffix(src, "exempt.length")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
+            return CommandResult.success();
+        }
 
-            //Check if too long
-            if (optDuration.orElse(Long.MAX_VALUE) > wca.getNodeOrDefault().getMaximumWarnLength() && wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
-                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
-                return CommandResult.success();
+        //Check if too long
+        if (optDuration.orElse(Long.MAX_VALUE) > wca.getNodeOrDefault().getMaximumWarnLength() && wca.getNodeOrDefault().getMaximumWarnLength() != -1 && !permissions.testSuffix(src, "exempt.length")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
+            return CommandResult.success();
 
-            }
+        }
 
-            //Check if too short
-            if (optDuration.orElse(Long.MAX_VALUE) < wca.getNodeOrDefault().getMinimumWarnLength() && wca.getNodeOrDefault().getMinimumWarnLength() != -1) {
-                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
-                return CommandResult.success();
-            }
+        //Check if too short
+        if (optDuration.orElse(Long.MAX_VALUE) < wca.getNodeOrDefault().getMinimumWarnLength() && wca.getNodeOrDefault().getMinimumWarnLength() != -1 && !permissions.testSuffix(src, "exempt.length")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
+            return CommandResult.success();
         }
 
         if (warnHandler.addWarning(user, warnData)) {
