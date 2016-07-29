@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.warn.commands;
 
 import com.google.inject.Inject;
+import io.github.nucleuspowered.nucleus.ChatUtil;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.WarnData;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
@@ -15,6 +16,7 @@ import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformati
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.warn.config.WarnConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warn.handlers.WarnHandler;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -41,21 +43,22 @@ public class WarnCommand extends CommandBase<CommandSource> {
 
     public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "warn.notify";
     private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "warn.bypass";
+    private final String warningExempt = PermissionRegistry.PERMISSIONS_PREFIX + "warn.exempt";
 
     private final String playerKey = "player";
     private final String durationKey = "duration";
     private final String reasonKey = "reason";
 
-    @Inject
-    private WarnHandler warnHandler;
-    @Inject
-    private WarnConfigAdapter wca;
+    @Inject private WarnHandler warnHandler;
+    @Inject private WarnConfigAdapter wca;
+    @Inject private ChatUtil chatUtil;
 
     @Override
     public Map<String, PermissionInformation> permissionsToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
         m.put(notifyPermission, new PermissionInformation(Util.getMessageWithFormat("permission.warn.notify"), SuggestedLevel.MOD));
         m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.warn.bypass"), SuggestedLevel.MOD));
+        m.put(warningExempt, new PermissionInformation(Util.getMessageWithFormat("permission.warn.exempt"), SuggestedLevel.MOD));
         return m;
     }
 
@@ -71,6 +74,11 @@ public class WarnCommand extends CommandBase<CommandSource> {
         User user = args.<User>getOne(playerKey).get();
         Optional<Long> optDuration = args.getOne(durationKey);
         String reason = args.<String>getOne(reasonKey).get();
+
+        if (user.hasPermission(warningExempt)) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.warn.exempt", user.getName()));
+            return CommandResult.success();
+        }
 
         //Set default duration if no duration given
         if (wca.getNodeOrDefault().getDefaultLength() != -1 && !optDuration.isPresent()) {
@@ -128,6 +136,22 @@ public class WarnCommand extends CommandBase<CommandSource> {
                     user.getPlayer().get().sendMessage(Util.getTextMessageWithFormat("warn.playernotify.standard", warnData.getReason()));
                 }
             }
+
+            //Check if the player has action command should be executed
+            if (wca.getNodeOrDefault().getWarningsBeforeAction() != -1) {
+                if (warnHandler.getWarnings(user, true, false).size() < wca.getNodeOrDefault().getWarningsBeforeAction()) {
+                    return CommandResult.success();
+                }
+
+                //Expire all active warnings
+                warnHandler.clearWarnings(user, false, false);
+
+                //Get and run the action command
+                String command = chatUtil.getPlayerMessageFromTemplate(wca.getNodeOrDefault().getActionCommand(), src, true).toPlain();
+                Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
+                return CommandResult.success();
+            }
+
             return CommandResult.success();
         }
 

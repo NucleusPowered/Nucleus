@@ -25,6 +25,12 @@ public class WarnConfig {
     @Setting(value = "default-length", comment = "loc:config.warn.defaultlength")
     private long defaultLength = -1;
 
+    @Setting(value = "warnings-before-action", comment = "loc:config.warn.warningsbeforeaction")
+    private int warningsBeforeAction = -1;
+
+    @Setting(value = "action-command", comment = "loc:config.warn.actioncommand")
+    private String actionCommand = "tempban {{name}} 1d Exceeding the active warning threshold";
+
     public boolean isShowOnLogin() {
         return showOnLogin;
     }
@@ -43,5 +49,13 @@ public class WarnConfig {
 
     public long getDefaultLength() {
         return defaultLength;
+    }
+
+    public int getWarningsBeforeAction() {
+        return warningsBeforeAction;
+    }
+
+    public String getActionCommand() {
+        return actionCommand;
     }
 }
