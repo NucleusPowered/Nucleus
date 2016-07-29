@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.data.NoteData;
-import io.github.nucleuspowered.nucleus.dataservices.UserService;
 import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
@@ -20,12 +19,12 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MutableMessageChannel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class NoteListener extends ListenerBase {
@@ -53,19 +52,11 @@ public class NoteListener extends ListenerBase {
             List<NoteData> notes = handler.getNotes(player);
             if (notes != null && !notes.isEmpty()) {
                 MutableMessageChannel messageChannel = MessageChannel.permission(showOnLogin).asMutable();
-                messageChannel.send(Util.getTextMessageWithFormat("note.login.notify", player.getName()));
-                int noteNumber = 1;
-                for (NoteData note : notes) {
-                    Optional<UserService> optUserService = userDataManager.get(note.getNoter());
-                    if (!optUserService.isPresent()) {
-                        messageChannel.send(Util.getTextMessageWithFormat("note.login.nonoter", String.valueOf(noteNumber), note.getNote()));
-                        continue;
-                    }
-                    UserService userService = optUserService.get();
+                messageChannel.send(Util.getTextMessageWithFormat("note.login.notify", player.getName()).toBuilder()
+                        .onHover(TextActions.showText(Util.getTextMessageWithFormat("note.login.view", player.getName())))
+                        .onClick(TextActions.runCommand("/checknotes " + player.getName()))
+                        .build());
 
-                    messageChannel.send(Util.getTextMessageWithFormat("note.login.note", String.valueOf(noteNumber), note.getNote(), userService.getUser().getName()));
-                    noteNumber++;
-                }
             }
         }).submit(plugin);
     }
