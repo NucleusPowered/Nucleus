@@ -14,6 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.mute.config.MuteConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.mute.handler.MuteHandler;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -46,10 +47,12 @@ import java.util.UUID;
 @RegisterCommand({"mute", "unmute"})
 public class MuteCommand extends CommandBase<CommandSource> {
 
+    @Inject private MuteConfigAdapter mca;
     @Inject private UserDataManager userConfigLoader;
     @Inject private MuteHandler handler;
 
     private final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "mute.notify";
+    private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "mute.bypass";
 
     private String playerArgument = "player";
     private String timespanArgument = "time";
@@ -59,6 +62,7 @@ public class MuteCommand extends CommandBase<CommandSource> {
     public Map<String, PermissionInformation> permissionsToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
         m.put(notifyPermission, new PermissionInformation(Util.getMessageWithFormat("permission.mute.notify"), SuggestedLevel.MOD));
+        m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.mute.bypass"), SuggestedLevel.MOD));
         return m;
     }
 
@@ -87,11 +91,16 @@ public class MuteCommand extends CommandBase<CommandSource> {
             return CommandResult.success();
         }
 
-        // Do we have a time?
+        // Do we have a reason?
         String rs = reas.orElse(Util.getMessageWithFormat("command.mute.defaultreason"));
         UUID ua = Util.consoleFakeUUID;
         if (src instanceof Player) {
             ua = ((Player) src).getUniqueId();
+        }
+
+        if (time.orElse(Long.MAX_VALUE) > mca.getNodeOrDefault().getMaximumMuteLength() &&  mca.getNodeOrDefault().getMaximumMuteLength() != -1 && !src.hasPermission(bypassMaximumLength)) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.mute.length.toolong", Util.getTimeStringFromSeconds(mca.getNodeOrDefault().getMaximumMuteLength())));
+            return CommandResult.success();
         }
 
         MuteData data;

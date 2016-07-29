@@ -16,7 +16,14 @@ public class MuteConfig {
     @Setting(value = "blocked-commands", comment = "loc:config.mute.blocked")
     private List<String> blockedCommands = Lists.newArrayList("me", "say");
 
+    @Setting(value = "maximum-mute-length", comment = "loc:config.mute.maxmutelength")
+    private long maxMuteLength = 604800;
+
     public List<String> getBlockedCommands() {
         return blockedCommands;
+    }
+
+    public long getMaximumMuteLength() {
+        return maxMuteLength;
     }
 }

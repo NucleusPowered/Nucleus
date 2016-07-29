@@ -4,12 +4,15 @@
  */
 package io.github.nucleuspowered.nucleus.modules.ban.commands;
 
+import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
+import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.ban.config.BanConfigAdapter;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -37,9 +40,19 @@ import java.util.Map;
 @NoCost
 public class TempBanCommand extends CommandBase<CommandSource> {
 
+    @Inject private BanConfigAdapter bca;
     private final String user = "user";
     private final String reason = "reason";
     private final String duration = "duration";
+
+    private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "tempban.bypass";
+
+    @Override
+    public Map<String, PermissionInformation> permissionsToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.tempban.bypass"), SuggestedLevel.MOD));
+        return m;
+    }
 
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
@@ -65,6 +78,11 @@ public class TempBanCommand extends CommandBase<CommandSource> {
         if (!u.isOnline() && !permissions.testSuffix(src, "offline")) {
             src.sendMessage(Util.getTextMessageWithFormat("command.tempban.offline.noperms"));
             return CommandResult.empty();
+        }
+
+        if (time > bca.getNodeOrDefault().getMaximumTempBanLength() &&  bca.getNodeOrDefault().getMaximumTempBanLength() != -1 && !src.hasPermission(bypassMaximumLength)) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.tempban.length.toolong", Util.getTimeStringFromSeconds(bca.getNodeOrDefault().getMaximumTempBanLength())));
+            return CommandResult.success();
         }
 
         BanService service = Sponge.getServiceManager().provideUnchecked(BanService.class);

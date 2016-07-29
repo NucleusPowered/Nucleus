@@ -40,24 +40,28 @@ import java.util.UUID;
 public class WarnCommand extends CommandBase<CommandSource> {
 
     public static final String notifyPermission = PermissionRegistry.PERMISSIONS_PREFIX + "warn.notify";
+    private final String bypassMaximumLength = PermissionRegistry.PERMISSIONS_PREFIX + "warn.bypass";
 
     private final String playerKey = "player";
     private final String durationKey = "duration";
     private final String reasonKey = "reason";
 
-    @Inject private WarnHandler warnHandler;
-    @Inject private WarnConfigAdapter wca;
+    @Inject
+    private WarnHandler warnHandler;
+    @Inject
+    private WarnConfigAdapter wca;
 
     @Override
     public Map<String, PermissionInformation> permissionsToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
         m.put(notifyPermission, new PermissionInformation(Util.getMessageWithFormat("permission.warn.notify"), SuggestedLevel.MOD));
+        m.put(bypassMaximumLength, new PermissionInformation(Util.getMessageWithFormat("permission.warn.bypass"), SuggestedLevel.MOD));
         return m;
     }
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
+        return new CommandElement[]{GenericArguments.onlyOne(GenericArguments.user(Text.of(playerKey))),
                 GenericArguments.onlyOne(GenericArguments.optionalWeak(new TimespanArgument(Text.of(durationKey)))),
                 GenericArguments.onlyOne(GenericArguments.onlyOne(GenericArguments.remainingJoinedStrings(Text.of(reasonKey))))};
     }
@@ -85,19 +89,25 @@ public class WarnCommand extends CommandBase<CommandSource> {
             warnData = new WarnData(warner, reason);
         }
 
-        //Check if too long
-        if (!optDuration.isPresent()) {
-            if (wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
+        if (!src.hasPermission(bypassMaximumLength)) {
+            //Check if too long (No duration provided, it is infinite)
+            if (!optDuration.isPresent() && wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
                 src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
                 return CommandResult.success();
             }
-        } else if (optDuration.get() > wca.getNodeOrDefault().getMaximumWarnLength() &&  wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
-            return CommandResult.success();
-        //Check if too short
-        } else if (optDuration.get() < wca.getNodeOrDefault().getMinimumWarnLength() &&  wca.getNodeOrDefault().getMinimumWarnLength() != -1){
-            src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
-            return CommandResult.success();
+
+            //Check if too long
+            if (optDuration.orElse(Long.MAX_VALUE) > wca.getNodeOrDefault().getMaximumWarnLength() && wca.getNodeOrDefault().getMaximumWarnLength() != -1) {
+                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.toolong", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMaximumWarnLength())));
+                return CommandResult.success();
+
+            }
+
+            //Check if too short
+            if (optDuration.orElse(Long.MAX_VALUE) < wca.getNodeOrDefault().getMinimumWarnLength() && wca.getNodeOrDefault().getMinimumWarnLength() != -1) {
+                src.sendMessage(Util.getTextMessageWithFormat("command.warn.length.tooshort", Util.getTimeStringFromSeconds(wca.getNodeOrDefault().getMinimumWarnLength())));
+                return CommandResult.success();
+            }
         }
 
         if (warnHandler.addWarning(user, warnData)) {
@@ -105,7 +115,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
             messageChannel.addMember(src);
 
             if (optDuration.isPresent()) {
-                String time= Util.getTimeStringFromSeconds(optDuration.get());
+                String time = Util.getTimeStringFromSeconds(optDuration.get());
                 messageChannel.send(Util.getTextMessageWithFormat("command.warn.success.time", user.getName(), src.getName(), warnData.getReason(), time));
 
                 if (user.isOnline()) {
