@@ -67,7 +67,8 @@ public class MuteCommand extends CommandBase<CommandSource> {
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
         Map<String, PermissionInformation> m = new HashMap<>();
-        m.put("bypass", new PermissionInformation(Util.getMessageWithFormat("permission.mute.bypass"), SuggestedLevel.MOD));
+        m.put("exempt.length", new PermissionInformation(Util.getMessageWithFormat("permission.mute.bypass"), SuggestedLevel.MOD));
+        m.put("exempt.target", new PermissionInformation(Util.getMessageWithFormat("permission.mute.bypass"), SuggestedLevel.MOD));
         return m;
     }
 
@@ -88,6 +89,11 @@ public class MuteCommand extends CommandBase<CommandSource> {
         Optional<MuteData> omd = handler.getPlayerMuteData(user);
         Optional<String> reas = args.getOne(reason);
 
+        if (permissions.testSuffix(user, "exempt.target")) {
+            src.sendMessage(Util.getTextMessageWithFormat("command.mute.exempt", user.getName()));
+            return CommandResult.success();
+        }
+
         // No time, no reason, but is muted, unmute
         if (omd.isPresent() && !time.isPresent() && !reas.isPresent()) {
             // Unmute.
@@ -103,7 +109,7 @@ public class MuteCommand extends CommandBase<CommandSource> {
             ua = ((Player) src).getUniqueId();
         }
 
-        if (time.orElse(Long.MAX_VALUE) > mca.getNodeOrDefault().getMaximumMuteLength() &&  mca.getNodeOrDefault().getMaximumMuteLength() != -1 && !permissions.testSuffix(src, "bypass")) {
+        if (time.orElse(Long.MAX_VALUE) > mca.getNodeOrDefault().getMaximumMuteLength() &&  mca.getNodeOrDefault().getMaximumMuteLength() != -1 && !permissions.testSuffix(src, "exempt.length")) {
             src.sendMessage(Util.getTextMessageWithFormat("command.mute.length.toolong", Util.getTimeStringFromSeconds(mca.getNodeOrDefault().getMaximumMuteLength())));
             return CommandResult.success();
         }

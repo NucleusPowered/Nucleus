@@ -153,7 +153,7 @@ public class WarnCommand extends CommandBase<CommandSource> {
                 warnHandler.clearWarnings(user, false, false);
 
                 //Get and run the action command
-                String command = chatUtil.getPlayerMessageFromTemplate(wca.getNodeOrDefault().getActionCommand(), src, true).toPlain();
+                String command = wca.getNodeOrDefault().getActionCommand().replaceAll("\\{\\{name\\}\\}", user.getName());
                 Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
                 return CommandResult.success();
             }

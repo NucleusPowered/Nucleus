@@ -182,7 +182,11 @@ public class CheckWarningsCommand extends CommandBase<CommandSource> {
             message.append(Text.of(TextColors.GRAY, " " + Util.getMessageWithFormat("standard.status.expired")));
         } else {
             message.append(Text.of(TextColors.GREEN, " " + Util.getMessageWithFormat("standard.for") + " "));
-            message.append(Text.of(TextColors.YELLOW, time));
+            if (Character.isLetter(time.charAt(0))) {
+                message.append(Text.of(TextColors.YELLOW, time.substring(0, 1).toLowerCase() + time.substring(1)));
+            } else {
+                message.append(Text.of(TextColors.YELLOW, time));
+            }
         }
 
         return message.build();
