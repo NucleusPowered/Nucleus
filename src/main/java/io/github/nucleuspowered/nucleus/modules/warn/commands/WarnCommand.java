@@ -29,6 +29,7 @@ import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MutableMessageChannel;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -99,9 +100,9 @@ public class WarnCommand extends CommandBase<CommandSource> {
 
         WarnData warnData;
         if (optDuration.isPresent()) {
-            warnData = new WarnData(warner, reason, Duration.ofSeconds(optDuration.get()));
+            warnData = new WarnData(Instant.now(), warner, reason, Duration.ofSeconds(optDuration.get()));
         } else {
-            warnData = new WarnData(warner, reason);
+            warnData = new WarnData(Instant.now(), warner, reason);
         }
 
         //Check if too long (No duration provided, it is infinite)

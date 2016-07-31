@@ -63,7 +63,7 @@ public class WarnHandler implements NucleusWarnService {
 
         UserService userService = optUserService.get();
         if (user.isOnline() && warning.getTimeFromNextLogin().isPresent() && !warning.getEndTimestamp().isPresent()) {
-            warning = new WarnData(warning.getWarner(), warning.getReason(), Instant.now().plus(warning.getTimeFromNextLogin().get()));
+            warning = new WarnData(Instant.now(), warning.getWarner(), warning.getReason(), Instant.now().plus(warning.getTimeFromNextLogin().get()));
         }
 
         userService.addWarning(warning);
@@ -81,7 +81,7 @@ public class WarnHandler implements NucleusWarnService {
         if (userService.isPresent()) {
             userService.get().removeWarning(warning);
             if (wca.getNodeOrDefault().isExpireWarnings() && !warning.isExpired() && !permanent) {
-                userService.get().addWarning(new WarnData(warning.getWarner(), warning.getReason(), true));
+                userService.get().addWarning(new WarnData(warning.getDate(), warning.getWarner(), warning.getReason(), true));
             }
             return true;
         }

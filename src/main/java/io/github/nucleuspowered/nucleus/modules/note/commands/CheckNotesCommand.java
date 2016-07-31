@@ -78,7 +78,7 @@ public class CheckNotesCommand extends CommandBase<CommandSource> {
                 .title(
                         Text.builder()
                         .color(TextColors.GOLD)
-                        .append(Text.of(user.getName() + Util.getMessageWithFormat("command.checknotes.header")))
+                        .append(Text.of(Util.getMessageWithFormat("command.checknotes.header", user.getName())))
                         .build())
                 .padding(
                         Text.builder()

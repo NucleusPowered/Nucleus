@@ -29,19 +29,24 @@ public class WarnData extends EndTimestamp {
     private Long timeFromNextLogin;
 
     @Setting
+    private long date;
+
+    @Setting
     private boolean expired = false;
 
     public WarnData() { }
 
-    public WarnData(UUID warner, String reason) {
+    public WarnData(Instant date, UUID warner, String reason) {
         this.warner = warner;
         this.reason = reason;
+        this.date = date.toEpochMilli();
     }
 
-    public WarnData(UUID warner, String reason, boolean expired) {
+    public WarnData(Instant date, UUID warner, String reason, boolean expired) {
         this.warner = warner;
         this.reason = reason;
         this.expired = expired;
+        this.date = date.toEpochMilli();
     }
 
 
@@ -51,10 +56,12 @@ public class WarnData extends EndTimestamp {
      * @param warner       The UUID of the warner
      * @param endtimestamp The end timestamp
      * @param reason       The reason
+     * @param date         The date
      */
-    public WarnData(UUID warner, String reason, Instant endtimestamp) {
-        this(warner, reason);
+    public WarnData(Instant date, UUID warner, String reason, Instant endtimestamp) {
+        this(date, warner, reason);
         this.endtimestamp = endtimestamp.getEpochSecond();
+        this.date = date.toEpochMilli();
     }
 
     /**
@@ -63,10 +70,12 @@ public class WarnData extends EndTimestamp {
      * @param warner            The UUID of the muter
      * @param reason            The reason
      * @param timeFromNextLogin The time to warn for from next login.
+     * @param date              The date
      */
-    public WarnData(UUID warner, String reason, Duration timeFromNextLogin) {
-        this(warner, reason);
+    public WarnData(Instant date, UUID warner, String reason, Duration timeFromNextLogin) {
+        this(date, warner, reason);
         this.timeFromNextLogin = timeFromNextLogin.getSeconds();
+        this.date = date.toEpochMilli();
     }
 
     public String getReason() {
@@ -96,6 +105,10 @@ public class WarnData extends EndTimestamp {
         }
 
         return Optional.of(Duration.of(timeFromNextLogin, ChronoUnit.SECONDS));
+    }
+
+    public Instant getDate() {
+        return Instant.ofEpochMilli(date);
     }
 
     public boolean isExpired() {

@@ -114,7 +114,8 @@ public class UserService extends Service<UserDataNode>
         if (warnings.removeIf(x -> x.getEndTimestamp().equals(warning.getEndTimestamp()) &&
                 x.getReason().equals(warning.getReason()) &&
                 x.getTimeFromNextLogin().equals(warning.getTimeFromNextLogin()) &&
-                x.getWarner().equals(warning.getWarner()))) {
+                x.getWarner().equals(warning.getWarner()) &&
+                x.getDate().equals(warning.getDate()))) {
             data.setWarnings(warnings);
             return true;
         }
