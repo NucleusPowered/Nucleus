@@ -25,6 +25,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MutableMessageChannel;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -66,7 +67,7 @@ public class NoteCommand extends CommandBase<CommandSource> {
             noter = ((Player) src).getUniqueId();
         }
 
-        NoteData noteData = new NoteData(noter, note);
+        NoteData noteData = new NoteData(Instant.now(), noter, note);
 
         if (noteHandler.addNote(user, noteData)) {
             MutableMessageChannel messageChannel = MessageChannel.permission(notifyPermission).asMutable();

@@ -79,7 +79,7 @@ public class WarningArgument extends CommandElement {
 
     @Override
     public Text getUsage(CommandSource src) {
-        return Text.of("<user> <index>");
+        return Text.of("<user> <ID>");
     }
 
     public static class Result {
