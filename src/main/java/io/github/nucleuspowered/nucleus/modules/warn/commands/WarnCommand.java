@@ -48,12 +48,9 @@ public class WarnCommand extends CommandBase<CommandSource> {
     private final String durationKey = "duration";
     private final String reasonKey = "reason";
 
-    @Inject
-    private WarnHandler warnHandler;
-    @Inject
-    private WarnConfigAdapter wca;
-    @Inject
-    private ChatUtil chatUtil;
+    @Inject private WarnHandler warnHandler;
+    @Inject private WarnConfigAdapter wca;
+    @Inject private ChatUtil chatUtil;
 
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
