@@ -103,10 +103,8 @@ public class CheckNotesCommand extends CommandBase<CommandSource> {
         //Add the delete button [Delete]
         actions.append(Text.builder().append(Text.of(TextColors.RED, Util.getMessageWithFormat("standard.action.delete")))
                 .onHover(TextActions.showText(Util.getTextMessageWithFormat("command.checknotes.hover.delete")))
-                .onClick(TextActions.executeCallback(commandSource1 -> {
-                    handler.removeNote(user, note);
-                    commandSource1.sendMessage(Util.getTextMessageWithFormat("command.removenote.remove", user.getName()));
-                })).build());
+                .onClick(TextActions.runCommand("/removenote " + user.getName() + " " + id))
+                .build());
 
         //Add a - to separate it from the next action button
         actions.append(Text.of(TextColors.GOLD, " - "));
@@ -114,7 +112,7 @@ public class CheckNotesCommand extends CommandBase<CommandSource> {
         //Add the return button [Return]
         actions.append(Text.builder().append(Text.of(TextColors.GREEN, Util.getMessageWithFormat("standard.action.return")))
                 .onHover(TextActions.showText(Util.getTextMessageWithFormat("command.checknotes.hover.return")))
-                .onClick(TextActions.executeCallback(commandSource1 -> Sponge.getCommandManager().process(commandSource1, "checknotes " + user.getName())))
+                .onClick(TextActions.runCommand("/checknotes " + user.getName()))
                 .build());
 
         //Add a < to end the actions button list
