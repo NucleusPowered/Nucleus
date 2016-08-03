@@ -87,12 +87,12 @@ public class LightningCommand extends CommandBase<CommandSource> {
 
     private CommandResult spawnLightning(Location<World> location, CommandSource src, String successKey, String... replacements) {
         World world = location.getExtent();
-        Optional<Entity> bolt = world.createEntity(EntityTypes.LIGHTNING, location.getPosition());
+        Entity bolt = world.createEntity(EntityTypes.LIGHTNING, location.getPosition());
 
         Cause cause = Cause.of(
                 NamedCause.owner(SpawnCause.builder().type(SpawnTypes.PLUGIN).build()),
                 NamedCause.source(src));
-        if (bolt.isPresent() && world.spawnEntity(bolt.get(), cause)) {
+        if (world.spawnEntity(bolt, cause)) {
             src.sendMessage(Util.getTextMessageWithFormat(successKey, replacements));
             return CommandResult.success();
         }

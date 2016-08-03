@@ -93,8 +93,8 @@ public class SpawnMobCommand extends CommandBase<CommandSource> {
                 NamedCause.owner(SpawnCause.builder().type(SpawnTypes.PLUGIN).build()),
                 NamedCause.source(opl.get()));
         do {
-            Optional<Entity> e = w.createEntity(et, loc.getPosition());
-            if (e.isPresent() && w.spawnEntity(e.get(), cause)) {
+            Entity e = w.createEntity(et, loc.getPosition());
+            if (w.spawnEntity(e, cause)) {
                 i++;
             }
         } while (i < Math.min(amount, mobConfigAdapter.getNodeOrDefault().getMaxMobsToSpawn()));
