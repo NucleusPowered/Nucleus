@@ -24,23 +24,27 @@ import java.util.regex.Pattern;
  */
 public class ChatUtilTests extends TestBase {
 
+    private static Pattern patternToTest;
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        TestBase.testSetup();
+
+        Nucleus plugin = Guice.createInjector(new TestModule()).getInstance(Nucleus.class);
+
+        Field parserToTest = ChatUtil.class.getDeclaredField("urlParser");
+        parserToTest.setAccessible(true);
+        patternToTest = (Pattern)parserToTest.get(new ChatUtil(plugin));
+    }
+
     /**
      * Tests that the specified permissions are in the permission list.
      */
     @RunWith(Parameterized.class)
     public static class URLtests {
-
-        private static Pattern patternToTest;
-
         @BeforeClass
         public static void setup() throws Exception {
-            TestBase.testSetup();
-
-            Nucleus plugin = Guice.createInjector(new TestModule()).getInstance(Nucleus.class);
-
-            Field parserToTest = ChatUtil.class.getDeclaredField("urlParser");
-            parserToTest.setAccessible(true);
-            patternToTest = (Pattern)parserToTest.get(new ChatUtil(plugin));
+            ChatUtilTests.setup();
         }
 
         @Parameterized.Parameters(name = "{index}: Message {0}, expecting {1}")
@@ -91,7 +95,5 @@ public class ChatUtilTests extends TestBase {
                 Assert.assertEquals(codes, m.group("colour"));
             }
         }
-
     }
-
 }

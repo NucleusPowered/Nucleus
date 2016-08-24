@@ -29,15 +29,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ChatUtil {
 
-    private final Map<String, Function<CommandSource, Text>> tokens;
-    private final Map<String, Function<CommandSource, Text>> serverTokens;
+    private final Map<String, BiFunction<CommandSource, String, Text>> tokens;
+    private final Map<String, BiFunction<CommandSource, String, Text>> serverTokens;
 
     private final Pattern playerTokenMatcher;
     private final Pattern playerTokenSplitter;
@@ -49,6 +49,7 @@ public class ChatUtil {
     private final Pattern urlParser =
             Pattern.compile("(?<first>(^|\\s))(?<colour>(&[0-9a-flmnork])+)?(?<url>(http(s)?://)?([A-Za-z0-9]+\\.)+[A-Za-z0-9]{2,}\\S*)", Pattern.CASE_INSENSITIVE);
 
+    private final String customPrefixPatten = "{{o:([a-zA-Z0-9_-]{1,15})(:s)?}}";
     private CoreConfigAdapter cca = null;
 
     public static final StyleTuple EMPTY = new StyleTuple(TextColors.NONE, TextStyles.NONE);
@@ -72,7 +73,7 @@ public class ChatUtil {
 
     private String getRegex(Set<String> keys) {
         StringBuilder sb = new StringBuilder("(");
-        keys.forEach(k -> sb.append(k.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}")).append("|"));
+        keys.forEach(k -> sb.append(k.replaceAll("\\{\\{", "\\\\{\\\\{").replaceAll("\\}\\}", "\\\\}\\\\}")).append("|"));
         return sb.deleteCharAt(sb.length() - 1).append(")").toString();
     }
 
@@ -84,9 +85,9 @@ public class ChatUtil {
 
     @SafeVarargs
     public final Text getMessageFromTokens(String template, CommandSource cs, boolean trimTrailingSpace,
-                                           boolean includePlayer, boolean includeServer, Map<String, Function<CommandSource, Text>>... customTokens) {
+                                           boolean includePlayer, boolean includeServer, Map<String, BiFunction<CommandSource, String, Text>>... customTokens) {
 
-        Map<String, Function<CommandSource, Text>> map = Maps.newHashMap();
+        Map<String, BiFunction<CommandSource, String, Text>> map = Maps.newHashMap();
         if (includePlayer) {
             map.putAll(tokens);
         }
@@ -95,7 +96,7 @@ public class ChatUtil {
             map.putAll(serverTokens);
         }
 
-        for (Map<String, Function<CommandSource, Text>> customToken : customTokens) {
+        for (Map<String, BiFunction<CommandSource, String, Text>> customToken : customTokens) {
             map.putAll(customToken);
         }
 
@@ -117,20 +118,25 @@ public class ChatUtil {
 
     @SafeVarargs
     private final Text getMessageFromTemplate(String template, CommandSource cs, boolean trimTrailingSpace,
-                                              Pattern splitter, Pattern matcher, Map<String, Function<CommandSource, Text>>... tokensArray) {
+                                              Pattern splitter, Pattern matcher, Map<String, BiFunction<CommandSource, String, Text>>... tokensArray) {
         StyleTuple st = new StyleTuple(TextColors.WHITE, TextStyles.NONE);
 
-        Map<String, Function<CommandSource, Text>> tokens = Maps.newHashMap();
-        for (Map<String, Function<CommandSource, Text>> stringFunctionMap : tokensArray) {
+        Map<String, BiFunction<CommandSource, String, Text>> tokens = Maps.newHashMap();
+        for (Map<String, BiFunction<CommandSource, String, Text>> stringFunctionMap : tokensArray) {
             tokens.putAll(stringFunctionMap);
         }
 
         Text.Builder tb = Text.builder();
         for (String textElement : splitter.split(template)) {
             if (matcher.matcher(textElement).matches()) {
+
+                // Bit hacky, but it allows the rest of the token system to work. If we get something beginning with
+                // {{o: then we get the specific function out.
+                String elementToUse = textElement.toLowerCase().startsWith("{{o:") ? this.customPrefixPatten : textElement.toLowerCase();
+
                 // If we have a token, do the replacement as specified by the function
                 Text message = Text.builder().color(st.colour).style(st.style)
-                        .append(tokens.get(textElement.toLowerCase()).apply(cs)).build();
+                        .append(tokens.get(elementToUse).apply(cs, textElement)).build();
                 if (!message.isEmpty()) {
                     trimTrailingSpace = false;
                     tb.append(message);
@@ -274,24 +280,35 @@ public class ChatUtil {
         return texts;
     }
 
-    private Map<String, Function<CommandSource, Text>> createTokens() {
-        Map<String, Function<CommandSource, Text>> t = new HashMap<>();
+    private Map<String, BiFunction<CommandSource, String, Text>> createTokens() {
+        Map<String, BiFunction<CommandSource, String, Text>> t = new HashMap<>();
 
-        t.put("{{name}}", this::addCommandToName);
-        t.put("{{prefix}}", (p) -> getTextFromOption(p, "prefix"));
-        t.put("{{suffix}}", (p) -> getTextFromOption(p, "suffix"));
-        t.put("{{displayname}}", this::addCommandToDisplayName);
+        // Token to get the option after "o:".
+        t.put("{{o:([a-zA-Z0-9_-]{1,15})(:s)?}}", (p, g) -> {
+            boolean addSpace = g.contains(":s");
+            Text option = getTextFromOption(p, g.substring(4, g.length() - (addSpace ? 4 : 2)));
+            if (addSpace && !option.isEmpty()) {
+                return Text.of(option, " ");
+            }
+
+            return option;
+        });
+
+        t.put("{{name}}", (p, g) -> this.addCommandToName(p));
+        t.put("{{prefix}}", (p, g) -> getTextFromOption(p, "prefix"));
+        t.put("{{suffix}}", (p, g) -> getTextFromOption(p, "suffix"));
+        t.put("{{displayname}}", (p, g) -> this.addCommandToDisplayName(p));
 
         return t;
     }
 
-    private Map<String, Function<CommandSource, Text>> createServerTokens() {
-        Map<String, Function<CommandSource, Text>> t = new HashMap<>();
+    private Map<String, BiFunction<CommandSource, String, Text>> createServerTokens() {
+        Map<String, BiFunction<CommandSource, String, Text>> t = new HashMap<>();
 
-        t.put("{{maxplayers}}", p -> Text.of(Sponge.getServer().getMaxPlayers()));
-        t.put("{{onlineplayers}}", p -> Text.of(Sponge.getServer().getOnlinePlayers().size()));
-        t.put("{{currentworld}}", p -> Text.of(getWorld(p).getName()));
-        t.put("{{time}}", p -> Text.of(String.valueOf(Util.getTimeFromTicks(getWorld(p).getProperties().getWorldTime()))));
+        t.put("{{maxplayers}}", (p, g) -> Text.of(Sponge.getServer().getMaxPlayers()));
+        t.put("{{onlineplayers}}", (p, g) -> Text.of(Sponge.getServer().getOnlinePlayers().size()));
+        t.put("{{currentworld}}", (p, g) -> Text.of(getWorld(p).getName()));
+        t.put("{{time}}", (p, g) -> Text.of(String.valueOf(Util.getTimeFromTicks(getWorld(p).getProperties().getWorldTime()))));
 
         return t;
     }
@@ -311,7 +328,10 @@ public class ChatUtil {
         if (cs instanceof Player) {
             Optional<OptionSubject> oos = Util.getSubject((Player)cs);
             if (oos.isPresent()) {
-                return TextSerializers.formattingCode('&').deserialize(oos.get().getOption(option).orElse(""));
+                Optional<String> optionString = oos.get().getOption(option);
+                if (optionString.isPresent()) {
+                    return TextSerializers.FORMATTING_CODE.deserialize(optionString.get());
+                }
             }
         }
 
@@ -388,7 +408,7 @@ public class ChatUtil {
         public final TextColor colour;
         public final TextStyle style;
 
-        public StyleTuple(TextColor colour, TextStyle style) {
+        StyleTuple(TextColor colour, TextStyle style) {
             this.colour = colour;
             this.style = style;
         }

@@ -29,6 +29,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -108,11 +109,11 @@ public class MessageHandler implements NucleusPrivateMessagingService {
         }
 
         // Create the tokens.
-        Map<String, Function<CommandSource, Text>> tokens = Maps.newHashMap();
-        tokens.put("{{from}}", cs -> chatUtil.addCommandToName(sender));
-        tokens.put("{{to}}", cs -> chatUtil.addCommandToName(receiver));
-        tokens.put("{{fromdisplay}}", cs -> chatUtil.addCommandToDisplayName(sender));
-        tokens.put("{{todisplay}}", cs -> chatUtil.addCommandToDisplayName(receiver));
+        Map<String, BiFunction<CommandSource, String, Text>> tokens = Maps.newHashMap();
+        tokens.put("{{from}}", (cs, g) -> chatUtil.addCommandToName(sender));
+        tokens.put("{{to}}", (cs, g) -> chatUtil.addCommandToName(receiver));
+        tokens.put("{{fromdisplay}}", (cs, g) -> chatUtil.addCommandToDisplayName(sender));
+        tokens.put("{{todisplay}}", (cs, g) -> chatUtil.addCommandToDisplayName(receiver));
 
         MessageChannel mc = MessageChannel.fixed(lm);
         Text tm = useMessage(sender, message);
@@ -153,7 +154,7 @@ public class MessageHandler implements NucleusPrivateMessagingService {
     }
 
     @SuppressWarnings("unchecked")
-    private Text constructMessage(CommandSource sender, Text message, String template, Map<String, Function<CommandSource, Text>> tokens) {
+    private Text constructMessage(CommandSource sender, Text message, String template, Map<String, BiFunction<CommandSource, String, Text>> tokens) {
         return Text.of(chatUtil.getMessageFromTokens(template, sender, false, false, false, tokens), message);
     }
 
