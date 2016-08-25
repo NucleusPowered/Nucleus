@@ -12,7 +12,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.translator.ConfigurateTranslator;
+import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 import java.util.List;
@@ -28,7 +28,8 @@ public class ItemStackSnapshotSerialiser implements TypeSerializer<ItemStackSnap
 
     @Override
     public ItemStackSnapshot deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
-        // Process enchantments, temporary fix before Sponge gets a more general fix in.
+        // Process enchantments, temporary fix before Sponge gets a more general
+        // fix in.
         ConfigurationNode ench = value.getNode("UnsafeData", "ench");
         if (!ench.isVirtual()) {
             List<? extends ConfigurationNode> enchantments = ench.getChildrenList();
@@ -46,12 +47,13 @@ public class ItemStackSnapshotSerialiser implements TypeSerializer<ItemStackSnap
         }
 
         Optional<ItemStackSnapshot> oiss = Sponge.getDataManager().deserialize(ItemStackSnapshot.class,
-                ConfigurateTranslator.instance().translateFrom(value));
+                DataTranslators.CONFIGURATION_NODE.translate(value));
         if (oiss.isPresent()) {
             return oiss.get();
         }
 
-        // If we get here, we have had a problem with the data. We should therefore remove all the data
+        // If we get here, we have had a problem with the data. We should
+        // therefore remove all the data
         // (except enchants) and see what happens.
         ConfigurationNode unsafe = value.getNode("UnsafeData");
         unsafe.getChildrenMap().forEach((k, v) -> {
@@ -61,7 +63,7 @@ public class ItemStackSnapshotSerialiser implements TypeSerializer<ItemStackSnap
         });
 
         // Try again
-        oiss = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, ConfigurateTranslator.instance().translateFrom(value));
+        oiss = Sponge.getDataManager().deserialize(ItemStackSnapshot.class, DataTranslators.CONFIGURATION_NODE.translate(value));
         if (oiss.isPresent()) {
             logger.warn(Util.getMessageWithFormat("config.itemstacksnapshot.data", value.getNode("ItemType").getString()));
             return oiss.get();
@@ -76,6 +78,6 @@ public class ItemStackSnapshotSerialiser implements TypeSerializer<ItemStackSnap
     @Override
     public void serialize(TypeToken<?> type, ItemStackSnapshot obj, ConfigurationNode value) throws ObjectMappingException {
         DataContainer container = obj.toContainer();
-        value.setValue(ConfigurateTranslator.instance().translateData(container));
+        value.setValue(DataTranslators.CONFIGURATION_NODE.translate(container));
     }
 }

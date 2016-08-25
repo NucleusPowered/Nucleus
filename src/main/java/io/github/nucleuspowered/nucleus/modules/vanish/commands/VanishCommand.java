@@ -65,7 +65,7 @@ public class VanishCommand extends CommandBase<CommandSource> {
         boolean toVanish = args.<Boolean>getOne(b).orElse(!playerToVanish.get(Keys.INVISIBLE).orElse(false));
 
         DataTransactionResult dtr = playerToVanish.offer(Keys.VANISH, toVanish);
-        playerToVanish.offer(Keys.VANISH_IGNORES_COLLISION, toVanish);
+        playerToVanish.offer(Keys.VANISH_PREVENTS_TARGETING, toVanish);
         playerToVanish.offer(Keys.VANISH_IGNORES_COLLISION, toVanish);
         playerToVanish.offer(Keys.IS_SILENT, toVanish);
 
