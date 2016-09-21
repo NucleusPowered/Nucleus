@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.mail.listeners;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.mail.handlers.MailHandler;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.event.Listener;
