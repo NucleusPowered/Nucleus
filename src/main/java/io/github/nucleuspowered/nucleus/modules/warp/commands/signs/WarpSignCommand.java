@@ -5,11 +5,10 @@
 package io.github.nucleuspowered.nucleus.modules.warp.commands.signs;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.WarpSignData;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
-import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
+import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.warp.handlers.WarpHandler;
@@ -33,7 +32,7 @@ import java.util.Optional;
 @NoCost
 @NoCooldown
 @NoWarmup
-public class WarpSignCommand extends CommandBase<Player> {
+public class WarpSignCommand extends AbstractCommand<Player> {
 
     @Inject private WarpConfigAdapter wca;
     @Inject private WarpHandler warpHandler;
@@ -42,7 +41,7 @@ public class WarpSignCommand extends CommandBase<Player> {
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
         if (!wca.getNodeOrDefault().areWarpSignsEnabled()) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.notenabled"));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.notenabled"));
             return CommandResult.empty();
         }
 
@@ -55,10 +54,10 @@ public class WarpSignCommand extends CommandBase<Player> {
             if (wsd.isPresent()) {
                 displayWarpData(src, wsd.get());
             } else {
-                src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.nodata"));
+                src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.nodata"));
             }
         } else {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.nosign"));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.nosign"));
         }
 
         // Just informational, it's always a success.
@@ -68,20 +67,20 @@ public class WarpSignCommand extends CommandBase<Player> {
     private void displayWarpData(Player player, WarpSignData data) {
         String warp = data.warpName().or("").get();
         if (warpHandler.warpExists(warp)) {
-            player.sendMessage(Util.getTextMessageWithFormat("command.warpsign.warpinfo.standard", warp, data.warmupTime().get().toString()));
+            player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.warpinfo.standard", warp, data.warmupTime().get().toString()));
 
             Optional<String> permission = data.permission().get();
             if (permission.isPresent() && !permission.get().isEmpty()) {
                 if (!player.hasPermission(permission.get())) {
-                    player.sendMessage(Util.getTextMessageWithFormat("command.warpsign.warpinfo.noperm"));
+                    player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.warpinfo.noperm"));
                 }
 
                 if (pr.getService(SetWarpSignCommand.class).get().testBase(player)) {
-                    player.sendMessage(Util.getTextMessageWithFormat("command.warpsign.warpinfo.admin.perm", permission.get()));
+                    player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.warpinfo.admin.perm", permission.get()));
                 }
             }
         } else {
-            player.sendMessage(Util.getTextMessageWithFormat("command.warpsign.invalidwarp", warp));
+            player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.invalidwarp", warp));
         }
     }
 

@@ -35,6 +35,11 @@ public final class NucleusKeys {
      */
     public final static Key<MutableBoundedValue<Integer>> WARP_WARMUP = new FakeKey<>();
 
+    /**
+     * The permission for the warp.
+     */
+    public final static Key<OptionalValue<Integer>> WARP_COST = new FakeKey<>();
+
     /* (non-Javadoc)
      *
      * A fake key.

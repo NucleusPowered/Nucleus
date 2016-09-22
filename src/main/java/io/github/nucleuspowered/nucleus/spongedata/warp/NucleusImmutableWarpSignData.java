@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.warp.spongedata.manipulators;
+package io.github.nucleuspowered.nucleus.spongedata.warp;
 
 import com.google.common.collect.ComparisonChain;
 import io.github.nucleuspowered.nucleus.api.spongedata.NucleusKeys;
@@ -15,16 +15,16 @@ import org.spongepowered.api.data.value.immutable.ImmutableValue;
 
 import java.util.Optional;
 
-public class ImmutableWarpData extends AbstractImmutableData<ImmutableWarpSignData, WarpSignData> implements ImmutableWarpSignData {
+public class NucleusImmutableWarpSignData extends AbstractImmutableData<ImmutableWarpSignData, WarpSignData> implements ImmutableWarpSignData {
     private String warpName = null;
     private String permission = null;
     private int warmupTime = 0;
 
-    public ImmutableWarpData() {
+    public NucleusImmutableWarpSignData() {
         this(null, null, 0);
     }
 
-    public ImmutableWarpData(String warpName, String permission, int warmupTime) {
+    public NucleusImmutableWarpSignData(String warpName, String permission, int warmupTime) {
         this.warpName = warpName;
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
@@ -60,8 +60,8 @@ public class ImmutableWarpData extends AbstractImmutableData<ImmutableWarpSignDa
     }
 
     @Override
-    public WarpData asMutable() {
-        return new WarpData(warpName, permission, warmupTime);
+    public NucleusWarpSignData asMutable() {
+        return new NucleusWarpSignData(warpName, permission, warmupTime);
     }
 
     @Override

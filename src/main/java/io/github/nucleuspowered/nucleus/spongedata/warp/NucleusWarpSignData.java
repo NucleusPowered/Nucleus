@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.warp.spongedata.manipulators;
+package io.github.nucleuspowered.nucleus.spongedata.warp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
@@ -20,17 +20,17 @@ import org.spongepowered.api.data.value.mutable.OptionalValue;
 
 import java.util.Optional;
 
-public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> implements WarpSignData {
+public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWarpSignData> implements WarpSignData {
 
     private String warpName = null;
     private String permission = null;
     private int warmupTime = 0;
 
-    public WarpData() {
+    public NucleusWarpSignData() {
         this(null, null, 0);
     }
 
-    public WarpData(String warpName, String permission, int warmupTime) {
+    public NucleusWarpSignData(String warpName, String permission, int warmupTime) {
         this.warpName = warpName;
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
@@ -95,7 +95,7 @@ public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> 
         }
 
         return Optional.of(
-            new WarpData(
+            new NucleusWarpSignData(
                 container.getString(NucleusKeys.WARP_NAME.getQuery()).orElse(null),
                 container.getString(NucleusKeys.WARP_PERMISSION.getQuery()).orElse(null),
                 container.getInt(NucleusKeys.WARP_WARMUP.getQuery()).orElse(0)
@@ -104,7 +104,7 @@ public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> 
 
     @Override
     public WarpSignData copy() {
-        return new WarpData(warpName, permission, warmupTime);
+        return new NucleusWarpSignData(warpName, permission, warmupTime);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> 
         return Optional.ofNullable(warpName);
     }
 
-    public WarpData setWarpName(Optional<String> warpName) {
+    public NucleusWarpSignData setWarpName(Optional<String> warpName) {
         String warp = warpName.orElse(null);
         Optional<NucleusWarpService> onws = Sponge.getServiceManager().provide(NucleusWarpService.class);
         Preconditions.checkState(onws.isPresent());
@@ -149,7 +149,7 @@ public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> 
     }
 
     @SuppressWarnings("all")
-    public WarpData setPermission(Optional<String> permission) {
+    public NucleusWarpSignData setPermission(Optional<String> permission) {
         this.permission = permission.orElse(null);
         return this;
     }
@@ -158,7 +158,7 @@ public class WarpData extends AbstractData<WarpSignData, ImmutableWarpSignData> 
         return warmupTime;
     }
 
-    public WarpData setWarmupTime(Integer warmupTime) {
+    public NucleusWarpSignData setWarmupTime(Integer warmupTime) {
         this.warmupTime = warmupTime;
         return this;
     }

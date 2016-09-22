@@ -5,15 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.warp.commands.signs;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.WarpSignData;
 import io.github.nucleuspowered.nucleus.argumentparsers.PositiveIntegerArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.WarpArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
-import io.github.nucleuspowered.nucleus.internal.command.CommandBase;
+import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.warp.spongedata.manipulators.WarpData;
+import io.github.nucleuspowered.nucleus.spongedata.warp.NucleusWarpSignData;
 import org.spongepowered.api.block.tileentity.Sign;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 
 @Permissions(root = "warpsign")
 @RegisterCommand(value = "set", subcommandOf = WarpSignCommand.class)
-public class SetWarpSignCommand extends CommandBase<Player> {
+public class SetWarpSignCommand extends AbstractCommand<Player> {
 
     private final String warpKey = "warp";
     private final String warmupKey = "warmup";
@@ -52,13 +51,13 @@ public class SetWarpSignCommand extends CommandBase<Player> {
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
         if (!wca.getNodeOrDefault().areWarpSignsEnabled()) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.notenabled"));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.notenabled"));
             return CommandResult.empty();
         }
 
         Optional<Sign> optionalSign = WarpSignCommand.getSignFromBlockRay(src);
         if (!optionalSign.isPresent()) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.nosign"));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.nosign"));
             return CommandResult.empty();
         }
 
@@ -66,14 +65,14 @@ public class SetWarpSignCommand extends CommandBase<Player> {
 
         // Verify the permission if there is one.
         if (permission.isPresent() && !permissionPattern.matcher(permission.get()).matches()) {
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.set.permissioninvalid"));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.set.permissioninvalid"));
             return CommandResult.empty();
         }
 
         // Verify the warp name
-        String warpName = args.<WarpArgument.WarpData>getOne(warpKey).get().warp;
+        String warpName = args.<NucleusWarpSignData>getOne(warpKey).get().getWarpName().get();
 
-        WarpSignData data = new WarpData(warpName, permission.orElse(null), args.<Integer>getOne(warmupKey).orElse(0));
+        WarpSignData data = new NucleusWarpSignData(warpName, permission.orElse(null), args.<Integer>getOne(warmupKey).orElse(0));
         Sign s = optionalSign.get();
         if (s.offer(data).isSuccessful()) {
             SignData sd = s.getSignData();
@@ -82,11 +81,11 @@ public class SetWarpSignCommand extends CommandBase<Player> {
                 s.offer(sd);
             }
 
-            src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.set.success", warpName));
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.set.success", warpName));
             return CommandResult.success();
         }
 
-        src.sendMessage(Util.getTextMessageWithFormat("command.warpsign.set.error", warpName));
+        src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.set.error", warpName));
         return CommandResult.empty();
     }
 }

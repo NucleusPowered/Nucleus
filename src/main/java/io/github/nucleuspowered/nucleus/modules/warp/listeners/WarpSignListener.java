@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.warp.listeners;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
-import io.github.nucleuspowered.nucleus.api.data.WarpLocation;
+import io.github.nucleuspowered.nucleus.api.data.WarpData;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.WarpSignData;
 import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
@@ -49,38 +49,38 @@ public class WarpSignListener extends ListenerBase {
                 WarpSignData w = ow.get();
                 String warpName = w.warpName().or("").get();
                 if (!handler.warpExists(warpName)) {
-                    player.sendMessage(Util.getTextMessageWithFormat("warpsign.warp.error"));
+                    player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("warpsign.warp.error"));
                     return;
                 }
 
                 Optional<String> permission = w.permission().get();
                 if (permission.isPresent() && !player.hasPermission(permission.get())) {
-                    player.sendMessage(Util.getTextMessageWithFormat("warpsign.warp.nopermission"));
+                    player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("warpsign.warp.nopermission"));
                     return;
                 }
 
-                WarpLocation wd = handler.getWarp(warpName).get();
+                WarpData wd = handler.getWarp(warpName).get();
                 int warmup = w.warmupTime().get();
                 if (warmup > 0) {
-                    player.sendMessage(Util.getTextMessageWithFormat("warmup.start", Util.getTimeStringFromSeconds(warmup)));
+                    player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("warmup.start", Util.getTimeStringFromSeconds(warmup)));
                     warmupManager.addWarmup(player.getUniqueId(), Sponge.getScheduler().createSyncExecutor(plugin).schedule(() -> {
-                        player.sendMessage(Util.getTextMessageWithFormat("warmup.end"));
+                        player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("warmup.end"));
                         warmupManager.removeWarmup(player.getUniqueId());
-                        warpPlayer(player, warpName, wd.getLocation(), wd.getRotation());
+                        warpPlayer(player, warpName, wd.getLocation().get(), wd.getRotation());
                     }, warmup, TimeUnit.SECONDS).getTask());
                 } else {
-                     warpPlayer(player, warpName, wd.getLocation(), wd.getRotation());
+                     warpPlayer(player, warpName, wd.getLocation().get(), wd.getRotation());
                 }
             }
         }
     }
 
     private void warpPlayer(Player player, String warp, Location<World> worldLocation, Vector3d rotation) {
-        player.sendMessage(Util.getTextMessageWithFormat("command.warps.start", warp));
+        player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warps.start", warp));
 
         // Warp them.
          if (!player.setLocationAndRotationSafely(worldLocation, rotation)) {
-            player.sendMessage(Util.getTextMessageWithFormat("command.warps.nosafe"));
+            player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warps.nosafe"));
         }
     }
 }
