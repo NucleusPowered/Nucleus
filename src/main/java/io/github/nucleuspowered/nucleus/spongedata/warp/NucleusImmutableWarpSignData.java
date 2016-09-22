@@ -19,15 +19,17 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     private String warpName = null;
     private String permission = null;
     private int warmupTime = 0;
+    private int cost = 0;
 
     public NucleusImmutableWarpSignData() {
-        this(null, null, 0);
+        this(null, null, 0, 0);
     }
 
-    public NucleusImmutableWarpSignData(String warpName, String permission, int warmupTime) {
+    public NucleusImmutableWarpSignData(String warpName, String permission, int warmupTime, int cost) {
         this.warpName = warpName;
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
+        this.cost = Math.max(0, cost);
     }
 
     @Override
@@ -48,6 +50,13 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     }
 
     @Override
+    public ImmutableBoundedValue<Integer> cost() {
+        return Sponge.getRegistry().getValueFactory()
+                .createBoundedValueBuilder(NucleusKeys.WARP_COST).minimum(0).maximum(Integer.MAX_VALUE)
+                .actualValue(cost).defaultValue(0).build().asImmutable();
+    }
+
+    @Override
     protected void registerGetters() {
         registerFieldGetter(NucleusKeys.WARP_NAME, this::getWarpName);
         registerKeyValue(NucleusKeys.WARP_NAME, this::warpName);
@@ -57,11 +66,14 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
 
         registerFieldGetter(NucleusKeys.WARP_WARMUP, this::getWarmupTime);
         registerKeyValue(NucleusKeys.WARP_WARMUP, this::warmupTime);
+
+        registerFieldGetter(NucleusKeys.WARP_COST, this::getWarpCost);
+        registerKeyValue(NucleusKeys.WARP_COST, this::cost);
     }
 
     @Override
     public NucleusWarpSignData asMutable() {
-        return new NucleusWarpSignData(warpName, permission, warmupTime);
+        return new NucleusWarpSignData(warpName, permission, warmupTime, cost);
     }
 
     @Override
@@ -75,6 +87,7 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
                 .compare(this.warpName, o.warpName().get().orElse(null))
                 .compare(this.warmupTime, o.warmupTime().get().intValue())
                 .compare(this.permission, o.permission().get().orElse(null))
+                .compare(this.cost, o.cost().get().intValue())
                 .result();
     }
 
@@ -88,5 +101,9 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
 
     public int getWarmupTime() {
         return warmupTime;
+    }
+
+    public int getWarpCost() {
+        return cost;
     }
 }

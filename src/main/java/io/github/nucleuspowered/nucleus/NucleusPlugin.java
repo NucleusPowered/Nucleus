@@ -43,6 +43,7 @@ import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusReloadConfigEvent;
 import io.github.nucleuspowered.nucleus.signdata.SignListener;
+import io.github.nucleuspowered.nucleus.spongedata.SpongeDataRegistrar;
 import io.github.nucleuspowered.nucleus.util.ThrowableAction;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
@@ -189,8 +190,24 @@ public class NucleusPlugin extends Nucleus {
         }
     }
 
-    @Listener(order = Order.POST)
+    @Listener
     public void onInit(GameInitializationEvent event) {
+        if (isErrored) {
+            return;
+        }
+
+        logger.info(messageProvider.getMessageWithFormat("startup.init", PluginInfo.NAME));
+
+        try {
+            SpongeDataRegistrar.registerData();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            isErrored = true;
+            e.printStackTrace();
+        }
+    }
+
+    @Listener(order = Order.FIRST)
+    public void onPostInit(GamePostInitializationEvent event) {
         if (isErrored) {
             return;
         }

@@ -25,15 +25,17 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
     private String warpName = null;
     private String permission = null;
     private int warmupTime = 0;
+    private int warpCost = 0;
 
     public NucleusWarpSignData() {
-        this(null, null, 0);
+        this(null, null, 0, 0);
     }
 
-    public NucleusWarpSignData(String warpName, String permission, int warmupTime) {
+    public NucleusWarpSignData(String warpName, String permission, int warmupTime, int warpCost) {
         this.warpName = warpName;
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
+        this.warpCost = Math.max(0, warpCost);
     }
 
     /**
@@ -68,6 +70,18 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
                 .actualValue(warmupTime).defaultValue(0).build();
     }
 
+    /**
+     * The warmup time.
+     *
+     * @return The time, in seconds.
+     */
+    @Override
+    public MutableBoundedValue<Integer> cost() {
+        return Sponge.getRegistry().getValueFactory()
+                .createBoundedValueBuilder(NucleusKeys.WARP_WARMUP).minimum(0).maximum(Integer.MAX_VALUE)
+                .actualValue(warpCost).defaultValue(0).build();
+    }
+
     @Override
     protected void registerGettersAndSetters() {
         registerFieldGetter(NucleusKeys.WARP_NAME, this::getWarpName);
@@ -81,11 +95,15 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
         registerFieldGetter(NucleusKeys.WARP_WARMUP, this::getWarmupTime);
         registerFieldSetter(NucleusKeys.WARP_WARMUP, this::setWarmupTime);
         registerKeyValue(NucleusKeys.WARP_WARMUP, this::warmupTime);
+
+        registerFieldGetter(NucleusKeys.WARP_COST, this::getWarpCost);
+        registerFieldSetter(NucleusKeys.WARP_COST, this::setWarpCost);
+        registerKeyValue(NucleusKeys.WARP_COST, this::cost);
     }
 
     @Override
     public Optional<WarpSignData> fill(DataHolder dataHolder, MergeFunction overlap) {
-        return null;
+        return Optional.of(Preconditions.checkNotNull(overlap).merge(copy(), from(dataHolder.toContainer()).orElse(null)));
     }
 
     @Override
@@ -98,13 +116,14 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
             new NucleusWarpSignData(
                 container.getString(NucleusKeys.WARP_NAME.getQuery()).orElse(null),
                 container.getString(NucleusKeys.WARP_PERMISSION.getQuery()).orElse(null),
-                container.getInt(NucleusKeys.WARP_WARMUP.getQuery()).orElse(0)
+                container.getInt(NucleusKeys.WARP_WARMUP.getQuery()).orElse(0),
+                container.getInt(NucleusKeys.WARP_COST.getQuery()).orElse(0)
             ));
     }
 
     @Override
     public WarpSignData copy() {
-        return new NucleusWarpSignData(warpName, permission, warmupTime);
+        return new NucleusWarpSignData(warpName, permission, warmupTime, warpCost);
     }
 
     @Override
@@ -160,6 +179,15 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
 
     public NucleusWarpSignData setWarmupTime(Integer warmupTime) {
         this.warmupTime = warmupTime;
+        return this;
+    }
+
+    public Integer getWarpCost() {
+        return warpCost;
+    }
+
+    public NucleusWarpSignData setWarpCost(Integer warpCost) {
+        this.warpCost = warpCost;
         return this;
     }
 }

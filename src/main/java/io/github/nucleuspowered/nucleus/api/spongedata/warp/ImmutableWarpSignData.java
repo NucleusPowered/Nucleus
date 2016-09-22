@@ -20,4 +20,6 @@ public interface ImmutableWarpSignData extends ImmutableDataManipulator<Immutabl
     ImmutableValue<Optional<String>> permission();
 
     ImmutableBoundedValue<Integer> warmupTime();
+
+    ImmutableBoundedValue<Integer> cost();
 }

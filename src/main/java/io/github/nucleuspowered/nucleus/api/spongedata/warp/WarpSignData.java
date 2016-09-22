@@ -33,4 +33,6 @@ public interface WarpSignData extends DataManipulator<WarpSignData, ImmutableWar
      * @return The warmup, in seconds.
      */
     MutableBoundedValue<Integer> warmupTime();
+
+    MutableBoundedValue<Integer> cost();
 }

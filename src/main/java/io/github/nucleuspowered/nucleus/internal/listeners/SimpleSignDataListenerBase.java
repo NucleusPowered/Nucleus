@@ -8,7 +8,7 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.block.tileentity.Sign;
-import org.spongepowered.api.data.manipulator.mutable.common.AbstractData;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
  * Specialised class for listening to sign changes when data is attached to them.
  * @param <D> The type of data.
  */
-public abstract class SimpleSignDataListenerBase<D extends AbstractData<?,?>> extends SignDataListenerBase<D> {
+public abstract class SimpleSignDataListenerBase<D extends DataManipulator<?,?>> extends SignDataListenerBase<D> {
 
     protected abstract String breakPermission();
 

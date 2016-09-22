@@ -9,7 +9,7 @@ import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import org.spongepowered.api.block.tileentity.Sign;
-import org.spongepowered.api.data.manipulator.mutable.common.AbstractData;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Map;
@@ -19,7 +19,7 @@ import java.util.Optional;
  * Specialised class for listening to sign changes when data is attached to them.
  * @param <D> The type of data.
  */
-public abstract class SignDataListenerBase<D extends AbstractData<?,?>> {
+public abstract class SignDataListenerBase<D extends DataManipulator<?,?>> {
 
     @Inject
     protected NucleusPlugin plugin;

@@ -80,7 +80,7 @@ public final class SignListener {
     public void onInteract(InteractBlockEvent event, @Root Player player) {
         Optional<Location<World>> ol = event.getTargetBlock().getLocation();
         if (ol.isPresent()) {
-            event.setCancelled(continueAction(ol.get(), (x, sign) -> x.onInteract(sign, player)));
+            event.setCancelled(!continueAction(ol.get(), (x, sign) -> x.onInteract(sign, player)));
         }
     }
 
