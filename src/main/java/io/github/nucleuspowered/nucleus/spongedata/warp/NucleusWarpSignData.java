@@ -128,7 +128,7 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
 
     @Override
     public ImmutableWarpSignData asImmutable() {
-        return null;
+        return new NucleusImmutableWarpSignData(warpName, permission, warmupTime, warpCost);
     }
 
     @Override
