@@ -42,7 +42,7 @@ import io.github.nucleuspowered.nucleus.internal.qsml.event.BaseModuleEvent;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusReloadConfigEvent;
-import io.github.nucleuspowered.nucleus.signdata.SignListener;
+import io.github.nucleuspowered.nucleus.spongedata.SignListener;
 import io.github.nucleuspowered.nucleus.spongedata.SpongeDataRegistrar;
 import io.github.nucleuspowered.nucleus.util.ThrowableAction;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -53,7 +53,10 @@ import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.game.state.*;
+import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -147,6 +150,8 @@ public class NucleusPlugin extends Nucleus {
             warmupManager = new WarmupManager();
             chatUtil = new ChatUtil(this);
             nameUtil = new NameUtil(this);
+
+            SpongeDataRegistrar.registerData();
         } catch (Exception e) {
             isErrored = true;
             e.printStackTrace();
@@ -185,22 +190,6 @@ public class NucleusPlugin extends Nucleus {
 
             moduleContainer.startDiscover();
         } catch (QuickStartModuleDiscoveryException e) {
-            isErrored = true;
-            e.printStackTrace();
-        }
-    }
-
-    @Listener
-    public void onInit(GameInitializationEvent event) {
-        if (isErrored) {
-            return;
-        }
-
-        logger.info(messageProvider.getMessageWithFormat("startup.init", PluginInfo.NAME));
-
-        try {
-            SpongeDataRegistrar.registerData();
-        } catch (NoSuchFieldException | IllegalAccessException e) {
             isErrored = true;
             e.printStackTrace();
         }

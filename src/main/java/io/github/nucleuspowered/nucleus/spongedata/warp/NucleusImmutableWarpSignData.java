@@ -9,17 +9,19 @@ import io.github.nucleuspowered.nucleus.api.spongedata.NucleusKeys;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.ImmutableWarpSignData;
 import io.github.nucleuspowered.nucleus.api.spongedata.warp.WarpSignData;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableData;
 import org.spongepowered.api.data.value.immutable.ImmutableBoundedValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public class NucleusImmutableWarpSignData extends AbstractImmutableData<ImmutableWarpSignData, WarpSignData> implements ImmutableWarpSignData {
     private String warpName = null;
     private String permission = null;
     private int warmupTime = 0;
-    private int cost = 0;
+    private int warpCost = 0;
 
     public NucleusImmutableWarpSignData() {
         this(null, null, 0, 0);
@@ -29,7 +31,8 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
         this.warpName = warpName;
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
-        this.cost = Math.max(0, cost);
+        this.warpCost = Math.max(0, cost);
+        registerGetters();
     }
 
     @Override
@@ -53,7 +56,7 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     public ImmutableBoundedValue<Integer> cost() {
         return Sponge.getRegistry().getValueFactory()
                 .createBoundedValueBuilder(NucleusKeys.WARP_COST).minimum(0).maximum(Integer.MAX_VALUE)
-                .actualValue(cost).defaultValue(0).build().asImmutable();
+                .actualValue(warpCost).defaultValue(0).build().asImmutable();
     }
 
     @Override
@@ -73,7 +76,7 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
 
     @Override
     public NucleusWarpSignData asMutable() {
-        return new NucleusWarpSignData(warpName, permission, warmupTime, cost);
+        return new NucleusWarpSignData(warpName, permission, warmupTime, warpCost);
     }
 
     @Override
@@ -87,8 +90,26 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
                 .compare(this.warpName, o.warpName().get().orElse(null))
                 .compare(this.warmupTime, o.warmupTime().get().intValue())
                 .compare(this.permission, o.permission().get().orElse(null))
-                .compare(this.cost, o.cost().get().intValue())
+                .compare(this.warpCost, o.cost().get().intValue())
                 .result();
+    }
+
+    @Override
+    @Nonnull
+    public DataContainer toContainer() {
+        DataContainer dc = super.toContainer()
+                .set(NucleusKeys.WARP_COST, warpCost)
+                .set(NucleusKeys.WARP_WARMUP, warmupTime);
+
+        if (warpName != null && !warpName.isEmpty()) {
+            dc.set(NucleusKeys.WARP_NAME.getQuery(), warpName);
+        }
+
+        if (permission != null && !permission.isEmpty()) {
+            dc.set(NucleusKeys.WARP_PERMISSION.getQuery(), permission);
+        }
+
+        return dc;
     }
 
     public String getWarpName() {
@@ -104,6 +125,6 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     }
 
     public int getWarpCost() {
-        return cost;
+        return warpCost;
     }
 }

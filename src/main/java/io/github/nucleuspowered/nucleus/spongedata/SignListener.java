@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.signdata;
+package io.github.nucleuspowered.nucleus.spongedata;
 
 import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;

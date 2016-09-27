@@ -18,6 +18,7 @@ import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.data.value.mutable.OptionalValue;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWarpSignData> implements WarpSignData {
@@ -36,6 +37,7 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
         this.permission = permission;
         this.warmupTime = Math.max(0, warmupTime);
         this.warpCost = Math.max(0, warpCost);
+        registerGettersAndSetters();
     }
 
     /**
@@ -108,6 +110,10 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
 
     @Override
     public Optional<WarpSignData> from(DataContainer container) {
+        return fromStatic(container);
+    }
+
+    public static Optional<WarpSignData> fromStatic(DataContainer container) {
         if (!container.contains(NucleusKeys.WARP_NAME.getQuery())) {
             return Optional.empty();
         }
@@ -137,12 +143,31 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
                 .compare(this.warpName, o.warpName().get().orElse(null))
                 .compare(this.warmupTime, o.warmupTime().get().intValue())
                 .compare(this.permission, o.permission().get().orElse(null))
+                .compare(this.warpCost, o.cost().get().intValue())
                 .result();
     }
 
     @Override
     public int getContentVersion() {
         return 1;
+    }
+
+    @Override
+    @Nonnull
+    public DataContainer toContainer() {
+        DataContainer dc = super.toContainer()
+            .set(NucleusKeys.WARP_COST, warpCost)
+            .set(NucleusKeys.WARP_WARMUP, warmupTime);
+
+        if (warpName != null && !warpName.isEmpty()) {
+            dc.set(NucleusKeys.WARP_NAME.getQuery(), warpName);
+        }
+
+        if (permission != null && !permission.isEmpty()) {
+            dc.set(NucleusKeys.WARP_PERMISSION.getQuery(), permission);
+        }
+
+        return dc;
     }
 
     // Getters and setters.

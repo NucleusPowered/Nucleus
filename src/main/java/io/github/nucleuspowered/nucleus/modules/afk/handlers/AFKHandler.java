@@ -13,7 +13,6 @@ import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.modules.afk.commands.AFKCommand;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfig;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfigAdapter;
-import io.github.nucleuspowered.nucleus.util.BiTuple;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -21,6 +20,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Identifiable;
+import org.spongepowered.api.util.Tuple;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.time.Instant;
@@ -127,8 +127,8 @@ public class AFKHandler {
         CommandPermissionHandler cph = getPermissionUtil();
         if (afkTime > 0) {
             workOnAfkPlayers(now.minus(afkTime, ChronoUnit.SECONDS), cph, exempttoggle, x -> !x.getValue().afk, x -> {
-                x.getB().afk = true;
-                sendAFKMessage(x.getA(), true);
+                x.getSecond().afk = true;
+                sendAFKMessage(x.getFirst(), true);
             });
         }
 
@@ -141,7 +141,7 @@ public class AFKHandler {
 
                 final String messageToServer = config.getMessages().getOnKick().trim();
                 final String messageToGetAroundJavaRestrictions = message;
-                Sponge.getScheduler().createSyncExecutor(plugin).execute(() -> x.getA().kick(TextSerializers.FORMATTING_CODE.deserialize(messageToGetAroundJavaRestrictions)));
+                Sponge.getScheduler().createSyncExecutor(plugin).execute(() -> x.getFirst().kick(TextSerializers.FORMATTING_CODE.deserialize(messageToGetAroundJavaRestrictions)));
                 if (!messageToServer.isEmpty()) {
                     MessageChannel mc;
                     if (config.isBroadcastOnKick()) {
@@ -150,7 +150,7 @@ public class AFKHandler {
                         mc = MessageChannel.permission(getPermissionUtil().getPermissionWithSuffix("notify"));
                     }
 
-                    mc.send(plugin.getChatUtil().getPlayerMessageFromTemplate(messageToServer, x.getA(), true));
+                    mc.send(plugin.getChatUtil().getPlayerMessageFromTemplate(messageToServer, x.getFirst(), true));
                 }
             });
         }
@@ -165,12 +165,13 @@ public class AFKHandler {
         afkData.entrySet().removeIf(x -> !uuids.contains(x.getKey()));
     }
 
-    private void workOnAfkPlayers(Instant now, CommandPermissionHandler cph, String permissionSuffix, Predicate<Map.Entry<UUID, Data>> firstCheck, Consumer<BiTuple<Player, Data>> forEach) {
+    @SuppressWarnings("all")
+    private void workOnAfkPlayers(Instant now, CommandPermissionHandler cph, String permissionSuffix, Predicate<Map.Entry<UUID, Data>> firstCheck, Consumer<Tuple<Player, Data>> forEach) {
         afkData.entrySet().stream()
                 .filter(firstCheck)
                 .filter(x -> x.getValue().lastActivity.isBefore(now))
-                .map(x -> new BiTuple<>(Sponge.getServer().getPlayer(x.getKey()).orElse(null), x.getValue()))
-                .filter(x -> x.getA() != null && !cph.testSuffix(x.getA(), permissionSuffix))
+                .map(x -> new Tuple<>(Sponge.getServer().getPlayer(x.getKey()).orElse(null), x.getValue()))
+                .filter(x -> x.getFirst() != null && !cph.testSuffix(x.getFirst(), permissionSuffix))
                 .forEach(forEach);
     }
 

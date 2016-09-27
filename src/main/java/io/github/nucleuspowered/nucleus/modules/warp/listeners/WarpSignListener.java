@@ -47,7 +47,7 @@ public class WarpSignListener extends SimpleSignDataListenerBase<WarpSignData> {
 
     @Override
     protected boolean onInteract(Sign sign, WarpSignData w, Player player) {
-        String warpName = w.warpName().or("").get();
+        String warpName = w.warpName().get().orElse("");
         if (!handler.warpExists(warpName)) {
             player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("warpsign.warp.error"));
             return true;

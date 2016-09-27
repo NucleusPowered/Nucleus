@@ -11,22 +11,30 @@ import io.github.nucleuspowered.nucleus.spongedata.warp.NucleusWarpSignDataManip
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataManager;
 import org.spongepowered.api.data.DataQuery;
+import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.key.KeyFactory;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
-import org.spongepowered.api.data.value.mutable.Value;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class SpongeDataRegistrar {
+
+    private static final Map<String, Key> keys = new HashMap<String, Key>() {{
+        put("WARP_NAME", KeyFactory.makeOptionalKey(String.class, DataQuery.of("nucleus", "warp", "name")));
+        put("WARP_PERMISSION", KeyFactory.makeOptionalKey(String.class, DataQuery.of("nucleus", "warp", "permission")));
+        put("WARP_WARMUP", KeyFactory.makeSingleKey(Integer.class, MutableBoundedValue.class, DataQuery.of("nucleus", "warp", "warmup")));
+        put("WARP_COST", KeyFactory.makeSingleKey(Integer.class, MutableBoundedValue.class, DataQuery.of("nucleus", "warp", "cost")));
+    }};
 
     private SpongeDataRegistrar() {}
 
     public static void registerData() throws NoSuchFieldException, IllegalAccessException {
         DataManager dataManager = Sponge.getDataManager();
 
-        // Warp sign.
-        NucleusKeys.class.getDeclaredField("WARP_NAME").set(null, KeyFactory.makeSingleKey(String.class, Value.class, DataQuery.of("nucleus", "warp", "name")));
-        NucleusKeys.class.getDeclaredField("WARP_PERMISSION").set(null, KeyFactory.makeOptionalKey(String.class, DataQuery.of("nucleus", "warp", "permission")));
-        NucleusKeys.class.getDeclaredField("WARP_WARMUP").set(null, KeyFactory.makeSingleKey(String.class, MutableBoundedValue.class, DataQuery.of("nucleus", "warp", "warmup")));
-        NucleusKeys.class.getDeclaredField("WARP_COST").set(null, KeyFactory.makeOptionalKey(String.class, DataQuery.of("nucleus", "warp", "cost")));
+        for (Map.Entry<String, Key> entry : keys.entrySet()) {
+            NucleusKeys.class.getDeclaredField(entry.getKey()).set(null, entry.getValue());
+        }
 
         dataManager.register(WarpSignData.class, ImmutableWarpSignData.class, new NucleusWarpSignDataManipulatorBuilder());
     }

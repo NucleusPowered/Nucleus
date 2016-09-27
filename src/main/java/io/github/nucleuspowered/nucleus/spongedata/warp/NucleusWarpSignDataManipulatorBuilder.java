@@ -23,7 +23,7 @@ public class NucleusWarpSignDataManipulatorBuilder extends AbstractDataBuilder<W
     @Override
     protected Optional<WarpSignData> buildContent(DataView container) throws InvalidDataException {
         // There seriously isn't any point to me doing that again...
-        return new NucleusWarpSignData().from(container.getContainer());
+        return NucleusWarpSignData.fromStatic(container.getContainer());
     }
 
     @Override

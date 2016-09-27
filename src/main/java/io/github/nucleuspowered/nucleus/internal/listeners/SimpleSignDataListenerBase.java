@@ -21,7 +21,7 @@ public abstract class SimpleSignDataListenerBase<D extends DataManipulator<?,?>>
 
     protected abstract String breakPermission();
 
-    public Map<String, PermissionInformation> getPermissions() {
+    public final Map<String, PermissionInformation> getPermissions() {
         Map<String, PermissionInformation> map = Maps.newHashMap();
         map.put(breakPermission(), new PermissionInformation(plugin.getMessageProvider()
                 .getMessageWithFormat("permission.signdata.listener.generic.break", getDataClass().getSimpleName()), SuggestedLevel.ADMIN));
