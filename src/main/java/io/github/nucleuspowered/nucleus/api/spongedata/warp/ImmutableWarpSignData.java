@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 public interface ImmutableWarpSignData extends ImmutableDataManipulator<ImmutableWarpSignData, WarpSignData> {
 
-    ImmutableValue<Optional<String>> warpName();
+    ImmutableValue<String> warpName();
 
     ImmutableValue<Optional<String>> permission();
 

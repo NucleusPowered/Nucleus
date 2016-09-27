@@ -17,6 +17,7 @@ import org.spongepowered.api.data.manipulator.mutable.common.AbstractData;
 import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.api.data.value.mutable.OptionalValue;
+import org.spongepowered.api.data.value.mutable.Value;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -46,8 +47,8 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
      * @return The name of the warp.
      */
     @Override
-    public OptionalValue<String> warpName() {
-        return Sponge.getRegistry().getValueFactory().createOptionalValue(NucleusKeys.WARP_NAME, warpName);
+    public Value<String> warpName() {
+        return Sponge.getRegistry().getValueFactory().createValue(NucleusKeys.WARP_NAME, warpName);
     }
 
     /**
@@ -113,14 +114,14 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
         return fromStatic(container);
     }
 
-    public static Optional<WarpSignData> fromStatic(DataContainer container) {
-        if (!container.contains(NucleusKeys.WARP_NAME.getQuery())) {
+    static Optional<WarpSignData> fromStatic(DataContainer container) {
+        if (!container.contains(NucleusKeys.WARP_NAME) || !container.getString(NucleusKeys.WARP_NAME.getQuery()).isPresent()) {
             return Optional.empty();
         }
 
         return Optional.of(
             new NucleusWarpSignData(
-                container.getString(NucleusKeys.WARP_NAME.getQuery()).orElse(null),
+                container.getString(NucleusKeys.WARP_NAME.getQuery()).get(),
                 container.getString(NucleusKeys.WARP_PERMISSION.getQuery()).orElse(null),
                 container.getInt(NucleusKeys.WARP_WARMUP.getQuery()).orElse(0),
                 container.getInt(NucleusKeys.WARP_COST.getQuery()).orElse(0)
@@ -140,7 +141,7 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
     @Override
     public int compareTo(WarpSignData o) {
         return ComparisonChain.start()
-                .compare(this.warpName, o.warpName().get().orElse(null))
+                .compare(this.warpName, o.warpName().get())
                 .compare(this.warmupTime, o.warmupTime().get().intValue())
                 .compare(this.permission, o.permission().get().orElse(null))
                 .compare(this.warpCost, o.cost().get().intValue())
@@ -175,8 +176,7 @@ public class NucleusWarpSignData extends AbstractData<WarpSignData, ImmutableWar
         return Optional.ofNullable(warpName);
     }
 
-    public NucleusWarpSignData setWarpName(Optional<String> warpName) {
-        String warp = warpName.orElse(null);
+    public NucleusWarpSignData setWarpName(String warp) {
         Optional<NucleusWarpService> onws = Sponge.getServiceManager().provide(NucleusWarpService.class);
         Preconditions.checkState(onws.isPresent());
 

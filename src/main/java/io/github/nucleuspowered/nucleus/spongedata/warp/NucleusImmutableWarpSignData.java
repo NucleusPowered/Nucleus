@@ -36,8 +36,8 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     }
 
     @Override
-    public ImmutableValue<Optional<String>> warpName() {
-        return Sponge.getRegistry().getValueFactory().createOptionalValue(NucleusKeys.WARP_NAME, warpName).asImmutable();
+    public ImmutableValue<String> warpName() {
+        return Sponge.getRegistry().getValueFactory().createValue(NucleusKeys.WARP_NAME, warpName).asImmutable();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class NucleusImmutableWarpSignData extends AbstractImmutableData<Immutabl
     @Override
     public int compareTo(ImmutableWarpSignData o) {
         return ComparisonChain.start()
-                .compare(this.warpName, o.warpName().get().orElse(null))
+                .compare(this.warpName, o.warpName().get())
                 .compare(this.warmupTime, o.warmupTime().get().intValue())
                 .compare(this.permission, o.permission().get().orElse(null))
                 .compare(this.warpCost, o.cost().get().intValue())

@@ -65,7 +65,7 @@ public class WarpSignCommand extends AbstractCommand<Player> {
     }
 
     private void displayWarpData(Player player, WarpSignData data) {
-        String warp = data.warpName().get().orElse("");
+        String warp = data.warpName().get();
         if (warpHandler.warpExists(warp)) {
             player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.warpsign.warpinfo.standard", warp, data.warmupTime().get().toString()));
 
