@@ -5,8 +5,8 @@
 package io.github.nucleuspowered.nucleus.modules.sign.listeners;
 
 import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;

@@ -6,7 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.commandlogger.listeners;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.commandlogger.config.CommandLoggerConfig;
 import io.github.nucleuspowered.nucleus.modules.commandlogger.config.CommandLoggerConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.commandlogger.handlers.CommandLoggerHandler;

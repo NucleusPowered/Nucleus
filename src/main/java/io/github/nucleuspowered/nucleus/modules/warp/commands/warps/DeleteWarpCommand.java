@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.warp.commands;
+package io.github.nucleuspowered.nucleus.modules.warp.commands.warps;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWarpService;

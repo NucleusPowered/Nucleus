@@ -25,7 +25,6 @@ public class WarpModule extends ConfigurableModule<WarpConfigAdapter> {
 
         try {
             // Put the warp service into the service manager.
-
             WarpHandler wh = new WarpHandler();
             plugin.getInjector().injectMembers(wh);
             serviceManager.registerService(WarpHandler.class, wh);

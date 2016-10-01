@@ -26,6 +26,7 @@ import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.TextFileController;
+import io.github.nucleuspowered.nucleus.internal.asm.ClassTransformer;
 import io.github.nucleuspowered.nucleus.internal.docgen.DocGenCache;
 import io.github.nucleuspowered.nucleus.internal.guice.QuickStartInjectorModule;
 import io.github.nucleuspowered.nucleus.internal.guice.SubInjectorModule;
@@ -41,6 +42,8 @@ import io.github.nucleuspowered.nucleus.internal.qsml.event.BaseModuleEvent;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusReloadConfigEvent;
+import io.github.nucleuspowered.nucleus.spongedata.SignListener;
+import io.github.nucleuspowered.nucleus.spongedata.SpongeDataRegistrar;
 import io.github.nucleuspowered.nucleus.util.ThrowableAction;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
@@ -49,6 +52,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
@@ -88,12 +92,13 @@ public class NucleusPlugin extends Nucleus {
     private ChatUtil chatUtil;
     private NameUtil nameUtil;
     private Injector injector;
+    private final SignListener signListener = new SignListener(this);
     private SubInjectorModule subInjectorModule = new SubInjectorModule();
     private List<ThrowableAction<? extends Exception>> reloadableList = Lists.newArrayList();
     private DocGenCache docGenCache = null;
 
     private InternalServiceManager serviceManager = new InternalServiceManager(this);
-    private MessageProvider messageProvider = new ResourceMessageProvider(ResourceMessageProvider.messagesBundle);
+    private MessageProvider messageProvider;
     private MessageProvider commandMessageProvider = new ResourceMessageProvider(ResourceMessageProvider.commandMessagesBundle);
 
     private WarmupManager warmupManager;
@@ -105,15 +110,25 @@ public class NucleusPlugin extends Nucleus {
     private final Map<String, TextFileController> textFileControllers = Maps.newHashMap();
 
     @Inject private Game game;
-    @Inject private Logger logger;
+    private final Logger logger;
     private Path configDir;
     private Path dataDir;
 
     // We inject this into the constructor so we can build the config path ourselves.
     @Inject
-    public NucleusPlugin(@ConfigDir(sharedRoot = true) Path configDir) {
+    public NucleusPlugin(@ConfigDir(sharedRoot = true) Path configDir, Logger logger) {
         Nucleus.setNucleus(this);
+        this.messageProvider = new ResourceMessageProvider(ResourceMessageProvider.messagesBundle);
+        logger.info(messageProvider.getMessageWithFormat("startup.construct", PluginInfo.NAME));
         this.configDir = configDir.resolve(PluginInfo.ID);
+
+        this.logger = logger;
+        try {
+            new ClassTransformer(logger).loadClasses();
+        } catch (Exception e) {
+            e.printStackTrace();
+            isErrored = true;
+        }
     }
 
     @Listener
@@ -135,6 +150,8 @@ public class NucleusPlugin extends Nucleus {
             warmupManager = new WarmupManager();
             chatUtil = new ChatUtil(this);
             nameUtil = new NameUtil(this);
+
+            SpongeDataRegistrar.registerData();
         } catch (Exception e) {
             isErrored = true;
             e.printStackTrace();
@@ -178,7 +195,7 @@ public class NucleusPlugin extends Nucleus {
         }
     }
 
-    @Listener
+    @Listener(order = Order.FIRST)
     public void onPostInit(GamePostInitializationEvent event) {
         if (isErrored) {
             return;
@@ -205,6 +222,8 @@ public class NucleusPlugin extends Nucleus {
             isErrored = true;
             return;
         }
+
+        Sponge.getEventManager().registerListeners(this, signListener);
 
         logger.info(messageProvider.getMessageWithFormat("startup.moduleloaded", PluginInfo.NAME));
         registerPermissions();
@@ -416,6 +435,14 @@ public class NucleusPlugin extends Nucleus {
 
     public Optional<Instant> getGameStartedTime() {
         return Optional.ofNullable(this.gameStartedTime);
+    }
+
+    public SignListener getSignListener() {
+        return signListener;
+    }
+
+    public boolean isModulesLoaded() {
+        return this.modulesLoaded;
     }
 
     private Injector runInjectorUpdate() {

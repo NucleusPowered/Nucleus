@@ -10,13 +10,15 @@ import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.data.seen.BasicSeenInformationProvider;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
-import io.github.nucleuspowered.nucleus.internal.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.TaskBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.annotations.SkipOnError;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBuilder;
 import io.github.nucleuspowered.nucleus.internal.docgen.DocGenCache;
+import io.github.nucleuspowered.nucleus.internal.listeners.ListenerBase;
+import io.github.nucleuspowered.nucleus.internal.listeners.SignDataListenerBase;
+import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.handlers.SeenHandler;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
@@ -30,6 +32,7 @@ import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -80,6 +83,7 @@ public abstract class StandardModule implements Module {
         // Construct commands
         loadCommands();
         loadEvents();
+        loadDataEvents();
         loadRunnables();
     }
 
@@ -115,7 +119,6 @@ public abstract class StandardModule implements Module {
         Set<Class<? extends ListenerBase>> commandsToLoad = getStreamForModule(ListenerBase.class)
                 .collect(Collectors.toSet());
 
-        ModuleData md = this.getClass().getAnnotation(ModuleData.class);
         Optional<DocGenCache> docGenCache = plugin.getDocGenCache();
         Injector injector = plugin.getInjector();
         commandsToLoad.stream().map(x -> this.getInstance(injector, x)).filter(lb -> lb != null).forEach(c -> {
@@ -123,6 +126,23 @@ public abstract class StandardModule implements Module {
             c.getPermissions().forEach((k, v) -> plugin.getPermissionRegistry().registerOtherPermission(k, v));
             docGenCache.ifPresent(x -> x.addPermissionDocs(moduleId, c.getPermissions()));
             Sponge.getEventManager().registerListeners(plugin, c);
+        });
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private void loadDataEvents() {
+        Set<Class<? extends SignDataListenerBase>> commandsToLoad = getStreamForModule(SignDataListenerBase.class)
+                .collect(Collectors.toSet());
+
+        Optional<DocGenCache> docGenCache = plugin.getDocGenCache();
+        Injector injector = plugin.getInjector();
+        commandsToLoad.stream().map(x -> this.getInstance(injector, x)).filter(lb -> lb != null).forEach(c -> {
+            // Register suggested permissions
+            Map<String, PermissionInformation> mpi = c.getPermissions();
+            mpi.forEach((k, v) -> plugin.getPermissionRegistry().registerOtherPermission(k, v));
+            docGenCache.ifPresent(x -> x.addPermissionDocs(moduleId, c.getPermissions()));
+            plugin.getSignListener().registerSignListener(c);
         });
     }
 
