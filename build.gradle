@@ -17,7 +17,7 @@ group 'io.github.nucleuspowered'
 version '0.12.0-5.0-SNAPSHOT'
 
 def mixinversion = '0.12.0-5.0-SNAPSHOT';
-def qsmlDep = "uk.co.drnaylor:quickstart-moduleloader:0.3.0";
+def qsmlDep = "uk.co.drnaylor:quickstart-moduleloader:0.3.1";
 def mixinDep = "io.github.nucleuspowered:NucleusMixins:" + mixinversion;
 
 defaultTasks 'licenseFormat build'

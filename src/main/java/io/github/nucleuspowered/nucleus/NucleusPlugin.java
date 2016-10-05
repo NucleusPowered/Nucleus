@@ -168,6 +168,7 @@ public class NucleusPlugin extends Nucleus {
                             .build())
                     .setPackageToScan(getClass().getPackage().getName() + ".modules")
                     .setLoggerProxy(new NucleusLoggerProxy(logger))
+                    .setConfigurationOptionsTransformer(ConfigurateHelper::setOptions)
                     .setOnPreEnable(() -> {
                         runInjectorUpdate();
                         initDocGenIfApplicable();
@@ -199,6 +200,9 @@ public class NucleusPlugin extends Nucleus {
         try {
             itemDataService.load();
             generalService.load();
+
+            // Reload so that we can update the serialisers.
+            moduleContainer.reloadSystemConfig();
         } catch (Exception e) {
             isErrored = true;
             e.printStackTrace();
