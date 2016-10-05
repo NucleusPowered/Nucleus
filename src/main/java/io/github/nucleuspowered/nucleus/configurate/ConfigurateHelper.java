@@ -14,6 +14,8 @@ import io.github.nucleuspowered.nucleus.configurate.typeserialisers.Vector3dType
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
+import org.spongepowered.api.GameState;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 import java.util.Set;
@@ -22,6 +24,8 @@ public class ConfigurateHelper {
 
     private ConfigurateHelper() {}
 
+    private static TypeSerializerCollection typeSerializerCollection = null;
+
     /**
      * Set NucleusPlugin specific options on the {@link ConfigurationOptions}
      *
@@ -29,6 +33,21 @@ public class ConfigurateHelper {
      * @return The {@link ConfigurationOptions}, for easier inline use of this function.
      */
     public static ConfigurationOptions setOptions(ConfigurationOptions options) {
+        TypeSerializerCollection tsc = getNucleusTypeSerialiserCollection(options);
+
+        // Allows us to use localised comments and @ProcessSetting annotations
+        return options.setSerializers(tsc).setObjectMapperFactory(NucleusObjectMapperFactory.getInstance());
+    }
+
+    public static TypeSerializerCollection getNucleusTypeSerialiserCollection() {
+        return getNucleusTypeSerialiserCollection(ConfigurationOptions.defaults());
+    }
+
+    public static TypeSerializerCollection getNucleusTypeSerialiserCollection(ConfigurationOptions options) {
+        if (typeSerializerCollection != null) {
+            return typeSerializerCollection;
+        }
+
         TypeSerializerCollection tsc = options.getSerializers();
 
         // Custom type serialisers for NucleusPlugin
@@ -40,7 +59,10 @@ public class ConfigurateHelper {
                 new SetTypeSerialiser()
         );
 
-        // Allows us to use localised comments and @ProcessSetting annotations
-        return options.setSerializers(tsc).setObjectMapperFactory(NucleusObjectMapperFactory.getInstance());
+        if (Sponge.getGame().getState() == GameState.SERVER_STARTED) {
+            typeSerializerCollection = tsc;
+        }
+
+        return tsc;
     }
 }

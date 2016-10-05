@@ -22,7 +22,7 @@ public class ItemDataService extends Service<Map<String, ItemDataNode>> {
     private Map<String, String> aliasToItemIdCache = null;
 
     public ItemDataService(DataProvider<Map<String, ItemDataNode>> dataProvider) throws Exception {
-        super(dataProvider);
+        super(dataProvider, false);
     }
 
     @Override

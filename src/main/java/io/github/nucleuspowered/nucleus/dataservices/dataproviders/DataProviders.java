@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.dataservices.dataproviders;
 
+import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.configurate.ConfigurateHelper;
@@ -11,15 +12,20 @@ import io.github.nucleuspowered.nucleus.configurate.datatypes.GeneralDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.ItemDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.UserDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.WorldDataNode;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class DataProviders {
 
@@ -57,7 +63,7 @@ public class DataProviders {
         // For now, just the Configurate one.
         try {
             Path p = plugin.getDataPath().resolve("general.json");
-            return new ConfigurateDataProvider<>(ttg, getGsonBuilder().setPath(p).build(), p);
+            return new ConfigurateDataProvider<>(ttg, new LazyConfigurationLoader<>(() -> getGsonBuilder().setPath(p).build()), p);
         } catch (Exception e) {
             return null;
         }
@@ -67,7 +73,7 @@ public class DataProviders {
         // For now, just the Configurate one.
         try {
             Path p = plugin.getConfigDirPath().resolve("items.conf");
-            return new ConfigurateDataProvider<>(ttmsi, getHoconBuilder().setPath(p).build(), HashMap::new, p);
+            return new ConfigurateDataProvider<>(ttmsi, new LazyConfigurationLoader<>(() -> getGsonBuilder().setPath(p).build()), HashMap::new, p);
         } catch (Exception e) {
             return null;
         }
@@ -95,5 +101,50 @@ public class DataProviders {
     private HoconConfigurationLoader.Builder getHoconBuilder() {
         HoconConfigurationLoader.Builder gsb = HoconConfigurationLoader.builder();
         return gsb.setDefaultOptions(ConfigurateHelper.setOptions(gsb.getDefaultOptions()));
+    }
+
+    /**
+     * Only performs the loading when required.
+     * @param <T> The type of node that this lazy loaded loader will load.
+     */
+    private static class LazyConfigurationLoader<T extends ConfigurationNode> implements ConfigurationLoader<T> {
+
+        private ConfigurationLoader<T> lazyLoad = null;
+        private final Supplier<ConfigurationLoader<T>> supplier;
+
+        private LazyConfigurationLoader(Supplier<ConfigurationLoader<T>> supplier) {
+            Preconditions.checkNotNull(supplier);
+            this.supplier = supplier;
+        }
+
+        @Override
+        public ConfigurationOptions getDefaultOptions() {
+            init();
+            return lazyLoad.getDefaultOptions();
+        }
+
+        @Override
+        public T load(ConfigurationOptions options) throws IOException {
+            init();
+            return lazyLoad.load(options);
+        }
+
+        @Override
+        public void save(ConfigurationNode node) throws IOException {
+            init();
+            lazyLoad.save(node);
+        }
+
+        @Override
+        public T createEmptyNode(ConfigurationOptions options) {
+            init();
+            return lazyLoad.createEmptyNode(options);
+        }
+
+        private void init() {
+            if (lazyLoad == null) {
+                lazyLoad = supplier.get();
+            }
+        }
     }
 }

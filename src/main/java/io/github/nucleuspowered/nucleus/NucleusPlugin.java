@@ -140,9 +140,9 @@ public class NucleusPlugin extends Nucleus {
 
             DataProviders d = new DataProviders(this);
             generalService = new GeneralService(d.getGeneralDataProvider());
+            itemDataService = new ItemDataService(d.getItemDataProvider());
             userDataManager = new UserDataManager(this, d::getUserFileDataProviders);
             worldDataManager = new WorldDataManager(this, d::getWorldFileDataProvider);
-            itemDataService = new ItemDataService(d.getItemDataProvider());
             warmupManager = new WarmupManager();
             chatUtil = new ChatUtil(this);
             nameUtil = new NameUtil(this);
@@ -177,9 +177,7 @@ public class NucleusPlugin extends Nucleus {
                         runInjectorUpdate();
                         Sponge.getEventManager().post(new BaseModuleEvent.PreEnable(this));
                     })
-                    .setOnPostEnable(() -> {
-                        Sponge.getEventManager().post(new BaseModuleEvent.Enabled(this));
-                    })
+                    .setOnPostEnable(() -> Sponge.getEventManager().post(new BaseModuleEvent.Enabled(this)))
                     .build();
 
             moduleContainer.startDiscover();
@@ -199,6 +197,7 @@ public class NucleusPlugin extends Nucleus {
 
         // Load up the general data file now, mods should have registered items by now.
         try {
+            itemDataService.load();
             generalService.load();
         } catch (Exception e) {
             isErrored = true;

@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.dataservices.dataproviders;
 
 import com.google.common.reflect.TypeToken;
+import io.github.nucleuspowered.nucleus.configurate.ConfigurateHelper;
 import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
@@ -39,12 +40,12 @@ public class ConfigurateDataProvider<T> implements DataProvider<T> {
 
     @Override
     public T load() throws Exception {
-        return loader.load().getValue(typeToken, defaultSupplier);
+        return loader.load(ConfigurateHelper.setOptions(loader.getDefaultOptions())).getValue(typeToken, defaultSupplier);
     }
 
     @Override
     public void save(T info) throws Exception {
-        loader.save(SimpleCommentedConfigurationNode.root(loader.getDefaultOptions()).setValue(typeToken, info));
+        loader.save(SimpleCommentedConfigurationNode.root(ConfigurateHelper.setOptions(loader.getDefaultOptions())).setValue(typeToken, info));
     }
 
     @Override
