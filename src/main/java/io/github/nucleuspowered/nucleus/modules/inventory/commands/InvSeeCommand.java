@@ -17,14 +17,13 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.inventory.inventory.InvSeeInventoryFactory;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.text.Text;
 
 import java.util.Map;
@@ -73,8 +72,7 @@ public class InvSeeCommand extends AbstractCommand<Player> {
             throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.invsee.targetexempt", target.getName()));
         }
 
-        // Just in case, get the player inventory if they are online.
-        src.openInventory(target.isOnline() ? target.getPlayer().get().getInventory() : target.getInventory(), Cause.of(NamedCause.of("plugin", plugin), NamedCause.source(src)));
+        InvSeeInventoryFactory.viewInventory(plugin, src, target, permissions.testSuffix(target, "exempt.interact"));
         return CommandResult.success();
     }
 }
