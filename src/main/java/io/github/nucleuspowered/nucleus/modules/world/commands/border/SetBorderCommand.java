@@ -17,8 +17,8 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
@@ -67,8 +67,8 @@ public class SetBorderCommand extends io.github.nucleuspowered.nucleus.internal.
         int dia = args.<Integer>getOne(diameter).get();
         int delay = args.<Integer>getOne(delayKey).orElse(0);
 
-        if (src instanceof LocatedSource) {
-            Location<World> lw = ((LocatedSource) src).getLocation();
+        if (src instanceof Locatable) {
+            Location<World> lw = ((Locatable) src).getLocation();
             if (args.hasAny(zKey)) {
                 x = args.<Integer>getOne(xKey).get();
                 z = args.<Integer>getOne(zKey).get();

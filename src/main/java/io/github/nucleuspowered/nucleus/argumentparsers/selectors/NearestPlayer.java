@@ -12,9 +12,9 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.ArgumentParseException;
 import org.spongepowered.api.command.args.CommandArgs;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -40,11 +40,11 @@ public class NearestPlayer implements SelectorParser<Player> {
 
     @Override
     public Player get(String selector, CommandSource source, CommandArgs args) throws ArgumentParseException {
-        if (!(source instanceof LocatedSource)) {
+        if (!(source instanceof Locatable)) {
             throw args.createError(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("args.selector.nolocation"));
         }
 
-        LocatedSource locatedSource = (LocatedSource)source;
+        Locatable locatedSource = (Locatable)source;
 
         // We don't want the executing player.
         List<Player> playerCollection = Lists.newArrayList(Sponge.getServer().getOnlinePlayers());

@@ -4,16 +4,14 @@
  */
 package io.github.nucleuspowered.nucleus.modules.item.config;
 
-import io.github.nucleuspowered.nucleus.configurate.annotations.DoNotGenerate;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 @ConfigSerializable
 public class SkullConfig {
 
-    @DoNotGenerate
     @Setting(value = "use-minecraft-command", comment = "loc:config.item.skullcompat")
-    private boolean useMinecraftCommand = true;
+    private boolean useMinecraftCommand = false;
 
     public boolean isUseMinecraftCommand() {
         return useMinecraftCommand;

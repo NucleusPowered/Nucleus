@@ -20,6 +20,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -59,19 +60,19 @@ public class HatCommand extends io.github.nucleuspowered.nucleus.internal.comman
     @Override
     public CommandResult executeCommand(Player player, CommandContext args) throws Exception {
         Player pl = this.getUserFromArgs(Player.class, player, playerKey, args);
-        ItemStack stack = pl.getItemInHand().orElseThrow(() -> new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.generalerror.handempty")));
+        ItemStack stack = pl.getItemInHand(HandTypes.MAIN_HAND).orElseThrow(() -> new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.generalerror.handempty")));
         stack.setQuantity(1);
         pl.setHelmet(stack);
         Text itemName = stack.get(Keys.DISPLAY_NAME).orElse(Text.of(Util.getTranslatableIfPresentOnCatalogType(stack.getItem())));
 
         if (pl.get(Keys.GAME_MODE).get() == GameModes.SURVIVAL) {
-            stack = pl.getItemInHand().get();
+            stack = pl.getItemInHand(HandTypes.MAIN_HAND).get();
 
             if (stack.getQuantity() > 1) {
                 stack.setQuantity(stack.getQuantity() - 1);
-                pl.setItemInHand(stack);
+                pl.setItemInHand(HandTypes.MAIN_HAND, stack);
             } else {
-                pl.setItemInHand(null);
+                pl.setItemInHand(HandTypes.MAIN_HAND, null);
             }
         }
 

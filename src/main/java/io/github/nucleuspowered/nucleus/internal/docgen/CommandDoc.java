@@ -51,6 +51,9 @@ public class CommandDoc {
     private boolean cost;
 
     @Setting
+    private boolean requiresMixin;
+
+    @Setting
     private String nucleusVersion;
 
     @Setting
@@ -156,6 +159,14 @@ public class CommandDoc {
 
     public void setPermissions(List<PermissionDoc> permissions) {
         this.permissions = permissions;
+    }
+
+    public boolean isRequiresMixin() {
+        return requiresMixin;
+    }
+
+    public void setRequiresMixin(boolean requiresMixin) {
+        this.requiresMixin = requiresMixin;
     }
 
     public String getNucleusVersion() {

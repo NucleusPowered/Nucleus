@@ -57,12 +57,13 @@ public class VanishCommand extends io.github.nucleuspowered.nucleus.internal.com
         Player playerToVanish = this.getUserFromArgs(Player.class, src, playerKey, args);
 
         // If we don't specify whether to vanish, toggle
-        boolean toVanish = args.<Boolean>getOne(b).orElse(!playerToVanish.get(Keys.INVISIBLE).orElse(false));
+        boolean toVanish = args.<Boolean>getOne(b).orElse(!playerToVanish.get(Keys.VANISH).orElse(false));
 
-        DataTransactionResult dtr = playerToVanish.offer(Keys.INVISIBLE, toVanish);
-        playerToVanish.offer(Keys.INVISIBILITY_IGNORES_COLLISION, toVanish);
-        playerToVanish.offer(Keys.INVISIBILITY_PREVENTS_TARGETING, toVanish);
+        DataTransactionResult dtr = playerToVanish.offer(Keys.VANISH, toVanish);
+        playerToVanish.offer(Keys.VANISH_PREVENTS_TARGETING, toVanish);
+        playerToVanish.offer(Keys.VANISH_IGNORES_COLLISION, toVanish);
         playerToVanish.offer(Keys.IS_SILENT, toVanish);
+
         if (dtr.isSuccessful()) {
             playerToVanish.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.vanish.success",
                     toVanish ? plugin.getMessageProvider().getMessageWithFormat("command.vanish.vanished") : plugin.getMessageProvider().getMessageWithFormat("command.vanish.visible")));

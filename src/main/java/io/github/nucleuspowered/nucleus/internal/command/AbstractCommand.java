@@ -20,6 +20,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.NoCost;
 import io.github.nucleuspowered.nucleus.internal.annotations.NoWarmup;
 import io.github.nucleuspowered.nucleus.internal.annotations.NotifyIfAFK;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
+import io.github.nucleuspowered.nucleus.internal.annotations.RequireMixinPlugin;
 import io.github.nucleuspowered.nucleus.internal.annotations.RequiresEconomy;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
@@ -40,7 +41,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.source.CommandBlockSource;
 import org.spongepowered.api.command.source.ConsoleSource;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
@@ -52,6 +52,9 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.TextMessageException;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+import org.spongepowered.api.world.Locatable;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import uk.co.drnaylor.quickstart.exceptions.IncorrectAdapterTypeException;
 import uk.co.drnaylor.quickstart.exceptions.NoModuleException;
@@ -645,8 +648,8 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
         }
 
         // Actually, we just care about where we are.
-        if (src instanceof LocatedSource) {
-            return Optional.of(((LocatedSource) src).getWorld().getProperties());
+        if (src instanceof Locatable) {
+            return Optional.of(((Locatable) src).getWorld().getProperties());
         }
 
         return Optional.empty();
@@ -697,8 +700,8 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
         if (owp.isPresent()) {
            return owp.get();
         } else {
-            if (src instanceof LocatedSource) {
-                return ((LocatedSource) src).getWorld().getProperties();
+            if (src instanceof Locatable) {
+                return ((Locatable) src).getWorld().getProperties();
             } else {
                 throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.noworldconsole"));
             }
@@ -1016,6 +1019,10 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
                 textMessages.add(plugin.getMessageProvider().getTextMessageWithFormat("command.usage.playeronly"));
             }
 
+            if (parent.getClass().isAnnotationPresent(RequireMixinPlugin.class)) {
+                textMessages.add(plugin.getMessageProvider().getTextMessageWithFormat("command.usage.mixin"));
+            }
+
             textMessages.add(plugin.getMessageProvider().getTextMessageWithFormat("command.usage.module", module, moduleId));
 
             String desc = getDescription();
@@ -1051,7 +1058,7 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
 
         @Override
         @NonnullByDefault
-        public List<String> getSuggestions(CommandSource source, String arguments) throws CommandException {
+        public List<String> getSuggestions(CommandSource source, String arguments, @Nullable Location<World> targetPosition) throws CommandException {
             return Lists.newArrayList();
         }
 
@@ -1063,13 +1070,13 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
 
         @Override
         @NonnullByDefault
-        public Optional<? extends Text> getShortDescription(CommandSource source) {
+        public Optional<Text> getShortDescription(CommandSource source) {
             return Optional.empty();
         }
 
         @Override
         @NonnullByDefault
-        public Optional<? extends Text> getHelp(CommandSource source) {
+        public Optional<Text> getHelp(CommandSource source) {
             return Optional.empty();
         }
 

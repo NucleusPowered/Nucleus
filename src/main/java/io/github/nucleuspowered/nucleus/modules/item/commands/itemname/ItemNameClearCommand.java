@@ -11,6 +11,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -25,12 +26,12 @@ public class ItemNameClearCommand extends io.github.nucleuspowered.nucleus.inter
 
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
-        if (!src.getItemInHand().isPresent()) {
+        if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             src.sendMessage(provider.getTextMessageWithFormat("command.itemname.clear.noitem"));
             return CommandResult.empty();
         }
 
-        ItemStack stack = src.getItemInHand().get();
+        ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).get();
         Optional<Text> data = stack.get(Keys.DISPLAY_NAME);
 
         if (!data.isPresent()) {
@@ -40,7 +41,7 @@ public class ItemNameClearCommand extends io.github.nucleuspowered.nucleus.inter
         }
 
         if (stack.remove(Keys.DISPLAY_NAME).isSuccessful()) {
-            src.setItemInHand(stack);
+            src.setItemInHand(HandTypes.MAIN_HAND, stack);
             src.sendMessage(provider.getTextMessageWithFormat("command.itemname.clear.success"));
             return CommandResult.success();
         }

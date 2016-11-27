@@ -19,6 +19,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.manipulator.mutable.item.EnchantmentData;
 import org.spongepowered.api.data.meta.ItemEnchantment;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.Enchantment;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -57,13 +58,13 @@ public class EnchantCommand extends io.github.nucleuspowered.nucleus.internal.co
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
         // Check for item in hand
-        if (!src.getItemInHand().isPresent()) {
+        if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.enchant.noitem"));
             return CommandResult.empty();
         }
 
         // Get the arguments
-        ItemStack itemInHand = src.getItemInHand().get();
+        ItemStack itemInHand = src.getItemInHand(HandTypes.MAIN_HAND).get();
         Enchantment enchantment = args.<Enchantment>getOne(enchantmentKey).get();
         int level = args.<Integer>getOne(levelKey).get();
         boolean allowUnsafe = args.hasAny("u");
@@ -117,7 +118,7 @@ public class EnchantCommand extends io.github.nucleuspowered.nucleus.internal.co
         DataTransactionResult dtr = itemInHand.offer(ed);
         if (dtr.isSuccessful()) {
             // If successful, we need to put the item in the player's hand for it to actually take effect.
-            src.setItemInHand(itemInHand);
+            src.setItemInHand(HandTypes.MAIN_HAND, itemInHand);
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.enchant.success", Util.getTranslatableIfPresent(enchantment), String.valueOf(level)));
             return CommandResult.success();
         }

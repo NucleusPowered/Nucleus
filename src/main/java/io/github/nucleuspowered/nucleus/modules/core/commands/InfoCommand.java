@@ -16,9 +16,12 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.TextMessageException;
 import uk.co.drnaylor.quickstart.ModuleContainer;
 
@@ -27,6 +30,7 @@ import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Permissions(prefix = "nucleus", suggestedLevel = SuggestedLevel.NONE)
@@ -59,11 +63,39 @@ public class InfoCommand extends AbstractCommand<CommandSource> {
         information.add(String.format("Sponge API Version: %s %s", platform.getApi().getName(), platform.getApi().getVersion().orElse("unknown")));
         information.add("Nucleus Version: " + PluginInfo.VERSION + " (Git: " + PluginInfo.GIT_HASH + ")");
 
+        plugin.getMixinConfigIfAvailable().ifPresent(x -> {
+            information.add(sep);
+            information.add("Nucleus Mixins");
+            information.add(sep);
+            information.add("World Generation mixins: " + (x.get().config.isWorldgeneration() ? "on" : "off"));
+            information.add("/invsee mixins: " + (x.get().config.isInvsee() ? "on" : "off"));
+        });
+
         information.add(sep);
         information.add("Plugins");
         information.add(sep);
 
         Sponge.getPluginManager().getPlugins().forEach(x -> information.add(x.getName() + " (" + x.getId() + ") version " + x.getVersion().orElse("unknown")));
+
+        information.add(sep);
+        information.add("Registered Commands");
+        information.add(sep);
+
+        final CommandManager manager = Sponge.getCommandManager();
+        manager.getPrimaryAliases().stream().sorted().forEachOrdered(x -> {
+            Optional<? extends CommandMapping> ocm = manager.get(x);
+            if (ocm.isPresent()) {
+                Optional<PluginContainer> optionalPC = manager.getOwner(ocm.get());
+                if (optionalPC.isPresent()) {
+                    PluginContainer container = optionalPC.get();
+                    information.add("/" + x + " - " + container.getName() + " (" + container.getId() + ") version " + container.getVersion().orElse("unknown"));
+                } else {
+                    information.add("/" + x + " - unknown (plugin container not present)");
+                }
+            } else {
+                information.add("/" + x + " - unknown (mapping not present)");
+            }
+        });
 
         information.add(sep);
         information.add("Nucleus: Enabled Modules");

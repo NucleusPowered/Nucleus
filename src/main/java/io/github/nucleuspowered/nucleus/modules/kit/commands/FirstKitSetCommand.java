@@ -27,7 +27,7 @@ import javax.inject.Inject;
 @NoCost
 @NoCooldown
 @NoWarmup
-@RegisterCommand(value = "set", subcommandOf = FirstKitCommand.class)
+@RegisterCommand(value = {"set", "updateFromInventory"}, subcommandOf = FirstKitCommand.class)
 public class FirstKitSetCommand extends io.github.nucleuspowered.nucleus.internal.command.AbstractCommand<Player> {
 
     @Inject

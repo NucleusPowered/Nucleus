@@ -10,6 +10,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.NoCost;
 import io.github.nucleuspowered.nucleus.internal.annotations.NoPermissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.NoWarmup;
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
+import io.github.nucleuspowered.nucleus.internal.annotations.RequireMixinPlugin;
 import io.github.nucleuspowered.nucleus.internal.annotations.Since;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
@@ -67,6 +68,9 @@ public class DocGenCache {
         cmd.setCost(!cac.isAnnotationPresent(NoCost.class));
         cmd.setWarmup(!cac.isAnnotationPresent(NoWarmup.class));
         cmd.setSince(cac.getAnnotation(Since.class));
+
+        RequireMixinPlugin rmp = cac.getAnnotation(RequireMixinPlugin.class);
+        cmd.setRequiresMixin(rmp != null && rmp.document() && rmp.value() == RequireMixinPlugin.MixinLoad.MIXIN_ONLY);
 
         String desc = abstractCommand.getDescription();
         if (!desc.contains(" ")) {

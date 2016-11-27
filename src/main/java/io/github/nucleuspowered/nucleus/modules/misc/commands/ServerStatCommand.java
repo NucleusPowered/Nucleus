@@ -79,7 +79,12 @@ public class ServerStatCommand extends AbstractCommand<CommandSource> {
             int loadedChunks = Iterables.size(world.getLoadedChunks());
             messages.add(notQuiteEmpty);
             messages.add(plugin.getMessageProvider().getTextMessageWithFormat("command.serverstat.world.title", world.getName()));
-            messages.add(plugin.getMessageProvider().getTextMessageWithFormat("command.serverstat.world.info", world.getDimension().getName(), String.valueOf(numOfEntities), String.valueOf(loadedChunks)));
+            messages.add(plugin.getMessageProvider().getTextMessageWithFormat(
+                    "command.serverstat.world.info",
+                    world.getDimension().getType().getName(),
+                    world.getDimension().getGeneratorType().getName(),
+                    String.valueOf(numOfEntities),
+                    String.valueOf(loadedChunks)));
         }
 
         PaginationList.Builder plb = Sponge.getServiceManager().provideUnchecked(PaginationService.class).builder()

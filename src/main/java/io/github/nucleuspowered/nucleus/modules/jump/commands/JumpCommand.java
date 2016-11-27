@@ -32,7 +32,7 @@ public class JumpCommand extends io.github.nucleuspowered.nucleus.internal.comma
     // the initial contribution.
     @Override
     public CommandResult executeCommand(Player player, CommandContext args) throws Exception {
-        BlockRay<World> playerBlockRay = BlockRay.from(player).blockLimit(jca.getNode().getMaxJump()).build();
+        BlockRay<World> playerBlockRay = BlockRay.from(player).distanceLimit(jca.getNode().getMaxJump()).build();
 
         BlockRayHit<World> finalHitRay = null;
 

@@ -10,6 +10,7 @@ import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
+import io.github.nucleuspowered.nucleus.internal.MixinConfigProxy;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import uk.co.drnaylor.quickstart.modulecontainers.DiscoveryModuleContainer;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public abstract class Nucleus {
 
@@ -66,6 +68,8 @@ public abstract class Nucleus {
     public abstract MessageProvider getMessageProvider();
 
     public abstract MessageProvider getCommandMessageProvider();
+
+    public abstract Optional<MixinConfigProxy> getMixinConfigIfAvailable();
 
     public abstract NucleusTeleportHandler getTeleportHandler();
 

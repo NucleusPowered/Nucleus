@@ -11,10 +11,8 @@ import com.google.common.collect.Sets;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.service.permission.option.OptionSubject;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.HoverAction;
 import org.spongepowered.api.text.action.TextActions;
@@ -23,6 +21,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.serializer.TextSerializers;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.World;
 
 import java.net.MalformedURLException;
@@ -368,8 +367,8 @@ public class ChatUtil {
 
     private World getWorld(CommandSource p) {
         World world;
-        if (p instanceof LocatedSource) {
-            world = ((LocatedSource) p).getWorld();
+        if (p instanceof Locatable) {
+            world = ((Locatable) p).getWorld();
         } else {
             world = Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorldName()).get();
         }
@@ -379,12 +378,9 @@ public class ChatUtil {
 
     private Text getTextFromOption(CommandSource cs, String option) {
         if (cs instanceof Player) {
-            Optional<OptionSubject> oos = Util.getSubject((Player)cs);
-            if (oos.isPresent()) {
-                Optional<String> optionString = oos.get().getOption(option);
-                if (optionString.isPresent()) {
-                    return TextSerializers.FORMATTING_CODE.deserialize(optionString.get());
-                }
+            Optional<String> os = Util.getOptionFromSubject((Player)cs, option);
+            if (os.isPresent() && !os.get().isEmpty()) {
+                return TextSerializers.FORMATTING_CODE.deserialize(os.get());
             }
         }
 

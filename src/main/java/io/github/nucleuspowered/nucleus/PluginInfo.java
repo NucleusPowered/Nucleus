@@ -22,6 +22,8 @@ public final class PluginInfo {
     public static final String VERSION = "@version@";
     public static final String GIT_HASH = "@gitHash@";
 
+    public static final String MIXIN_VERSION = "@mixinversion@";
+
     // Preparing for 4.0.0 SpongeAPI
     public static final String DESCRIPTION = "@description@";
     public static final String URL = "@url@";

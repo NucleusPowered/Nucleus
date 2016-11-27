@@ -14,20 +14,22 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
+import org.spongepowered.api.item.inventory.property.InventoryDimension;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
 import org.spongepowered.api.item.inventory.type.GridInventory;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.service.permission.Subject;
-import org.spongepowered.api.service.permission.option.OptionSubject;
 import org.spongepowered.api.text.translation.Translatable;
 import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.util.Tristate;
@@ -204,11 +206,6 @@ public class Util {
         }
     }
 
-    public static Optional<OptionSubject> getSubject(User player) {
-        Subject subject = player.getContainingCollection().get(player.getIdentifier());
-        return subject instanceof OptionSubject ? Optional.of((OptionSubject) subject) : Optional.empty();
-    }
-
     public static boolean isFirstPlay(Player player) {
         Instant firstPlayed = player.getJoinData().firstPlayed().get();
         Instant lastPlayed = player.getJoinData().lastPlayed().get();
@@ -219,30 +216,24 @@ public class Util {
     }
 
     /**
-     * Utility method for getting the first available option from an {@link OptionSubject}
+     * Utility method for getting the first available option from an {@link Subject}
      *
      * @param player The {@link User} to get the subject from.
      * @param options The option keys to check.
      * @return An {@link Optional} that might contain a value.
      */
     public static Optional<String> getOptionFromSubject(User player, String... options) {
-        Optional<OptionSubject> optionSubjectOptional = getSubject(player);
-        if (!optionSubjectOptional.isPresent()) {
-            return Optional.empty();
-        }
-
-        OptionSubject optionSubject = optionSubjectOptional.get();
         for (String option : options) {
             String o = option.toLowerCase();
 
             // Option for context.
-            Optional<String> os = optionSubject.getOption(player.getActiveContexts(), o);
+            Optional<String> os = player.getOption(player.getActiveContexts(), o);
             if (os.isPresent()) {
                 return os;
             }
 
             // General option
-            os = optionSubject.getOption(o);
+            os = player.getOption(o);
             if (os.isPresent()) {
                 return os;
             }
@@ -398,10 +389,14 @@ public class Util {
         return plb;
     }
 
+    public static Inventory.Builder getKitInventoryBuilder() {
+        return Inventory.builder().of(InventoryArchetypes.CHEST).property(InventoryDimension.PROPERTY_NAM, new InventoryDimension(9, 4));
+    }
+
     public static Optional<CatalogType> getTypeFromItemInHand(Player src) {
         // If player, get the item in hand, otherwise, we can't continue.
-        if (src.getItemInHand().isPresent()) {
-            return Optional.of(getTypeFromItem(src.getItemInHand().get()));
+        if (src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
+            return Optional.of(getTypeFromItem(src.getItemInHand(HandTypes.MAIN_HAND).get()));
         } else {
             return Optional.empty();
         }

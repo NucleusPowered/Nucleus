@@ -13,6 +13,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -36,16 +37,16 @@ public class ItemNameSetCommand extends io.github.nucleuspowered.nucleus.interna
 
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
-        if (!src.getItemInHand().isPresent()) {
+        if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             src.sendMessage(provider.getTextMessageWithFormat("command.itemname.set.noitem"));
             return CommandResult.empty();
         }
 
-        ItemStack stack = src.getItemInHand().get();
+        ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).get();
         Text name = TextSerializers.FORMATTING_CODE.deserialize(args.<String>getOne(nameKey).get());
 
         if (stack.offer(Keys.DISPLAY_NAME, name).isSuccessful()) {
-            src.setItemInHand(stack);
+            src.setItemInHand(HandTypes.MAIN_HAND, stack);
 
             src.sendMessage(provider.getTextMessageWithFormat("command.itemname.set.success"));
             return CommandResult.success();

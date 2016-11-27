@@ -14,6 +14,7 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 
@@ -35,8 +36,7 @@ public class SellCommand extends io.github.nucleuspowered.nucleus.internal.comma
     @Override
     public CommandResult executeCommand(final Player src, CommandContext args) throws Exception {
         // Get the item in the hand.
-        ItemStack is = src.getItemInHand().orElseThrow(() -> new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.generalerror.handempty")));
-
+        ItemStack is = src.getItemInHand(HandTypes.MAIN_HAND).orElseThrow(() -> new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.generalerror.handempty")));
         String id;
         Optional<BlockState> blockState = is.get(Keys.ITEM_BLOCKSTATE);
         if (blockState.isPresent()) {
@@ -56,7 +56,7 @@ public class SellCommand extends io.github.nucleuspowered.nucleus.internal.comma
         final int amt = is.getQuantity();
         final int overallCost = sellPrice * amt;
         if (econHelper.depositInPlayer(src, overallCost, false)) {
-            src.setItemInHand(null);
+            src.setItemInHand(HandTypes.MAIN_HAND, null);
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.itemsell.summary", String.valueOf(amt), is.getTranslation().get(), econHelper.getCurrencySymbol(overallCost)));
             return CommandResult.success();
         }

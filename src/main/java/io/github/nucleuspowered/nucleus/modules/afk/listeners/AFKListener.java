@@ -14,7 +14,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.action.InteractEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
-import org.spongepowered.api.event.entity.DisplaceEntityEvent;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.message.MessageChannelEvent;
@@ -45,7 +45,7 @@ public class AFKListener extends ListenerBase {
     }
 
     @Listener(order = Order.LAST)
-    public void onPlayerMove(final DisplaceEntityEvent event, @Root Player player) {
+    public void onPlayerMove(final MoveEntityEvent event, @Root Player player) {
         handler.stageUserActivityUpdate(player);
     }
 

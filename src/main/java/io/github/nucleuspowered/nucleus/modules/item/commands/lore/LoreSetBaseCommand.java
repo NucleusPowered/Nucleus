@@ -12,6 +12,7 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.item.LoreData;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -33,12 +34,12 @@ abstract class LoreSetBaseCommand extends io.github.nucleuspowered.nucleus.inter
     }
 
     CommandResult setLore(Player src, String message, boolean replace) {
-        if (!src.getItemInHand().isPresent()) {
+        if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.lore.set.noitem"));
             return CommandResult.empty();
         }
 
-        ItemStack stack = src.getItemInHand().get();
+        ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).get();
         LoreData loreData = stack.getOrCreate(LoreData.class).get();
 
         Text getLore = TextSerializers.FORMATTING_CODE.deserialize(message);
@@ -52,7 +53,7 @@ abstract class LoreSetBaseCommand extends io.github.nucleuspowered.nucleus.inter
         }
 
         if (stack.offer(Keys.ITEM_LORE, loreList).isSuccessful()) {
-            src.setItemInHand(stack);
+            src.setItemInHand(HandTypes.MAIN_HAND, stack);
 
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.lore.set.success"));
             return CommandResult.success();

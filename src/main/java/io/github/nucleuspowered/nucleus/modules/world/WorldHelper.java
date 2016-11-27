@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.LoggerWrapper;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
+import io.github.nucleuspowered.nucleus.modules.world.commands.border.gen.EnhancedGeneration;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
@@ -26,6 +27,16 @@ public class WorldHelper {
     public boolean isPregenRunningForWorld(UUID uuid) {
         cleanup();
         return pregen.containsKey(uuid);
+    }
+
+    public boolean addPregenForWorld(World world, EnhancedGeneration.NucleusChunkPreGenerator preGenerator) {
+        cleanup();
+        if (!isPregenRunningForWorld(world.getUniqueId())) {
+            pregen.put(world.getUniqueId(), Sponge.getScheduler().createTaskBuilder().intervalTicks(4).execute(preGenerator).submit(plugin));
+            return true;
+        }
+
+        return false;
     }
 
     public boolean startPregenningForWorld(World world) {

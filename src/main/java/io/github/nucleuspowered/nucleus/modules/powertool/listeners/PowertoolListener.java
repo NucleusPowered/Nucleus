@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.powertool.commands.PowertoolCommand;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.action.InteractEvent;
@@ -40,12 +41,12 @@ public class PowertoolListener extends ListenerBase {
     @Listener
     public void onUserInteract(final InteractEvent event, @Root Player player) {
         // No item in hand or no permission -> no powertool.
-        if (!getPermissionUtil().testBase(player) || !player.getItemInHand().isPresent()) {
+        if (!getPermissionUtil().testBase(player) || !player.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             return;
         }
 
         // Get the item and the user.
-        ItemType item = player.getItemInHand().get().getItem();
+        ItemType item = player.getItemInHand(HandTypes.MAIN_HAND).get().getItem();
         UserService user;
         try {
             user = loader.get(player).get();

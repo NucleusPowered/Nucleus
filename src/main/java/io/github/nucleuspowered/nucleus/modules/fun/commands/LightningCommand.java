@@ -8,6 +8,7 @@ import io.github.nucleuspowered.nucleus.argumentparsers.NicknameArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.SelectorWrapperArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.command.CommandResult;
@@ -73,7 +74,7 @@ public class LightningCommand extends io.github.nucleuspowered.nucleus.internal.
             Player pl = (Player)src;
 
             // 100 is a good limit here.
-            BlockRay<World> playerBlockRay = BlockRay.from(pl).blockLimit(100).filter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
+            BlockRay<World> playerBlockRay = BlockRay.from(pl).distanceLimit(100).stopFilter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
             Optional<BlockRayHit<World>> obh = playerBlockRay.end();
             Location<World> lightningLocation;
             if (obh.isPresent()) {
@@ -95,14 +96,15 @@ public class LightningCommand extends io.github.nucleuspowered.nucleus.internal.
         return CommandResult.builder().successCount(successCount).build();
     }
 
-    private CommandResult spawnLightning(Location<World> location, CommandSource src, String successKey, String errorKey, String... replacements) {
+    private CommandResult spawnLightning(Location<World> location, CommandSource src, String successKey, String errorKey, String... replacements) throws ReturnMessageException {
         World world = location.getExtent();
-        Optional<Entity> bolt = world.createEntity(EntityTypes.LIGHTNING, location.getPosition());
+        Entity bolt = world.createEntity(EntityTypes.LIGHTNING, location.getPosition());
 
         Cause cause = Cause.of(
                 NamedCause.owner(SpawnCause.builder().type(SpawnTypes.PLUGIN).build()),
                 NamedCause.source(src));
-        if (bolt.isPresent() && world.spawnEntity(bolt.get(), cause)) {
+
+        if (world.spawnEntity(bolt, cause)) {
             if (successKey != null) {
                 src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat(successKey, replacements));
             }

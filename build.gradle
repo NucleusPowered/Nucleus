@@ -9,16 +9,18 @@ plugins {
     id "com.qixalite.spongestart" version "1.4.3"
 }
 
-ext.spongeapi = '4.1.0'
+ext.spongeapi = '5.0.0'
 description = 'The Ultimate Essentials Plugin.'
 ext.url = 'http://nucleuspowered.org'
 
 group 'io.github.nucleuspowered'
-version '0.15.0-4.1-SNAPSHOT'
+version '0.15.0-5.0'
 
+def mixinversion = '0.15.0-5.0'
 def qsmlDep = "uk.co.drnaylor:quickstart-moduleloader:0.4.0"
+def mixinDep = "io.github.nucleuspowered:NucleusMixins:" + mixinversion
 
-defaultTasks 'licenseFormat'
+defaultTasks 'licenseFormat build'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -30,6 +32,10 @@ repositories {
         url 'http://repo.spongepowered.org/maven'
     }
     maven {
+        name 'drnaylor-minecraft'
+        url 'http://repo.drnaylor.co.uk/artifactory/list/minecraft'
+    }
+    maven {
         name 'drnaylor'
         url 'http://repo.drnaylor.co.uk/artifactory/list/quickstart'
     }
@@ -39,8 +45,14 @@ repositories {
 }
 
 dependencies {
-    compile "org.spongepowered:spongeapi:4.1.0"
+    compile "org.spongepowered:spongeapi:5.0.0"
     compile qsmlDep
+    compile(mixinDep) {
+        exclude module: 'mixin'
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+
     compile "com.github.hsyyid:EssentialCmds:v8.1.7"
 
     testCompile "junit:junit:4.12"
@@ -80,6 +92,7 @@ blossom {
 
     replaceToken '@description@', project.description, location
     replaceToken '@url@', project.url, location
+    replaceToken '@mixinversion@', mixinversion, location
 }
 
 jar {

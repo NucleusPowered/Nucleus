@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.config.SafeTeleportConfig;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
@@ -34,9 +35,9 @@ import java.util.function.Predicate;
 public class NucleusTeleportHandler {
 
     // Note that for 1.10.2, use the Sponge TeleportHelper
-    public static final TeleportHelper TELEPORT_HELPER = new NucleusTeleportHelper();
+    public static final TeleportHelper TELEPORT_HELPER = Sponge.getGame().getTeleportHelper();
 
-    static final List<BlockType> unsafeBody = ImmutableList.of(
+    private static final List<BlockType> unsafeBody = ImmutableList.of(
         BlockTypes.AIR,
         BlockTypes.CACTUS,
         BlockTypes.FIRE,

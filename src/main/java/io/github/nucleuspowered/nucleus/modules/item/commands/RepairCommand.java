@@ -17,6 +17,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -50,16 +51,14 @@ public class RepairCommand extends io.github.nucleuspowered.nucleus.internal.com
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         Player pl = this.getUserFromArgs(Player.class, src, player, args);
-
-        if (pl.getItemInHand().isPresent()) {
-            ItemStack stack = pl.getItemInHand().get();
-
+        if (pl.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
+            ItemStack stack = pl.getItemInHand(HandTypes.MAIN_HAND).get();
             if (stack.get(DurabilityData.class).isPresent()) {
                 DurabilityData durabilityData = stack.get(DurabilityData.class).get();
                 DataTransactionResult transactionResult = stack.offer(Keys.ITEM_DURABILITY, durabilityData.durability().getMaxValue());
                 if (transactionResult.isSuccessful()) {
-                    pl.setItemInHand(stack);
-                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.repair.success", plugin.getNameUtil().getSerialisedName(pl)));
+                    pl.setItemInHand(HandTypes.MAIN_HAND, stack);
+                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.repair.success", pl.getName()));
                     return CommandResult.success();
                 } else {
                     src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.repair.error"));

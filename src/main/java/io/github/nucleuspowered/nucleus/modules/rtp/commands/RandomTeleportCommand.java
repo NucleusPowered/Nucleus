@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.rtp.commands;
 
 import com.flowpowered.math.vector.Vector3d;
+import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
@@ -112,13 +113,16 @@ public class RandomTeleportCommand extends io.github.nucleuspowered.nucleus.inte
             int x = RandomTeleportCommand.this.random.nextInt(diameter) - diameter/2;
             int z = RandomTeleportCommand.this.random.nextInt(diameter) - diameter/2;
 
+            // Load the chunk before continuing with /rtp. Sponge issue means we have to load the chunk first.
+            currentWorld.loadChunk(new Vector3i(x, 0, z), true);
+
             int y;
             if (rca.getNodeOrDefault().isMustSeeSky()) {
                 // From the x and z co-ordinates, scan down from the top to get the next block.
                 Optional<BlockRayHit<World>> blockRayHitOptional = BlockRay
                         .from(new Location<>(currentWorld, new Vector3d(x, Math.min(player.getLocation().getExtent().getBlockMax().getY() - 11, maxY), z)))
                         .to(new Vector3d(x, Math.min(player.getLocation().getExtent().getBlockMax().getY() - 11, minY), z))
-                        .filter(BlockRay.onlyAirFilter()).end();
+                        .stopFilter(BlockRay.onlyAirFilter()).end();
                 if (blockRayHitOptional.isPresent()) {
                     y = blockRayHitOptional.get().getBlockY();
                 } else {

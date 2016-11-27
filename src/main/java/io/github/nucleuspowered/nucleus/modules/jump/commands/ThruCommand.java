@@ -27,7 +27,7 @@ public class ThruCommand extends io.github.nucleuspowered.nucleus.internal.comma
     // the initial contribution.
     @Override
     public CommandResult executeCommand(Player player, CommandContext args) throws Exception {
-        BlockRay<World> playerBlockRay = BlockRay.from(player).blockLimit(jca.getNode().getMaxThru()).build();
+        BlockRay<World> playerBlockRay = BlockRay.from(player).distanceLimit(jca.getNode().getMaxThru()).build();
         World world = player.getWorld();
 
         // First, see if we get a wall.

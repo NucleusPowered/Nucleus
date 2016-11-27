@@ -21,6 +21,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -67,7 +68,7 @@ public class SetWorthCommand extends io.github.nucleuspowered.nucleus.internal.c
         if (catalogTypeOptional.isPresent()) {
             id = catalogTypeOptional.get().getId().toLowerCase();
         } else if (src instanceof Player) {
-            Optional<ItemStack> itemStack = ((Player) src).getItemInHand();
+            Optional<ItemStack> itemStack = ((Player) src).getItemInHand(HandTypes.MAIN_HAND);
             if (itemStack.isPresent()) {
                 ItemStack is = itemStack.get();
                 Optional<BlockState> blockStateOptional = is.get(Keys.ITEM_BLOCKSTATE);

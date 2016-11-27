@@ -57,7 +57,7 @@ public class TopCommand extends AbstractCommand<CommandSource> {
         double x = location.getX();
         double z = location.getZ();
         Location<World> start = new Location<>(location.getExtent(), x, location.getExtent().getBlockMax().getY(), z);
-        BlockRayHit<World> end = BlockRay.from(start).filter(BlockRay.onlyAirFilter())
+        BlockRayHit<World> end = BlockRay.from(start).stopFilter(BlockRay.onlyAirFilter())
             .to(playerToTeleport.getLocation().getPosition().sub(0, 1, 0)).end()
             .orElseThrow(() -> new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.top.nothingfound")));
 

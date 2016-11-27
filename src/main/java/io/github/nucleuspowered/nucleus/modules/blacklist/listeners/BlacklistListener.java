@@ -20,6 +20,8 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.type.HandType;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -31,6 +33,7 @@ import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.translation.Translatable;
 
@@ -73,15 +76,14 @@ public class BlacklistListener extends ListenerBase {
     @Listener
     public void onPlayerChangeItem(ChangeInventoryEvent event, @Root Player player) {
         if (onTransaction(ItemStackSnapshot.class, player, event.getTransactions(), Transaction::getFinal, itemId, null, confiscateRoot, possess, BlacklistNode::isInventory)) {
-            if (player.getItemInHand().isPresent() && itemDataService.getAllBlacklistedItemsByCatalogType().containsKey(player.getItemInHand().get().getItem())) {
-                player.setItemInHand(null);
-            }
+            player.getItemInHand(HandTypes.MAIN_HAND).ifPresent(x -> checkHand(HandTypes.MAIN_HAND, player, x));
+            player.getItemInHand(HandTypes.OFF_HAND).ifPresent(x -> checkHand(HandTypes.OFF_HAND, player, x));
         }
     }
 
     @Listener
     public void onPlayerUseItem(UseItemStackEvent event, @Root Player player) {
-        event.setCancelled(onTransaction(ItemStackSnapshot.class, player, event.getItemStackInUse(), Transaction::getOriginal, itemId, null, useRoot, use, BlacklistNode::isUse));
+        onTransaction(ItemStackSnapshot.class, player, new Transaction<>(event.getItemStackInUse(), event.getItemStackInUse()), Transaction::getOriginal, itemId, null, useRoot, use, BlacklistNode::isUse);
     }
 
     @Listener
@@ -201,5 +203,11 @@ public class BlacklistListener extends ListenerBase {
         mp.put(environment, new PermissionInformation(plugin.getMessageProvider().getMessageWithFormat("permission.blacklist.bypassenvironment"), SuggestedLevel.ADMIN));
         mp.put(possess, new PermissionInformation(plugin.getMessageProvider().getMessageWithFormat("permission.blacklist.bypasspossess"), SuggestedLevel.ADMIN));
         return mp;
+    }
+
+    private void checkHand(HandType type, Player player, ItemStack item) {
+        if (itemDataService.getDataForItem(item.getItem().getId()).getBlacklist().isInventory()) {
+            player.setItemInHand(type, null);
+        }
     }
 }

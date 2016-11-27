@@ -24,6 +24,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.entity.living.player.Player;
@@ -73,8 +74,8 @@ public class ItemInfoCommand extends io.github.nucleuspowered.nucleus.internal.c
                 it = bs.getType().getItem().orElseThrow(() -> new CommandException(plugin.getMessageProvider().getTextMessageWithFormat("command.iteminfo.invalidblockstate"))).getTemplate().createStack();
                 it.offer(Keys.ITEM_BLOCKSTATE, bs);
             }
-        } else if (player.getItemInHand().isPresent()) {
-            it = player.getItemInHand().get();
+        } else if (player.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
+            it = player.getItemInHand(HandTypes.MAIN_HAND).get();
         } else {
             player.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.iteminfo.none"));
             return CommandResult.empty();

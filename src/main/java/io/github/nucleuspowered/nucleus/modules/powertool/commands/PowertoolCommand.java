@@ -18,6 +18,7 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -50,7 +51,7 @@ public class PowertoolCommand extends io.github.nucleuspowered.nucleus.internal.
 
     @Override
     public CommandResult executeCommand(Player src, CommandContext args) throws Exception {
-        Optional<ItemStack> itemStack = src.getItemInHand();
+        Optional<ItemStack> itemStack = src.getItemInHand(HandTypes.MAIN_HAND);
         if (!itemStack.isPresent()) {
             src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.powertool.noitem"));
             return CommandResult.empty();

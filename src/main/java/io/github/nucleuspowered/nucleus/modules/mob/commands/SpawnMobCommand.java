@@ -100,14 +100,12 @@ public class SpawnMobCommand extends io.github.nucleuspowered.nucleus.internal.c
                 NamedCause.owner(SpawnCause.builder().type(SpawnTypes.PLUGIN).build()),
                 NamedCause.source(pl));
         do {
-            Optional<Entity> e = w.createEntity(et, loc.getPosition());
-            if (e.isPresent()) {
-                if (!w.spawnEntity(e.get(), cause)) {
-                    throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.spawnmob.fail", et.getTranslation().get()));
-                }
-
-                i++;
+            Entity e = w.createEntity(et, loc.getPosition());
+            if (!w.spawnEntity(e, cause)) {
+                throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.spawnmob.fail", et.getTranslation().get()));
             }
+
+            i++;
         } while (i < Math.min(amount, mobConfigAdapter.getNodeOrDefault().getMaxMobsToSpawn()));
 
         if (amount > mobConfigAdapter.getNodeOrDefault().getMaxMobsToSpawn()) {

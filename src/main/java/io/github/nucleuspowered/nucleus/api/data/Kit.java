@@ -81,15 +81,25 @@ public interface Kit {
     /**
      * Convenience method for updating the kit with the contents of the player's inventory.
      *
-     * @param player The player to get the kit from.
+     * @param inventory The inventory to get the kit from.
      * @return This {@link Kit} for chaining.
      */
-    default Kit updateKitInventory(Player player) {
-        List<Inventory> slots = Lists.newArrayList(Util.getStandardInventory(player).slots());
+    default Kit updateKitInventory(Inventory inventory) {
+        List<Inventory> slots = Lists.newArrayList(inventory.slots());
         final List<ItemStackSnapshot> stacks = slots.stream().filter(x -> x.peek().isPresent()).map(x -> x.peek().get().createSnapshot()).collect(Collectors.toList());
 
         // Add all the stacks into the kit list.
         setStacks(stacks);
         return this;
+    }
+
+    /**
+     * Convenience method for updating the kit with the contents of the player's inventory.
+     *
+     * @param player The player to get the kit from.
+     * @return This {@link Kit} for chaining.
+     */
+    default Kit updateKitInventory(Player player) {
+        return updateKitInventory(Util.getStandardInventory(player));
     }
 }

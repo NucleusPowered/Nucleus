@@ -26,7 +26,7 @@ import org.spongepowered.api.world.DimensionTypes;
 import org.spongepowered.api.world.GeneratorType;
 import org.spongepowered.api.world.GeneratorTypes;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.WorldCreationSettings;
+import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.difficulty.Difficulties;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.gen.WorldGeneratorModifier;
@@ -83,7 +83,7 @@ public class CreateWorldCommand extends io.github.nucleuspowered.nucleus.interna
             gamemodeInput.getName(),
             difficultyInput.getName()));
 
-        WorldCreationSettings.Builder worldSettingsBuilder = WorldCreationSettings.builder().name(nameInput).enabled(true)
+            WorldArchetype.Builder worldSettingsBuilder = WorldArchetype.builder().enabled(true)
                 .loadsOnStartup(true).keepsSpawnLoaded(true).dimension(dimensionInput).generator(generatorInput).gameMode(gamemodeInput);
         if (!modifiers.isEmpty()) {
             worldSettingsBuilder.generatorModifiers(modifiers.toArray(new WorldGeneratorModifier[modifiers.size()]));
@@ -93,21 +93,17 @@ public class CreateWorldCommand extends io.github.nucleuspowered.nucleus.interna
             worldSettingsBuilder.seed(seedInput.get());
         }
 
-        Optional<WorldProperties> worldProperties = Sponge.getGame().getServer().createWorldProperties(worldSettingsBuilder.build());
+        WorldArchetype wa = worldSettingsBuilder.build(nameInput.toLowerCase(), nameInput);
+        WorldProperties worldProperties = Sponge.getGame().getServer().createWorldProperties(nameInput, wa);
+        Optional<World> world = Sponge.getGame().getServer().loadWorld(worldProperties);
 
-        if (worldProperties.isPresent()) {
-            Optional<World> world = Sponge.getGame().getServer().loadWorld(worldProperties.get());
-
-            if (world.isPresent()) {
-                world.get().getProperties().setDifficulty(difficultyInput);
-                src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.success", nameInput));
-                return CommandResult.success();
-            } else {
-                throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.worldfailedtoload", nameInput));
-            }
+        if (world.isPresent()) {
+            world.get().getProperties().setDifficulty(difficultyInput);
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.success", nameInput));
+            return CommandResult.success();
+        } else {
+            throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.worldfailedtoload", nameInput));
         }
-
-        throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.fail", nameInput));
     }
 
     static String modifierString(Collection<WorldGeneratorModifier> cw) {

@@ -64,7 +64,7 @@ public class EntityInfoCommand extends AbstractCommand<Player> {
             .filter(x -> x.getLocation().getBlockPosition().distanceSquared(playerPos) < 121) // 11 blocks.
             .collect(Collectors.toList());
 
-        BlockRay<World> bl = BlockRay.from(player).blockLimit(10).filter(BlockRay.continueAfterFilter(x -> {
+        BlockRay<World> bl = BlockRay.from(player).distanceLimit(10).stopFilter(BlockRay.continueAfterFilter(x -> {
             Vector3i pt1 = x.getLocation().getBlockPosition();
             Vector3i pt2 = pt1.add(0, 1, 0);
             return entities.stream()

@@ -18,8 +18,8 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.weather.Weather;
@@ -57,8 +57,8 @@ public class WeatherCommand extends io.github.nucleuspowered.nucleus.internal.co
             w = Sponge.getServer().getWorld(wp.getUniqueId()).get();
         } else {
             // Actually, we just care about where we are.
-            if (src instanceof LocatedSource) {
-                w = ((LocatedSource) src).getWorld();
+            if (src instanceof Locatable) {
+                w = ((Locatable) src).getWorld();
             } else {
                 // As supreme overlord of the worlds... you have to specify one.
                 src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.specifyworld"));

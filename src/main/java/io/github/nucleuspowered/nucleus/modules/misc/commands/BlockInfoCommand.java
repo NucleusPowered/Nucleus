@@ -50,7 +50,7 @@ public class BlockInfoCommand extends io.github.nucleuspowered.nucleus.internal.
 
     @Override
     public CommandResult executeCommand(Player player, CommandContext args) throws Exception {
-        BlockRay<World> bl = BlockRay.from(player).blockLimit(10).filter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
+        BlockRay<World> bl = BlockRay.from(player).distanceLimit(10).stopFilter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
         Optional<BlockRayHit<World>> ob = bl.end();
 
         // If the last block is not air...

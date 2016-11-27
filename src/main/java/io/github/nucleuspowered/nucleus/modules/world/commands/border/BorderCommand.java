@@ -17,7 +17,6 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.source.ConsoleSource;
-import org.spongepowered.api.command.source.LocatedSource;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
@@ -25,7 +24,6 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.List;
-import java.util.Optional;
 
 @Permissions(prefix = "world")
 @RegisterCommand(value = {"border"}, subcommandOf = WorldCommand.class)

@@ -23,10 +23,8 @@ import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.entity.DismountEntityEvent;
-import org.spongepowered.api.event.entity.DisplaceEntityEvent;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
-import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.world.World;
 
@@ -90,7 +88,7 @@ public class FlyListener extends ListenerBase {
 
     // Only fire if there is no cancellation at the end.
     @Listener(order = Order.LAST)
-    public void onPlayerTransferWorld(DisplaceEntityEvent.Teleport event,
+    public void onPlayerTransferWorld(MoveEntityEvent.Teleport event,
                                       @Getter("getTargetEntity") Entity target,
                                       @Getter("getFromTransform") Transform<World> twfrom,
                                       @Getter("getToTransform") Transform<World> twto) {
@@ -133,23 +131,7 @@ public class FlyListener extends ListenerBase {
         }
     }
 
-    @Listener
-    public void onPlayerDismount(DismountEntityEvent event, @Root Player player) {
-        // If I'm right, this will work around Pixelmon when dismounting pokemon.
-        if (shouldIgnoreFromGameMode(player)) {
-            return;
-        }
-
-        try {
-            ucl.get(player).ifPresent(x -> player.offer(Keys.CAN_FLY, x.isFlyingSafe()));
-        } catch (Exception e) {
-            if (cca.getNodeOrDefault().isDebugmode()) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private boolean shouldIgnoreFromGameMode(Player player) {
+    static boolean shouldIgnoreFromGameMode(Player player) {
         GameMode gm = player.get(Keys.GAME_MODE).orElse(GameModes.NOT_SET);
         return (gm.equals(GameModes.CREATIVE) || gm.equals(GameModes.SPECTATOR));
     }
