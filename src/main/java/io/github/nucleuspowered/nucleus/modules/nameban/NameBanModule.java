@@ -11,7 +11,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 @ModuleData(id = "nameban", name = "Name Banning")
 public class NameBanModule extends ConfigurableModule<NameBanConfigAdapter> {
 
-    @Override public NameBanConfigAdapter getAdapter() {
+    @Override public NameBanConfigAdapter createAdapter() {
         return new NameBanConfigAdapter();
     }
 }

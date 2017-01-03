@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.api.data.interfaces.EndTimestamp;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.util.Action;
+import io.github.nucleuspowered.nucleus.util.ThrownFunction;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
@@ -245,25 +246,24 @@ public class Util {
     }
 
     public static Optional<Double> getDoubleOptionFromSubject(Subject player, String... options) {
-        try {
-            Optional<String> optional = getOptionFromSubject(player, options);
-            if (optional.isPresent()) {
-                return Optional.ofNullable(Double.parseDouble(optional.get()));
-            }
-        } catch (NumberFormatException e) {
-            // ignored
-        }
-
-        return Optional.empty();
+        return getTypedObjectFromSubject(Double::parseDouble, player, options);
     }
 
-    public static Optional<Integer> getIntOptionFromSubject(Subject player, String... options) {
+    public static Optional<Long> getPositiveLongOptionFromSubject(Subject player, String... options) {
+        return getTypedObjectFromSubject(Long::parseUnsignedLong, player, options);
+    }
+
+    public static Optional<Integer> getPositiveIntOptionFromSubject(Subject player, String... options) {
+        return getTypedObjectFromSubject(Integer::parseUnsignedInt, player, options);
+    }
+
+    public static <T> Optional<T> getTypedObjectFromSubject(ThrownFunction<String, T, Exception> conversion, Subject player, String... options) {
         try {
             Optional<String> optional = getOptionFromSubject(player, options);
             if (optional.isPresent()) {
-                return Optional.ofNullable(Integer.parseUnsignedInt(optional.get()));
+                return Optional.ofNullable(conversion.accept(optional.get()));
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             // ignored
         }
 

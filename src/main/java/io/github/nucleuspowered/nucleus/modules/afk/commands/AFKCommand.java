@@ -5,7 +5,13 @@
 package io.github.nucleuspowered.nucleus.modules.afk.commands;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.internal.annotations.*;
+import io.github.nucleuspowered.nucleus.internal.annotations.NoCooldown;
+import io.github.nucleuspowered.nucleus.internal.annotations.NoCost;
+import io.github.nucleuspowered.nucleus.internal.annotations.NoWarmup;
+import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
+import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
+import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.afk.handlers.AFKHandler;
@@ -45,9 +51,9 @@ public class AFKCommand extends io.github.nucleuspowered.nucleus.internal.comman
         boolean isAFK = afkHandler.isAfk(src);
 
         if (isAFK) {
-            afkHandler.updateUserActivity(src);
-        } else {
-            afkHandler.setAsAfk(src);
+            afkHandler.stageUserActivityUpdate(src);
+        } else if (!afkHandler.setAfk(src)) {
+            throw new ReturnMessageException(plugin.getMessageProvider().getTextMessageWithFormat("command.afk.notset"));
         }
 
         return CommandResult.success();

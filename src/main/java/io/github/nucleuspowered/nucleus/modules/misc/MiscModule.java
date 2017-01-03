@@ -19,7 +19,7 @@ public class MiscModule extends ConfigurableModule<MiscConfigAdapter> {
     public final static String ID = "misc";
 
     @Override
-    public MiscConfigAdapter getAdapter() {
+    public MiscConfigAdapter createAdapter() {
         return new MiscConfigAdapter();
     }
 

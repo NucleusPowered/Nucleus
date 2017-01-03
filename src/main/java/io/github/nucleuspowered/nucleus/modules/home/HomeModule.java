@@ -15,7 +15,7 @@ public class HomeModule extends ConfigurableModule<HomeConfigAdapter> {
     public static final String DEFAULT_HOME_NAME = "home";
 
     @Override
-    public HomeConfigAdapter getAdapter() {
+    public HomeConfigAdapter createAdapter() {
         return new HomeConfigAdapter();
     }
 }

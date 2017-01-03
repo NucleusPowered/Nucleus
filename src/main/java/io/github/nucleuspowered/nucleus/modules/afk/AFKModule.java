@@ -13,7 +13,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class AFKModule extends ConfigurableModule<AFKConfigAdapter> {
 
     @Override
-    public AFKConfigAdapter getAdapter() {
+    public AFKConfigAdapter createAdapter() {
         return new AFKConfigAdapter();
     }
 
@@ -21,8 +21,6 @@ public class AFKModule extends ConfigurableModule<AFKConfigAdapter> {
     protected void performPreTasks() throws Exception {
         super.performPreTasks();
 
-        AFKHandler handler = new AFKHandler();
-        plugin.getInjector().injectMembers(handler);
-        serviceManager.registerService(AFKHandler.class, handler);
+        serviceManager.registerService(AFKHandler.class, new AFKHandler(plugin, getAdapter()));
     }
 }

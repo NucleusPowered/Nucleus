@@ -15,7 +15,7 @@ public class ChatModule extends ConfigurableModule<ChatConfigAdapter> {
     public final static String ID = "chat";
 
     @Override
-    public ChatConfigAdapter getAdapter() {
+    public ChatConfigAdapter createAdapter() {
         return new ChatConfigAdapter();
     }
 

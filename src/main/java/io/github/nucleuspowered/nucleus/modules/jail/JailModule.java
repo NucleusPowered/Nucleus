@@ -30,7 +30,7 @@ public class JailModule extends ConfigurableModule<JailConfigAdapter> {
     @Inject private InternalServiceManager serviceManager;
 
     @Override
-    public JailConfigAdapter getAdapter() {
+    public JailConfigAdapter createAdapter() {
         return new JailConfigAdapter();
     }
 

@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class AdminModule extends ConfigurableModule<AdminConfigAdapter> {
 
     @Override
-    public AdminConfigAdapter getAdapter() {
+    public AdminConfigAdapter createAdapter() {
         return new AdminConfigAdapter();
     }
 }

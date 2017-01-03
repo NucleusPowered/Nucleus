@@ -14,7 +14,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class CommandLoggerModule extends ConfigurableModule<CommandLoggerConfigAdapter> {
 
     @Override
-    public CommandLoggerConfigAdapter getAdapter() {
+    public CommandLoggerConfigAdapter createAdapter() {
         return new CommandLoggerConfigAdapter();
     }
 

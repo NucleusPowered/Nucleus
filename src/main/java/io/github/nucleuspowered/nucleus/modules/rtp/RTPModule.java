@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class RTPModule extends ConfigurableModule<RTPConfigAdapter> {
 
     @Override
-    public RTPConfigAdapter getAdapter() {
+    public RTPConfigAdapter createAdapter() {
         return new RTPConfigAdapter();
     }
 }

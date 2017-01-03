@@ -24,7 +24,7 @@ import java.util.Optional;
 public class BanModule extends ConfigurableModule<BanConfigAdapter> {
 
     @Override
-    public BanConfigAdapter getAdapter() {
+    public BanConfigAdapter createAdapter() {
         return new BanConfigAdapter();
     }
 

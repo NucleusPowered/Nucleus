@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class RulesModule extends ConfigurableModule<RulesConfigAdapter> {
 
     @Override
-    public RulesConfigAdapter getAdapter() {
+    public RulesConfigAdapter createAdapter() {
         return new RulesConfigAdapter();
     }
 }

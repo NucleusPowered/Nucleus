@@ -36,7 +36,7 @@ public class KitModule extends ConfigurableModule<KitConfigAdapter> {
     }
 
     @Override
-    public KitConfigAdapter getAdapter() {
+    public KitConfigAdapter createAdapter() {
         return new KitConfigAdapter();
     }
 }

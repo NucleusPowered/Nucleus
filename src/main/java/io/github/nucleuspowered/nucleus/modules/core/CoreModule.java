@@ -15,7 +15,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class CoreModule extends ConfigurableModule<CoreConfigAdapter> {
 
     @Override
-    public CoreConfigAdapter getAdapter() {
+    public CoreConfigAdapter createAdapter() {
         return new CoreConfigAdapter();
     }
 

@@ -11,7 +11,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 @ModuleData(id = "fly", name = "Fly")
 public class FlyModule extends ConfigurableModule<FlyConfigAdapter> {
     @Override
-    public FlyConfigAdapter getAdapter() {
+    public FlyConfigAdapter createAdapter() {
         return new FlyConfigAdapter();
     }
 }

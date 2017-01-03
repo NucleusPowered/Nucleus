@@ -14,7 +14,7 @@ public class ServerShopModule extends ConfigurableModule<ServerShopConfigAdapter
     public static final String ID = "server-shop";
 
     @Override
-    public ServerShopConfigAdapter getAdapter() {
+    public ServerShopConfigAdapter createAdapter() {
         return new ServerShopConfigAdapter();
     }
 }

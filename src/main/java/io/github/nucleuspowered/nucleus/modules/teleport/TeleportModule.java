@@ -13,7 +13,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class TeleportModule extends ConfigurableModule<TeleportConfigAdapter> {
 
     @Override
-    public TeleportConfigAdapter getAdapter() {
+    public TeleportConfigAdapter createAdapter() {
         return new TeleportConfigAdapter();
     }
 

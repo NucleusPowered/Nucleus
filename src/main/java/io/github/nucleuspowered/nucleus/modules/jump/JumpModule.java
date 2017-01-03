@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class JumpModule extends ConfigurableModule<JumpConfigAdapter> {
 
     @Override
-    public JumpConfigAdapter getAdapter() {
+    public JumpConfigAdapter createAdapter() {
         return new JumpConfigAdapter();
     }
 }

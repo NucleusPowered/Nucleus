@@ -739,7 +739,7 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
         }
 
         // Get the warmup time.
-        return Util.getIntOptionFromSubject(src, warmupKey)
+        return Util.getPositiveIntOptionFromSubject(src, warmupKey)
             .orElseGet(() -> plugin.getCommandsConfig().getCommandNode(configSection).getNode("warmup").getInt());
     }
 
@@ -815,7 +815,7 @@ public abstract class AbstractCommand<T extends CommandSource> implements Comman
     private void setCooldown(Player src) {
         if (!permissions.testCooldownExempt(src)) {
             // Get the cooldown time.
-            int cooldownTime = Util.getIntOptionFromSubject(src, cooldownKey).orElseGet(() -> plugin.getCommandsConfig().getCommandNode(configSection).getNode("cooldown").getInt());
+            int cooldownTime = Util.getPositiveIntOptionFromSubject(src, cooldownKey).orElseGet(() -> plugin.getCommandsConfig().getCommandNode(configSection).getNode("cooldown").getInt());
             if (cooldownTime > 0) {
                 // If there is a cooldown, add the cooldown to the list, with
                 // the end time as an Instant.

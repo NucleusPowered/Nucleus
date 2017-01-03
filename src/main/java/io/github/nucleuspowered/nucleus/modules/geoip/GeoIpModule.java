@@ -15,7 +15,7 @@ public class GeoIpModule extends ConfigurableModule<GeoIpConfigAdapter> {
 
     public static final String ID = "geo-ip";
 
-    @Override public GeoIpConfigAdapter getAdapter() {
+    @Override public GeoIpConfigAdapter createAdapter() {
         return new GeoIpConfigAdapter();
     }
 

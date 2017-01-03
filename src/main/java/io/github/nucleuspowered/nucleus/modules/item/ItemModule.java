@@ -11,7 +11,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 @ModuleData(id = "item", name = "Item")
 public class ItemModule extends ConfigurableModule<ItemConfigAdapter> {
 
-    @Override public ItemConfigAdapter getAdapter() {
+    @Override public ItemConfigAdapter createAdapter() {
         return new ItemConfigAdapter();
     }
 }

@@ -14,7 +14,7 @@ public class MobModule extends ConfigurableModule<MobConfigAdapter> {
     public final static String ID = "mob";
 
     @Override
-    public MobConfigAdapter getAdapter() {
+    public MobConfigAdapter createAdapter() {
         return new MobConfigAdapter();
     }
 }

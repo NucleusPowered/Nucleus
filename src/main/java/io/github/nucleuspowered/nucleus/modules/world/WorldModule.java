@@ -15,7 +15,7 @@ public class WorldModule extends ConfigurableModule<WorldConfigAdapter> {
 
     @Inject private Logger logger;
 
-    @Override public WorldConfigAdapter getAdapter() {
+    @Override public WorldConfigAdapter createAdapter() {
         return new WorldConfigAdapter();
     }
 

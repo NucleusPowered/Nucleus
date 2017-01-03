@@ -38,7 +38,7 @@ public class WarpModule extends ConfigurableModule<WarpConfigAdapter> {
     }
 
     @Override
-    public WarpConfigAdapter getAdapter() {
+    public WarpConfigAdapter createAdapter() {
         return new WarpConfigAdapter();
     }
 }

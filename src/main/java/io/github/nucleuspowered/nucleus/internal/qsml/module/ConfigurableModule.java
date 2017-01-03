@@ -18,16 +18,20 @@ public abstract class ConfigurableModule<A extends NucleusConfigAdapter<?>> exte
      *
      * @return The adapter.
      */
-    public abstract A getAdapter();
+    public abstract A createAdapter();
 
-    @Override
-    public final Optional<AbstractConfigAdapter<?>> getConfigAdapter() {
+    public final A getAdapter() {
         if (adapter == null) {
-            adapter = getAdapter();
+            adapter = createAdapter();
             plugin.getInjector().injectMembers(adapter);
         }
 
+        return adapter;
+    }
+
+    @Override
+    public final Optional<AbstractConfigAdapter<?>> getConfigAdapter() {
         // We need to use the right type...
-        return Optional.of(adapter);
+        return Optional.of(getAdapter());
     }
 }

@@ -29,7 +29,7 @@ public class MessageModule extends ConfigurableModule<MessageConfigAdapter> {
     @Inject private Game game;
 
     @Override
-    public MessageConfigAdapter getAdapter() {
+    public MessageConfigAdapter createAdapter() {
         return new MessageConfigAdapter();
     }
 
@@ -55,7 +55,7 @@ public class MessageModule extends ConfigurableModule<MessageConfigAdapter> {
                     mp.getMessageWithFormat("standard.yesno." + Boolean.toString(socialSpy).toLowerCase())));
 
             getConfigAdapter().ifPresent(x -> lt.add(
-                mp.getTextMessageWithFormat("seen.socialspylevel", String.valueOf(Util.getIntOptionFromSubject(user, MessageHandler.socialSpyOption).orElse(0)))
+                mp.getTextMessageWithFormat("seen.socialspylevel", String.valueOf(Util.getPositiveIntOptionFromSubject(user, MessageHandler.socialSpyOption).orElse(0)))
             ));
 
             return lt;

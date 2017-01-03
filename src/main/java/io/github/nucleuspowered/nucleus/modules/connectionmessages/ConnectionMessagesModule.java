@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class ConnectionMessagesModule extends ConfigurableModule<ConnectionMessagesConfigAdapter> {
 
     @Override
-    public ConnectionMessagesConfigAdapter getAdapter() {
+    public ConnectionMessagesConfigAdapter createAdapter() {
         return new ConnectionMessagesConfigAdapter();
     }
 }

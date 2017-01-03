@@ -14,7 +14,7 @@ public class ProtectionModule extends ConfigurableModule<ProtectionConfigAdapter
     public static final String ID = "protection";
 
     @Override
-    public ProtectionConfigAdapter getAdapter() {
+    public ProtectionConfigAdapter createAdapter() {
         return new ProtectionConfigAdapter();
     }
 }

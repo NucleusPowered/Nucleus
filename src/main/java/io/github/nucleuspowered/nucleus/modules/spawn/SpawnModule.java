@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class SpawnModule extends ConfigurableModule<SpawnConfigAdapter> {
 
     @Override
-    public SpawnConfigAdapter getAdapter() {
+    public SpawnConfigAdapter createAdapter() {
         return new SpawnConfigAdapter();
     }
 }

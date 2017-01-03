@@ -146,9 +146,9 @@ public class MessageHandler implements NucleusPrivateMessagingService {
             prefix = messageConfig.getMutedTag() + prefix;
         }
 
-        final int senderLevel = useLevels ? Util.getIntOptionFromSubject(sender, socialSpyOption)
+        final int senderLevel = useLevels ? Util.getPositiveIntOptionFromSubject(sender, socialSpyOption)
             .orElseGet(() -> sender instanceof Player ? 0 : serverLevel) : 0;
-        final int receiverLevel = useLevels ? Util.getIntOptionFromSubject(receiver, socialSpyOption)
+        final int receiverLevel = useLevels ? Util.getPositiveIntOptionFromSubject(receiver, socialSpyOption)
             .orElseGet(() -> receiver instanceof Player ? 0 : serverLevel) : 0;
 
         // Always if it's a player who does the sending, if player only is disabled in the config, to all.
@@ -167,7 +167,7 @@ public class MessageHandler implements NucleusPrivateMessagingService {
                             return true;
                         }
 
-                        int rLvl =  Util.getIntOptionFromSubject(x.get(), socialSpyOption).orElse(0);
+                        int rLvl =  Util.getPositiveIntOptionFromSubject(x.get(), socialSpyOption).orElse(0);
                         if (sameLevel) {
                             return rLvl >= senderLevel && rLvl >= receiverLevel;
                         }

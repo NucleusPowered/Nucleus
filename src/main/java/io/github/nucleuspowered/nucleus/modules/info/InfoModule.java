@@ -17,7 +17,7 @@ public class InfoModule extends ConfigurableModule<InfoConfigAdapter> {
     public static final String MOTD_KEY = "motd";
 
     @Override
-    public InfoConfigAdapter getAdapter() {
+    public InfoConfigAdapter createAdapter() {
         return new InfoConfigAdapter();
     }
 

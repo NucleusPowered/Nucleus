@@ -18,7 +18,7 @@ public class BackModule extends ConfigurableModule<BackConfigAdapter> {
     @Inject private Game game;
 
     @Override
-    public BackConfigAdapter getAdapter() {
+    public BackConfigAdapter createAdapter() {
         return new BackConfigAdapter();
     }
 

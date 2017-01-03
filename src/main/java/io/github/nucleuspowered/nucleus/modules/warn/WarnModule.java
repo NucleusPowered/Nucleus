@@ -24,7 +24,7 @@ public class WarnModule extends ConfigurableModule<WarnConfigAdapter> {
     @Inject private Logger logger;
 
     @Override
-    public WarnConfigAdapter getAdapter() {
+    public WarnConfigAdapter createAdapter() {
         return new WarnConfigAdapter();
     }
 

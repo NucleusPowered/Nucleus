@@ -14,7 +14,7 @@ public class StaffChatModule extends ConfigurableModule<StaffChatConfigAdapter> 
     static final String moduleID = "staff-chat";
 
     @Override
-    public StaffChatConfigAdapter getAdapter() {
+    public StaffChatConfigAdapter createAdapter() {
         return new StaffChatConfigAdapter();
     }
 

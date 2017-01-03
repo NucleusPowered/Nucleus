@@ -17,7 +17,7 @@ public class PlayerInfoModule extends ConfigurableModule<PlayerInfoConfigAdapter
     public static final String ID = "playerinfo";
 
     @Override
-    public PlayerInfoConfigAdapter getAdapter() {
+    public PlayerInfoConfigAdapter createAdapter() {
         return new PlayerInfoConfigAdapter();
     }
 

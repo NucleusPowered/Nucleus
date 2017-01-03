@@ -26,7 +26,7 @@ public class NoteModule extends ConfigurableModule<NoteConfigAdapter> {
     @Inject private Logger logger;
 
     @Override
-    public NoteConfigAdapter getAdapter() {
+    public NoteConfigAdapter createAdapter() {
         return new NoteConfigAdapter();
     }
 

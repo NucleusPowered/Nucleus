@@ -8,8 +8,9 @@ import io.github.nucleuspowered.nucleus.internal.TaskBase;
 import io.github.nucleuspowered.nucleus.modules.afk.handlers.AFKHandler;
 import org.spongepowered.api.scheduler.Task;
 
-import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 public class AFKTask extends TaskBase {
 
@@ -17,7 +18,7 @@ public class AFKTask extends TaskBase {
 
     @Override
     public void accept(Task task) {
-        handler.updateAfkStatus();
+        handler.onTick();
     }
 
     @Override
@@ -27,6 +28,6 @@ public class AFKTask extends TaskBase {
 
     @Override
     public TimePerRun interval() {
-        return new TimePerRun(2, TimeUnit.SECONDS);
+        return new TimePerRun(1, TimeUnit.SECONDS);
     }
 }

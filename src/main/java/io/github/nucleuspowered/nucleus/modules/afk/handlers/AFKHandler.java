@@ -6,209 +6,157 @@ package io.github.nucleuspowered.nucleus.modules.afk.handlers;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
+import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
-import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.modules.afk.commands.AFKCommand;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfig;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfigAdapter;
-import io.github.nucleuspowered.nucleus.util.Tuples;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.serializer.TextSerializers;
-import org.spongepowered.api.util.Identifiable;
-import org.spongepowered.api.util.Tuple;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.GuardedBy;
 
 public class AFKHandler {
 
-    @Inject private NucleusPlugin plugin;
-    @Inject private AFKConfigAdapter aca;
-    @Inject private PermissionRegistry permissionRegistry;
+    private final Map<UUID, AFKData> data = Maps.newHashMap();
+    private final AFKConfigAdapter afkConfigAdapter;
+    private final NucleusPlugin plugin;
+    private CommandPermissionHandler afkPermissionHandler;
+    private AFKConfig config;
 
-    @GuardedBy("setLock")
-    private final Set<Player> staged = Sets.newHashSet();
-    private final Map<UUID, Data> afkData = Maps.newHashMap();
+    @GuardedBy("lock")
+    private final Set<UUID> activity = Sets.newHashSet();
+    private final Object lock = new Object();
+
     private final String exempttoggle = "exempt.toggle";
     private final String exemptkick = "exempt.kick";
 
-    private final Object setLock = new Object();
+    private final String afkOption = "nucleus.afk.toggletime";
+    private final String afkKickOption = "nucleus.afk.kicktime";
 
-    private CommandPermissionHandler s = null;
+    public AFKHandler(NucleusPlugin plugin, AFKConfigAdapter afkConfigAdapter) {
+        this.plugin = plugin;
+        this.afkConfigAdapter = afkConfigAdapter;
+        plugin.registerReloadable(this::onReload);
+        onReload();
+    }
 
     public void stageUserActivityUpdate(Player player) {
         if (player.isOnline()) {
-            synchronized (setLock) {
-                staged.add(player);
+            stageUserActivityUpdate(player.getUniqueId());
+        }
+    }
+
+    public void stageUserActivityUpdate(UUID uuid) {
+        synchronized (lock) {
+            activity.add(uuid);
+        }
+    }
+
+    public void onTick() {
+        synchronized (lock) {
+            activity.forEach(u -> data.compute(u, ((uuid, afkData) -> afkData == null ? new AFKData(uuid) : updateActivity(uuid, afkData))));
+            activity.clear();
+        }
+
+        List<UUID> uuidList = Sponge.getServer().getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList());
+
+        // Remove all offline players.
+        Set<Map.Entry<UUID, AFKData>> entries = data.entrySet();
+        entries.removeIf(refactor -> !uuidList.contains(refactor.getKey()));
+        entries.stream().filter(x -> !x.getValue().cacheValid).forEach(x -> x.getValue().updateFromPermissions());
+
+        long now = System.currentTimeMillis();
+
+        // Check AFK status.
+        entries.stream().filter(x -> x.getValue().isKnownAfk && !x.getValue().willKick && x.getValue().timeToKick > 0).forEach(e -> {
+            if (now - e.getValue().lastActivityTime > e.getValue().timeToKick) {
+                // Kick them
+                e.getValue().willKick = true;
+                String message = config.getMessages().getKickMessage().trim();
+                if (message.isEmpty()) {
+                    message = plugin.getMessageProvider().getMessageWithFormat("afk.kickreason");
+                }
+
+                final String messageToServer = config.getMessages().getOnKick().trim();
+                final String messageToGetAroundJavaRestrictions = message;
+
+                Sponge.getServer().getPlayer(e.getKey()).ifPresent(player -> {
+                    Sponge.getScheduler().createSyncExecutor(plugin)
+                        .execute(() -> player.kick(TextSerializers.FORMATTING_CODE.deserialize(messageToGetAroundJavaRestrictions)));
+                    if (!messageToServer.isEmpty()) {
+                        MessageChannel mc;
+                        if (config.isBroadcastOnKick()) {
+                            mc = MessageChannel.TO_ALL;
+                        } else {
+                            mc = MessageChannel.permission(getPermissionUtil().getPermissionWithSuffix("notify"));
+                        }
+
+                        mc.send(plugin.getChatUtil().getMessageFromTemplate(messageToServer, player, true));
+                    }
+                });
             }
-        }
+        });
+
+        // Check AFK status.
+        entries.stream().filter(x -> !x.getValue().isKnownAfk && x.getValue().timeToAfk > 0).forEach(e -> {
+            if (now - e.getValue().lastActivityTime  > e.getValue().timeToAfk) {
+                // Set AFK, message
+                e.getValue().isKnownAfk = true;
+                sendAFKMessage(e.getKey(), true);
+            }
+        });
     }
 
-    /**
-     * Updates all staged users.
-     */
-    public void updateUserActivity() {
-        Set<Player> thisRun;
-        synchronized (setLock) {
-            thisRun = Sets.newHashSet(staged);
-            staged.clear();
-        }
-
-        Instant now = Instant.now();
-        thisRun.stream().filter(User::isOnline).forEach(x -> updateUserActivity(x, now));
+    public void invalidateAfkCache() {
+        data.forEach((k, v) -> v.cacheValid = false);
     }
 
-    /**
-     * Updates a specific user.
-     *
-     * @param player The {@link Player} of the user to update.
-     */
-    public void updateUserActivity(Player player) {
-        synchronized (setLock) {
-            staged.remove(player);
-        }
-
-        updateUserActivity(player, Instant.now());
-    }
-
-    /**
-     * Returns whether a player is AFK.
-     *
-     * @param player The {@link Player} to check
-     * @return If they are AFK.
-     */
     public boolean isAfk(Player player) {
-        return afkData.getOrDefault(player.getUniqueId(), new Data()).afk;
+        return isAfk(player.getUniqueId());
     }
 
-    /**
-     * Sets a player as AFK
-     *
-     * @param player The {@link Player} to set.
-     * @return <code>true</code> if the player has not got the exemption permission.
-     */
-    public boolean setAsAfk(Player player) {
-        if (!getPermissionUtil().testSuffix(player, exempttoggle)) {
-            UUID uuid = player.getUniqueId();
-            Data data = afkData.get(uuid);
-            if (data == null) {
-                data = new Data();
-                afkData.put(uuid, data);
+    public boolean isAfk(UUID uuid) {
+        return data.containsKey(uuid) && data.get(uuid).isKnownAfk;
+    }
+
+    public boolean setAfk(Player player) {
+        if (!player.isOnline()) {
+            return false;
+        }
+
+        UUID uuid = player.getUniqueId();
+        AFKData a = data.compute(uuid, ((u, afkData) -> afkData == null ? new AFKData(u) : afkData));
+        if (a.isKnownAfk) {
+            return false;
+        }
+
+        if (a.canGoAfk()) {
+            // Don't accident undo setting AFK, remove any activity from the list.
+            synchronized (lock) {
+                activity.remove(uuid);
             }
 
-            data.afk = true;
-            sendAFKMessage(player, true);
+            a.isKnownAfk = true;
+            sendAFKMessage(uuid, true);
             return true;
         }
 
         return false;
     }
 
-    /**
-     * Updates all players' AFK status if they are inactive.
-     */
-    public void updateAfkStatus() {
-        purgeNotOnline();
-        final AFKConfig config = aca.getNodeOrDefault();
-
-        long afkTime = config.getAfkTime();
-        long afkTimeKick = config.getAfkTimeToKick();
-        Instant now = Instant.now();
-        CommandPermissionHandler cph = getPermissionUtil();
-        if (afkTime > 0) {
-            workOnAfkPlayers(now.minus(afkTime, ChronoUnit.SECONDS), cph, exempttoggle, x -> !x.getValue().afk, x -> {
-                x.getSecond().afk = true;
-                sendAFKMessage(x.getFirst(), true);
-            });
-        }
-
-        if (afkTimeKick > 0) {
-            workOnAfkPlayers(now.minus(afkTimeKick, ChronoUnit.SECONDS), cph, exemptkick, x -> !x.getValue().kickRequested, x -> {
-                x.getSecond().kickRequested = true;
-                String message = config.getMessages().getKickMessage().trim();
-                if (message.isEmpty()) {
-                    message = NucleusPlugin.getNucleus().getMessageProvider().getMessageWithFormat("afk.kickreason");
-                }
-
-                final String messageToServer = config.getMessages().getOnKick().trim();
-                final String messageToGetAroundJavaRestrictions = message;
-                Sponge.getScheduler().createSyncExecutor(plugin).execute(() -> x.getFirst().kick(TextSerializers.FORMATTING_CODE.deserialize(messageToGetAroundJavaRestrictions)));
-                if (!messageToServer.isEmpty()) {
-                    MessageChannel mc;
-                    if (config.isBroadcastOnKick()) {
-                        mc = MessageChannel.TO_ALL;
-                    } else {
-                        mc = MessageChannel.permission(getPermissionUtil().getPermissionWithSuffix("notify"));
-                    }
-
-                    mc.send(plugin.getChatUtil().getMessageFromTemplate(messageToServer, x.getFirst(), true));
-                }
-            });
-        }
-    }
-
-    /**
-     * Remove all those who are not online from the data pool.
-     */
-    private void purgeNotOnline() {
-        Set<UUID> uuids = Sponge.getServer().getOnlinePlayers().stream()
-                .map(Identifiable::getUniqueId).collect(Collectors.toSet());
-        afkData.entrySet().removeIf(x -> !uuids.contains(x.getKey()));
-    }
-
-    private void workOnAfkPlayers(Instant now, CommandPermissionHandler cph, String permissionSuffix, Predicate<Map.Entry<UUID, Data>> firstCheck, Consumer<Tuple<Player, Data>> forEach) {
-        afkData.entrySet().stream()
-                .filter(firstCheck)
-                .filter(x -> x.getValue().lastActivity.isBefore(now))
-                .map(x -> Tuples.of(Sponge.getServer().getPlayer(x.getKey()).orElse(null), x.getValue()))
-                .filter(x -> x.getFirst() != null && !cph.testSuffix(x.getFirst(), permissionSuffix))
-                .forEach(forEach);
-    }
-
-    private void updateUserActivity(Player player, Instant now) {
-        UUID uuid = player.getUniqueId();
-        Data data = afkData.get(uuid);
-        if (data == null) {
-            afkData.put(uuid, new Data());
-            return;
-        }
-
-        data.lastActivity = now;
-
-        // Only tell players that this player is AFK if they are supposed to be able to go AFK in the first place.
-        if (data.afk && player.isOnline() && !getPermissionUtil().testSuffix(player, exempttoggle)) {
-            sendAFKMessage(player, false);
-        }
-
-        data.afk = false;
-        data.kickRequested = false;
-    }
-
-    private void sendAFKMessage(Player player, boolean isAfk) {
-        // If we have the config set to true, or the player is NOT invisible, send an AFK message
-        if (aca.getNodeOrDefault().isAfkOnVanish() || !player.get(Keys.INVISIBLE).orElse(false)) {
-            String template = isAfk ? aca.getNodeOrDefault().getMessages().getAfkMessage().trim() : aca.getNodeOrDefault().getMessages().getReturnAfkMessage().trim();
-            if (!template.isEmpty()) {
-                MessageChannel.TO_ALL.send(plugin.getChatUtil().getMessageFromTemplate(template, player, true));
-            }
-        } else {
-            // Tell the user in question about them going AFK
-            player.sendMessage(NucleusPlugin.getNucleus().getMessageProvider().getTextMessageWithFormat(isAfk ? "command.afk.from.vanish" : "command.afk.to.vanish"));
-        }
+    private void onReload() {
+        config = afkConfigAdapter.getNodeOrDefault();
     }
 
     /**
@@ -217,16 +165,79 @@ public class AFKHandler {
      * @return The permission util.
      */
     private CommandPermissionHandler getPermissionUtil() {
-        if (s == null) {
-            s = permissionRegistry.getService(AFKCommand.class);
+        if (afkPermissionHandler == null) {
+            afkPermissionHandler = plugin.getPermissionRegistry().getService(AFKCommand.class);
         }
 
-        return s;
+        return afkPermissionHandler;
     }
 
-    private static class Data {
-        private Instant lastActivity = Instant.now();
-        private boolean afk = false;
-        private boolean kickRequested = false;
+    private AFKData updateActivity(UUID uuid, AFKData data) {
+        data.lastActivityTime = System.currentTimeMillis();
+        if (data.isKnownAfk) {
+            data.isKnownAfk = false;
+
+            // Send message.
+            sendAFKMessage(uuid, false);
+        }
+
+        return data;
+    }
+
+    private void sendAFKMessage(UUID uuid, boolean isAfk) {
+        Sponge.getServer().getPlayer(uuid).ifPresent(player -> {
+            // If we have the config set to true, or the player is NOT invisible, send an AFK message
+            if (config.isAfkOnVanish() || !player.get(Keys.INVISIBLE).orElse(false)) {
+                String template = isAfk ? config.getMessages().getAfkMessage().trim() : config.getMessages().getReturnAfkMessage().trim();
+                if (!template.isEmpty()) {
+                    MessageChannel.TO_ALL.send(plugin.getChatUtil().getMessageFromTemplate(template, player, true));
+                }
+            } else {
+                // Tell the user in question about them going AFK
+                player.sendMessage(
+                    NucleusPlugin.getNucleus().getMessageProvider().getTextMessageWithFormat(isAfk ? "command.afk.from.vanish" : "command.afk.to.vanish"));
+            }
+        });
+    }
+
+    private class AFKData {
+
+        private final UUID uuid;
+
+        private long lastActivityTime = System.currentTimeMillis();
+        private boolean isKnownAfk = false;
+        private boolean willKick = false;
+
+        private boolean cacheValid = false;
+        private long timeToAfk = -1;
+        private long timeToKick = -1;
+
+        private AFKData(UUID uuid) {
+            this.uuid = uuid;
+            updateFromPermissions();
+        }
+
+        private boolean canGoAfk() {
+            return timeToAfk > 0;
+        }
+
+        private void updateFromPermissions() {
+            // Get the subject.
+            Sponge.getServer().getPlayer(uuid).ifPresent(x -> {
+                if (getPermissionUtil().testSuffix(x, exempttoggle)) {
+                    timeToAfk = -1;
+                } else {
+                    timeToAfk = Util.getPositiveLongOptionFromSubject(x, afkOption).orElseGet(() -> config.getAfkTime()) * 1000;
+                }
+
+                if (getPermissionUtil().testSuffix(x, exemptkick)) {
+                    timeToKick = -1;
+                } else {
+                    timeToKick = Util.getPositiveLongOptionFromSubject(x, afkKickOption).orElseGet(() -> config.getAfkTimeToKick()) * 1000;
+                }
+
+                cacheValid = true;
+            });
+        }
     }
 }

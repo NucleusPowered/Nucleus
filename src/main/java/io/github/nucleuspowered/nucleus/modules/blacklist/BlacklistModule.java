@@ -14,7 +14,7 @@ public class BlacklistModule extends ConfigurableModule<BlacklistConfigAdapter> 
     public final static String ID = "blacklist";
 
     @Override
-    public BlacklistConfigAdapter getAdapter() {
+    public BlacklistConfigAdapter createAdapter() {
         return new BlacklistConfigAdapter();
     }
 }

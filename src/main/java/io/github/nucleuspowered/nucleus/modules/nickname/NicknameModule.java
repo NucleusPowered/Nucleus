@@ -12,7 +12,7 @@ import uk.co.drnaylor.quickstart.annotations.ModuleData;
 public class NicknameModule extends ConfigurableModule<NicknameConfigAdapter> {
 
     @Override
-    public NicknameConfigAdapter getAdapter() {
+    public NicknameConfigAdapter createAdapter() {
         return new NicknameConfigAdapter();
     }
 }

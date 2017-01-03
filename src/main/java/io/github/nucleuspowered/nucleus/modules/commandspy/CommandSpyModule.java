@@ -13,7 +13,7 @@ public class CommandSpyModule extends ConfigurableModule<CommandSpyConfigAdapter
 
     public final static String ID = "command-spy";
 
-    @Override public CommandSpyConfigAdapter getAdapter() {
+    @Override public CommandSpyConfigAdapter createAdapter() {
         return new CommandSpyConfigAdapter();
     }
 }

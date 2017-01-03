@@ -26,7 +26,7 @@ public class MuteModule extends ConfigurableModule<MuteConfigAdapter> {
     @Inject private Logger logger;
 
     @Override
-    public MuteConfigAdapter getAdapter() {
+    public MuteConfigAdapter createAdapter() {
         return new MuteConfigAdapter();
     }
 
