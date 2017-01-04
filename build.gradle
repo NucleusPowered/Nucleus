@@ -59,6 +59,9 @@ dependencies {
     // For Geo IP
     compile geoIpDep
 
+    // For Scheduled
+    compile "com.cronutils:cron-utils:5.0.5"
+
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-all:1.10.19"
     testCompile "org.powermock:powermock-module-junit4:1.6.4"
@@ -86,6 +89,12 @@ license {
 
 spongestart{
     eula true
+}
+
+test {
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 blossom {
@@ -138,10 +147,12 @@ shadowJar {
         include(dependency("com.fasterxml.jackson.core:jackson-core"))
         include(dependency("com.fasterxml.jackson.core:jackson-databind"))
         include(dependency("com.fasterxml.jackson.core:jackson-annotations"))
+        include(dependency("com.cronutils:cron-utils"))
     }
 
     relocate 'com.maxmind.geoip2', 'io.github.nucleuspowered.relocate.com.maxmind.geoip2'
     relocate 'com.maxmind.db', 'io.github.nucleuspowered.relocate.com.maxmind.db'
     relocate 'com.fasterxml.jackson', 'io.github.nucleuspowered.relocate.com.fasterxml.jackson'
+    relocate 'com.cronutils', 'io.github.nucleuspowered.relocate.com.cronutils'
 }
 build.dependsOn(shadowJar)
