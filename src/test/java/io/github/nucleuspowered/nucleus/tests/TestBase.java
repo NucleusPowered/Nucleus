@@ -17,6 +17,7 @@ import io.github.nucleuspowered.nucleus.internal.MixinConfigProxy;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.messages.ResourceMessageProvider;
+import io.github.nucleuspowered.nucleus.internal.services.ScheduledManager;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import org.junit.BeforeClass;
@@ -113,6 +114,11 @@ public abstract class TestBase {
         @Override
         public void saveData() {
 
+        }
+
+        @Override
+        public ScheduledManager getScheduledManager() {
+            return null;
         }
 
         @Override

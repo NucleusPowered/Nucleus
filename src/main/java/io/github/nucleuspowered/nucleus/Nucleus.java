@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.MixinConfigProxy;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
+import io.github.nucleuspowered.nucleus.internal.services.ScheduledManager;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import org.slf4j.Logger;
@@ -48,6 +49,8 @@ public abstract class Nucleus {
     public abstract void reload();
 
     public abstract WarmupManager getWarmupManager();
+
+    public abstract ScheduledManager getScheduledManager();
 
     public abstract EconHelper getEconHelper();
 
