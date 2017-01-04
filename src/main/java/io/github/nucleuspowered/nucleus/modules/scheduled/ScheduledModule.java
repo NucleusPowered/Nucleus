@@ -22,9 +22,9 @@ public class ScheduledModule extends ConfigurableModule<ScheduledConfigAdapter> 
     public static final String ID = "scheduled";
 
     @Override
-    public ScheduledConfigAdapter getAdapter() {
-    return new ScheduledConfigAdapter();
-  }
+    public ScheduledConfigAdapter createAdapter() {
+        return new ScheduledConfigAdapter();
+    }
 
     @Override
     protected void performPreTasks() throws Exception {
