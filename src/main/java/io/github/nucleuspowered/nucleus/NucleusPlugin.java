@@ -16,6 +16,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import io.github.nucleuspowered.nucleus.api.service.NucleusModuleService;
+import io.github.nucleuspowered.nucleus.api.service.NucleusScheduledManagerService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusUserLoaderService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWarmupManagerService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWorldLoaderService;
@@ -46,6 +47,7 @@ import io.github.nucleuspowered.nucleus.internal.qsml.ModuleRegistrationProxySer
 import io.github.nucleuspowered.nucleus.internal.qsml.NucleusLoggerProxy;
 import io.github.nucleuspowered.nucleus.internal.qsml.QuickStartModuleConstructor;
 import io.github.nucleuspowered.nucleus.internal.qsml.event.BaseModuleEvent;
+import io.github.nucleuspowered.nucleus.internal.services.ScheduledManager;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TokenHandler;
@@ -119,6 +121,7 @@ public class NucleusPlugin extends Nucleus {
     private MessageProvider commandMessageProvider = new ResourceMessageProvider(ResourceMessageProvider.commandMessagesBundle);
 
     private WarmupManager warmupManager;
+    private ScheduledManager scheduledManager;
     private EconHelper econHelper = new EconHelper(this);
     private PermissionRegistry permissionRegistry = new PermissionRegistry();
 
@@ -171,6 +174,7 @@ public class NucleusPlugin extends Nucleus {
             kitService = new KitService(d.getKitsDataProvider());
             nameBanService = new NameBanService(d.getNameBanDataProvider());
             warmupManager = new WarmupManager();
+            scheduledManager = new ScheduledManager(this);
             chatUtil = new ChatUtil(this);
             nameUtil = new NameUtil(this);
         } catch (Exception e) {
@@ -185,8 +189,10 @@ public class NucleusPlugin extends Nucleus {
         // We register the ModuleService NOW so that others can hook into it.
         game.getServiceManager().setProvider(this, NucleusModuleService.class, new ModuleRegistrationProxyService(this));
         game.getServiceManager().setProvider(this, NucleusWarmupManagerService.class, warmupManager);
+        game.getServiceManager().setProvider(this, NucleusScheduledManagerService.class, scheduledManager);
         this.injector = Guice.createInjector(new QuickStartInjectorModule(this));
         serviceManager.registerService(WarmupManager.class, warmupManager);
+        serviceManager.registerService(ScheduledManager.class, scheduledManager);
 
         try {
             HoconConfigurationLoader.Builder builder = HoconConfigurationLoader.builder();
@@ -403,6 +409,11 @@ public class NucleusPlugin extends Nucleus {
     @Override
     public WarmupManager getWarmupManager() {
         return warmupManager;
+    }
+
+    @Override
+    public ScheduledManager getScheduledManager() {
+        return scheduledManager;
     }
 
     @Override

@@ -8,9 +8,13 @@ import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.configurate.objectmapper.NucleusObjectMapperFactory;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.ConfigurationNodeTypeSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.DelayedTimeValueSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.ItemStackSnapshotSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.SetTypeSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.Vector3dTypeSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarningTimeListSerialiser;
+import io.github.nucleuspowered.nucleus.util.DelayedTimeValue;
+import io.github.nucleuspowered.nucleus.util.WarningTimeList;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
@@ -58,6 +62,8 @@ public class ConfigurateHelper {
                 typeToken -> Set.class.isAssignableFrom(typeToken.getRawType()),
                 new SetTypeSerialiser()
         );
+        tsc.registerType(TypeToken.of(DelayedTimeValue.class), new DelayedTimeValueSerialiser());
+        tsc.registerType(TypeToken.of(WarningTimeList.class), new WarningTimeListSerialiser());
 
         if (Sponge.getGame().getState() == GameState.SERVER_STARTED) {
             typeSerializerCollection = tsc;

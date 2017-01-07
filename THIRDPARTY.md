@@ -33,6 +33,13 @@ Used in the GeoIP module, included in the plugin JAR.
 These libraries are available under the terms of the Apache 2 licence, certified as open source and compatible with the MIT licence.
 The Apache 2 licence will be reproduced at the bottom of this file.
 
+## Cron-Utils library
+
+Used in the Scheduled module, included in the plugin JAR.
+
+This library is available under the terms of the Apache 2 license, certified as open source and compatible with the MIT licence.
+The Apache 2 licence will be reporduced at the bottom of this file.
+
 ## Apache Licence Version 2.0
 
 Apache License<br/>
