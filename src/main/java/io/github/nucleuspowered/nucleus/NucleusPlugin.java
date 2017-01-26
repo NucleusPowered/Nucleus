@@ -53,6 +53,7 @@ import io.github.nucleuspowered.nucleus.internal.text.TokenHandler;
 import io.github.nucleuspowered.nucleus.logging.DebugLogger;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusReloadConfigEvent;
+import io.github.nucleuspowered.nucleus.spongedata.NucleusSpongeDataRegistration;
 import io.github.nucleuspowered.nucleus.util.ThrowableAction;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
@@ -62,6 +63,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
@@ -218,6 +220,16 @@ public class NucleusPlugin extends Nucleus {
             disable();
             e.printStackTrace();
         }
+    }
+
+    @Listener
+    public void onInit(GameInitializationEvent event) {
+        if (isErrored != null) {
+            return;
+        }
+
+        logger.info(messageProvider.getMessageWithFormat("startup.init.start", PluginInfo.NAME));
+        NucleusSpongeDataRegistration.register();
     }
 
     @Listener

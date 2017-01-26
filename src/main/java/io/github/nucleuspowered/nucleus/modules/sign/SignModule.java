@@ -4,9 +4,26 @@
  */
 package io.github.nucleuspowered.nucleus.modules.sign;
 
-import io.github.nucleuspowered.nucleus.internal.qsml.module.StandardModule;
+import static io.github.nucleuspowered.nucleus.modules.sign.SignModule.ID;
+
+import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
+import io.github.nucleuspowered.nucleus.modules.sign.config.SignConfigAdapter;
+import io.github.nucleuspowered.nucleus.modules.sign.handlers.ActionSignHandler;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 
-@ModuleData(id = "sign", name = "Sign")
-public class SignModule extends StandardModule {
+@ModuleData(id = ID, name = "Sign")
+public class SignModule extends ConfigurableModule<SignConfigAdapter> {
+
+    public static final String ID = "sign";
+
+    @Override public SignConfigAdapter createAdapter() {
+        return new SignConfigAdapter();
+    }
+
+    @Override protected void performPreTasks() throws Exception {
+        super.performPreTasks();
+
+        ActionSignHandler ash = new ActionSignHandler();
+        plugin.getInternalServiceManager().registerService(ActionSignHandler.class, ash);
+    }
 }

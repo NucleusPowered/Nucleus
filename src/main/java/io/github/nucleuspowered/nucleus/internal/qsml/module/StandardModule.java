@@ -18,12 +18,15 @@ import io.github.nucleuspowered.nucleus.internal.TaskBase;
 import io.github.nucleuspowered.nucleus.internal.annotations.ConditionalListener;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.annotations.RequireMixinPlugin;
+import io.github.nucleuspowered.nucleus.internal.annotations.RequireModule;
 import io.github.nucleuspowered.nucleus.internal.annotations.Scan;
 import io.github.nucleuspowered.nucleus.internal.annotations.SkipOnError;
 import io.github.nucleuspowered.nucleus.internal.command.CommandBuilder;
 import io.github.nucleuspowered.nucleus.internal.command.StandardAbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.DocGenCache;
+import io.github.nucleuspowered.nucleus.internal.signs.SignDataListenerBase;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.handlers.SeenHandler;
+import io.github.nucleuspowered.nucleus.modules.sign.handlers.ActionSignHandler;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
@@ -31,6 +34,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import uk.co.drnaylor.quickstart.Module;
+import uk.co.drnaylor.quickstart.ModuleContainer;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
 
@@ -39,6 +43,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -95,6 +100,7 @@ public abstract class StandardModule implements Module {
         // Construct commands
         loadCommands();
         loadEvents();
+        loadSignEvents();
         loadRunnables();
     }
 
@@ -186,6 +192,21 @@ public abstract class StandardModule implements Module {
     }
 
     @SuppressWarnings("unchecked")
+    private void loadSignEvents() {
+        plugin.getInternalServiceManager().getService(ActionSignHandler.class).ifPresent(x -> {
+            Set<Class<? extends SignDataListenerBase>> listenersToLoad = getStreamForModule(SignDataListenerBase.class)
+                .collect(Collectors.toSet());
+
+            Optional<DocGenCache> docGenCache = plugin.getDocGenCache();
+            Injector injector = plugin.getInjector();
+            listenersToLoad.stream().map(y -> this.getInstance(injector, y)).filter(Objects::nonNull).forEach(c -> {
+                docGenCache.ifPresent(y -> y.addPermissionDocs(moduleId, c.getPermissions()));
+                x.registerSignInteraction(c);
+            });
+        });
+    }
+
+    @SuppressWarnings("unchecked")
     private void loadRunnables() {
         Set<Class<? extends TaskBase>> commandsToLoad = getStreamForModule(TaskBase.class)
                 .filter(checkMixin("runnable"))
@@ -208,6 +229,15 @@ public abstract class StandardModule implements Module {
     @SuppressWarnings("unchecked")
     private <T> Stream<Class<? extends T>> getStreamForModule(Class<T> assignableClass) {
         return plugin.getModuleContainer().getLoadedClasses().stream()
+                .filter(x -> { // This allows us to have a command depend on two modules.
+                    if (x.isAnnotationPresent(RequireModule.class)) {
+                        List<String> modules = plugin.getModuleContainer().getModules(ModuleContainer.ModuleStatusTristate.ENABLE)
+                            .stream().map(String::toLowerCase).collect(Collectors.toList());
+                        return Arrays.stream(x.getAnnotation(RequireModule.class).value()).allMatch(modules::contains);
+                    }
+
+                    return true;
+                })
                 .filter(assignableClass::isAssignableFrom)
                 .filter(x -> x.getPackage().getName().startsWith(packageName))
                 .filter(x -> !Modifier.isAbstract(x.getModifiers()) && !Modifier.isInterface(x.getModifiers()))
