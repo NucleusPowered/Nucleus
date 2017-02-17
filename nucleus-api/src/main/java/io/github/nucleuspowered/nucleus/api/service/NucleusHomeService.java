@@ -123,6 +123,29 @@ public interface NucleusHomeService {
     }
 
     /**
+     * Modifies a home's location, if it exists, otherwise creates a home. This is subject to Nucleus' standard checks.
+     *
+     * @param cause The {@link Cause} of the change. The {@link PluginContainer} must be the root cause.
+     * @param user The {@link UUID} of the user to modify the home for.
+     * @param name The name of the home to modify or create.
+     * @param location The location of the home.
+     * @param rotation The rotation of the player when they return to this home.
+     * @throws NucleusException if the home could not be created, due to home limits, or a plugin cancelled the event.
+     * @throws NoSuchPlayerException if the supplied UUID does not map to a known user
+     */
+    default void modifyOrCreateHome(Cause cause, UUID user, String name, Location<World> location, Vector3d rotation) throws NucleusException, NoSuchPlayerException {
+        if (getHome(user, name).isPresent()) {
+            modifyHome(cause, user, name, location, rotation);
+        } else {
+            createHome(cause, user, name, location, rotation);
+        }
+    }
+
+    default void modifyOrCreateHome(Cause cause, User user, String name, Location<World> location, Vector3d rotation) throws NucleusException {
+        modifyHome(cause, user.getUniqueId(), name, location, rotation);
+    }
+
+    /**
      * Removes a home.
      *
      * @param cause The {@link Cause} of the change. The {@link PluginContainer} must be the root cause.
