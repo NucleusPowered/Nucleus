@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
 import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -70,21 +70,21 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
         Optional<Boolean> status = args.getOne(statusKey);
 
         //Construct the query.
-        TicketQuery.Builder ticketQueryBuilder = TicketQuery.builder();
+        NucleusTicketQuery.Builder ticketQueryBuilder = NucleusTicketQuery.builder();
         if (owner.isPresent()) {
-            ticketQueryBuilder.filter(TicketQuery.Column.ID, QueryComparator.EQUALS, owner.get().getUniqueId());
+            ticketQueryBuilder.filter(NucleusTicketQuery.Column.ID, QueryComparator.EQUALS, owner.get().getUniqueId());
         }
         if (assignee.isPresent()) {
-            ticketQueryBuilder.filter(TicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, assignee.get().getUniqueId());
+            ticketQueryBuilder.filter(NucleusTicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, assignee.get().getUniqueId());
         }
         if (createdSince.isPresent()) {
-            ticketQueryBuilder.filter(TicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(createdSince.get()), Instant.now());
+            ticketQueryBuilder.filter(NucleusTicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(createdSince.get()), Instant.now());
         }
         if (updatedSince.isPresent()) {
-            ticketQueryBuilder.filter(TicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(updatedSince.get()), Instant.now());
+            ticketQueryBuilder.filter(NucleusTicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(updatedSince.get()), Instant.now());
         }
         if (status.isPresent()) {
-            ticketQueryBuilder.filter(TicketQuery.Column.STATUS, QueryComparator.EQUALS, status.get());
+            ticketQueryBuilder.filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, status.get());
         }
 
         CompletableFuture<Collection<Ticket>> futureTickets = handler.getTicketsByArguments(ticketQueryBuilder.build());

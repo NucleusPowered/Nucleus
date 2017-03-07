@@ -7,8 +7,9 @@ package io.github.nucleuspowered.nucleus.modules.ticket.data;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import io.github.nucleuspowered.nucleus.modules.ticket.config.TicketConfigAdapter;
+import io.github.nucleuspowered.nucleus.modules.ticket.data.cache.TicketDataCache;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
 
@@ -145,7 +146,7 @@ public class TicketDataManager {
         });
     }
 
-    public CompletableFuture<Collection<Ticket>> retrieveTickets(TicketQuery query) throws SQLException {
+    public CompletableFuture<Collection<Ticket>> retrieveTickets(NucleusTicketQuery query) throws SQLException {
         return cache.lookupTicket(query);
     }
 

@@ -5,13 +5,16 @@
 package io.github.nucleuspowered.nucleus.modules.ticket;
 
 import com.google.inject.Inject;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.modules.ticket.config.TicketConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
+import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketQueryBuilder;
 import io.github.nucleuspowered.nucleus.modules.ticket.handlers.TicketHandler;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.Sponge;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 
 @ModuleData(id = "ticketing", name = "Ticketing")
@@ -36,6 +39,8 @@ public class TicketModule extends ConfigurableModule<TicketConfigAdapter> {
 
             TicketDataManager ticketDataManager = plugin.getInjector().getInstance(TicketDataManager.class);
             ticketDataManager.createTables();
+
+            Sponge.getGame().getRegistry().registerBuilderSupplier(NucleusTicketQuery.Builder.class, TicketQueryBuilder::new);
         } catch (Exception ex) {
             logger.warn("Could not load the ticketing module for the reason below.");
             ex.printStackTrace();

@@ -13,6 +13,14 @@ package io.github.nucleuspowered.nucleus.api.query;
 public interface QueryDataCache<K, V> {
 
     /**
+     * Loads in a value from the database in to the cache. If the value already exists it is overwritten.
+     *
+     * @param key The key for the items location in cache, this is a unique identifier.
+     * @return The retrieved object.
+     */
+    V load(K key);
+
+    /**
      * Attempts to get an item from the cache with the provided key, if it isn't present it is then loaded into the
      * cache from the database.
      *
@@ -33,4 +41,9 @@ public interface QueryDataCache<K, V> {
      * Syncs all changes made to objects in the cache to the database.
      */
     void sync();
+
+    /**
+     * Purges all data stored within the cache.
+     */
+    void purge();
 }

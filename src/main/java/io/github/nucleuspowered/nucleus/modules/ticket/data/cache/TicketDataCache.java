@@ -2,14 +2,16 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.ticket.data;
+package io.github.nucleuspowered.nucleus.modules.ticket.data.cache;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
 import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
 import io.github.nucleuspowered.nucleus.api.query.QueryDataCache;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
+import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketData;
+import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +29,7 @@ public class TicketDataCache {
         this.ticketDataManager = ticketDataManager;
     }
 
-    public CompletableFuture<Collection<Ticket>> lookupTicket(TicketQuery query) throws SQLException {
+    public CompletableFuture<Collection<Ticket>> lookupTicket(NucleusTicketQuery query) throws SQLException {
         CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         if (!ticketDataManager.getDataSource().isPresent()) {
             throw new SQLException("Retrieving Tickets from the database failed... the data source is not present.");
@@ -62,28 +64,28 @@ public class TicketDataCache {
     }
 
     public CompletableFuture<Optional<Ticket>> lookupTicketByID(int id) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.ID, QueryComparator.EQUALS, id).build())
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.ID, QueryComparator.EQUALS, id).build())
                 .thenApply(message -> Optional.ofNullable(message.isEmpty() ? null : message.iterator().next() /* An ID is unique, we know there will only be one so get the first. */));
     }
 
     public CompletableFuture<Collection<Ticket>> lookupTicketsByOwner(UUID uuid) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.OWNER, QueryComparator.EQUALS, uuid).build());
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.OWNER, QueryComparator.EQUALS, uuid).build());
     }
 
     public CompletableFuture<Collection<Ticket>> lookupTicketsByAssignee(UUID uuid) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, uuid).build());
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, uuid).build());
     }
 
     public CompletableFuture<Collection<Ticket>> lookupTicketsInCreationDateRange(Instant lowerDate, Instant higherDate) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
     }
 
     public CompletableFuture<Collection<Ticket>> lookupTicketsInUpdateDateRange(Instant lowerDate, Instant higherDate) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
     }
 
     public CompletableFuture<Collection<Ticket>> lookupTicketsByStatus(boolean closed) throws SQLException {
-        return lookupTicket(TicketQuery.builder().filter(TicketQuery.Column.STATUS, QueryComparator.EQUALS, closed).build());
+        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, closed).build());
     }
 
     public CompletableFuture<TreeMap<Long, String>> lookupTicketMessagesByTicketID(int id) throws SQLException {

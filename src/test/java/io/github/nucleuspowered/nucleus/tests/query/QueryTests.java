@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.tests.query;
 
 import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,9 +20,9 @@ public class QueryTests {
     public void ticketQueryTest() {
         Instant now = Instant.now();
         Instant lastWeek = Instant.now().minus(7, ChronoUnit.DAYS);
-        TicketQuery query = TicketQuery.builder()
-                .filter(TicketQuery.Column.ID, QueryComparator.EQUALS, 8)
-                .filter(TicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, lastWeek, now)
+        NucleusTicketQuery query = NucleusTicketQuery.builder()
+                .filter(NucleusTicketQuery.Column.ID, QueryComparator.EQUALS, 8)
+                .filter(NucleusTicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, lastWeek, now)
                 .build(); //Filter that gets all tickets with ID 8 created in the last week. (Just a test, I know it'll only ever match for one ticket at most as the ID is unique).
 
         String queryString = query.createPlainQueryString();

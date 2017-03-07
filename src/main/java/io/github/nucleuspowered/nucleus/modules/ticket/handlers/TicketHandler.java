@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.ticket.handlers;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketData;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
@@ -81,7 +81,7 @@ public class TicketHandler implements NucleusTicketService {
     }
 
     @Override
-    public CompletableFuture<Collection<Ticket>> getTicketsByArguments(TicketQuery query) {
+    public CompletableFuture<Collection<Ticket>> getTicketsByArguments(NucleusTicketQuery query) {
         CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         try {
             future = ticketDataManager.getCache().lookupTicket(query);

@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.service;
 
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
+import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.util.Collection;
@@ -47,12 +47,12 @@ public interface NucleusTicketService {
     CompletableFuture<Collection<Ticket>> getTicketsByStatus(boolean closed);
 
     /**
-     * Gets all Tickets which fulfill the filters within the provided {@link TicketQuery}.
+     * Gets all Tickets which fulfill the filters within the provided {@link NucleusTicketQuery}.
      *
      * @param query The ticket query to use.
      * @return The {@link Ticket}s which matched the query.
      */
-    CompletableFuture<Collection<Ticket>> getTicketsByArguments(TicketQuery query);
+    CompletableFuture<Collection<Ticket>> getTicketsByArguments(NucleusTicketQuery query);
 
     /**
      * Creates a ticket for the specified user.
