@@ -134,15 +134,15 @@ public interface NucleusHomeService {
      * @throws NoSuchPlayerException if the supplied UUID does not map to a known user
      */
     default void modifyOrCreateHome(Cause cause, UUID user, String name, Location<World> location, Vector3d rotation) throws NucleusException, NoSuchPlayerException {
+        modifyOrCreateHome(cause, Sponge.getServiceManager().provideUnchecked(UserStorageService.class).get(user).orElseThrow(NoSuchPlayerException::new), name, location, rotation);
+    }
+
+    default void modifyOrCreateHome(Cause cause, User user, String name, Location<World> location, Vector3d rotation) throws NucleusException {
         if (getHome(user, name).isPresent()) {
             modifyHome(cause, user, name, location, rotation);
         } else {
             createHome(cause, user, name, location, rotation);
         }
-    }
-
-    default void modifyOrCreateHome(Cause cause, User user, String name, Location<World> location, Vector3d rotation) throws NucleusException {
-        modifyHome(cause, user.getUniqueId(), name, location, rotation);
     }
 
     /**
