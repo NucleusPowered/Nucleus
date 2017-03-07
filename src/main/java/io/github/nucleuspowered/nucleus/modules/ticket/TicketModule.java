@@ -34,8 +34,7 @@ public class TicketModule extends ConfigurableModule<TicketConfigAdapter> {
             game.getServiceManager().setProvider(plugin, NucleusTicketService.class, ticketHandler);
             serviceManager.registerService(TicketHandler.class, ticketHandler);
 
-            TicketDataManager ticketDataManager = new TicketDataManager(plugin);
-            plugin.getInjector().injectMembers(ticketDataManager);
+            TicketDataManager ticketDataManager = plugin.getInjector().getInstance(TicketDataManager.class);
             ticketDataManager.createTables();
         } catch (Exception ex) {
             logger.warn("Could not load the ticketing module for the reason below.");

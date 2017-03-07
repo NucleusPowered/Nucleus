@@ -5,10 +5,10 @@
 package io.github.nucleuspowered.nucleus.api.service;
 
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import org.apache.commons.lang3.tuple.Triple;
+import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
 import org.spongepowered.api.entity.living.player.User;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,7 +28,7 @@ public interface NucleusTicketService {
      * @param user The {@link User} that has created the tickets.
      * @return The {@link Ticket}s.
      */
-    CompletableFuture<List<Ticket>> getTicketsForOwner(User user);
+    CompletableFuture<Collection<Ticket>> getTicketsForOwner(User user);
 
     /**
      * Gets all tickets (open and closed) assigned to a {@link User}.
@@ -36,7 +36,7 @@ public interface NucleusTicketService {
      * @param user The {@link User} assigned to the tickets.
      * @return The {@link Ticket}s.
      */
-    CompletableFuture<List<Ticket>> getTicketsForAssignee(User user);
+    CompletableFuture<Collection<Ticket>> getTicketsForAssignee(User user);
 
     /**
      * Gets all tickets by their status, if they are open or closed.
@@ -44,17 +44,15 @@ public interface NucleusTicketService {
      * @param closed The status of the tickets to get, <code>true</code> if closed.
      * @return The {@link Ticket}s.
      */
-    CompletableFuture<List<Ticket>> getTicketsByStatus(boolean closed);
+    CompletableFuture<Collection<Ticket>> getTicketsByStatus(boolean closed);
 
     /**
-     * Gets all tickets with the specified argument, each Tri represents an argument, the first should be the column
-     * identifier, the second should be the matching operator (=, >, <, >=, <=, etc.), SQL matches such as BETWEEN can
-     * also be used., the third should be the value to match.
+     * Gets all Tickets which fulfill the filters within the provided {@link TicketQuery}.
      *
-     * @param arguments The arguments to fetch tickets
+     * @param query The ticket query to use.
      * @return The {@link Ticket}s which matched the query.
      */
-    CompletableFuture<List<Ticket>> getTicketsByArguments(List<Triple<String, String, String>> arguments);
+    CompletableFuture<Collection<Ticket>> getTicketsByArguments(TicketQuery query);
 
     /**
      * Creates a ticket for the specified user.

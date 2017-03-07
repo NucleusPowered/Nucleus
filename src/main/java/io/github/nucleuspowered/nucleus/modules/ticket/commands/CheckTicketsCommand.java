@@ -7,6 +7,8 @@ package io.github.nucleuspowered.nucleus.modules.ticket.commands;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
+import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
+import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -21,8 +23,8 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 
-import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -67,15 +69,29 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
         Optional<Integer> updatedSince = args.getOne(updatedSinceKey);
         Optional<Boolean> status = args.getOne(statusKey);
 
-        if (owner.isPresent()) arguments.add(Triple.of("Owner", "=", owner.get().getUniqueId().toString()));
-        if (assignee.isPresent()) arguments.add(Triple.of("Assignee", "=", assignee.get().getUniqueId().toString()));
-        if (createdSince.isPresent()) arguments.add(Triple.of("CreationDate", "BETWEEN", "(" + Timestamp.from(Instant.now().minusSeconds(createdSince.get())) + " AND " + Timestamp.from(Instant.now()) + ")"));
-        if (updatedSince.isPresent()) arguments.add(Triple.of("LastUpdateDate", "BETWEEN", "(" + Timestamp.from(Instant.now().minusSeconds(updatedSince.get())) + " AND " + Timestamp.from(Instant.now()) + ")"));
-        if (status.isPresent()) arguments.add(Triple.of("Closed", "=", String.valueOf(status.get())));
+        //Construct the query.
+        TicketQuery.Builder ticketQueryBuilder = TicketQuery.builder();
+        if (owner.isPresent()) {
+            ticketQueryBuilder.filter(TicketQuery.Column.ID, QueryComparator.EQUALS, owner.get().getUniqueId());
+        }
+        if (assignee.isPresent()) {
+            ticketQueryBuilder.filter(TicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, assignee.get().getUniqueId());
+        }
+        if (createdSince.isPresent()) {
+            ticketQueryBuilder.filter(TicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(createdSince.get()), Instant.now());
+        }
+        if (updatedSince.isPresent()) {
+            ticketQueryBuilder.filter(TicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(updatedSince.get()), Instant.now());
+        }
+        if (status.isPresent()) {
+            ticketQueryBuilder.filter(TicketQuery.Column.STATUS, QueryComparator.EQUALS, status.get());
+        }
 
-        CompletableFuture<List<Ticket>> tickets = handler.getTicketsByArguments(arguments);
-        //TODO Check, format, send.
+        CompletableFuture<Collection<Ticket>> futureTickets = handler.getTicketsByArguments(ticketQueryBuilder.build());
+        futureTickets.thenAccept(tickets -> {
+            //TODO Check, format, send.
+        });
 
-        return CommandResult.empty();
+        return CommandResult.success();
     }
 }

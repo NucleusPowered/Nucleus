@@ -4,19 +4,18 @@
  */
 package io.github.nucleuspowered.nucleus.modules.ticket.handlers;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
+import io.github.nucleuspowered.nucleus.api.query.TicketQuery;
 import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketData;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
-import org.apache.commons.lang3.tuple.Triple;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -31,57 +30,67 @@ public class TicketHandler implements NucleusTicketService {
 
     @Override
     public CompletableFuture<Optional<Ticket>> getTicketWithID(int id) {
+        CompletableFuture<Optional<Ticket>> future = new CompletableFuture<>();
         try {
-            return ticketDataManager.getCache().lookupTicketByID(id);
+            future = ticketDataManager.getCache().lookupTicketByID(id);
         } catch (SQLException ex) {
             ex.printStackTrace();
+            future.completeExceptionally(ex);
         }
 
-        return CompletableFuture.completedFuture(Optional.empty()); //Failed
+        return future;
     }
 
     @Override
-    public CompletableFuture<List<Ticket>> getTicketsForOwner(User user) {
+    public CompletableFuture<Collection<Ticket>> getTicketsForOwner(User user) {
+        CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         try {
-            return ticketDataManager.getCache().lookupTicketsByOwner(user.getUniqueId());
+            future = ticketDataManager.getCache().lookupTicketsByOwner(user.getUniqueId());
         } catch (SQLException ex) {
             ex.printStackTrace();
+            future.completeExceptionally(ex);
         }
 
-        return CompletableFuture.completedFuture(Lists.newArrayList()); //Failed
+        return future;
     }
 
     @Override
-    public CompletableFuture<List<Ticket>> getTicketsForAssignee(User user) {
+    public CompletableFuture<Collection<Ticket>> getTicketsForAssignee(User user) {
+        CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         try {
-            return ticketDataManager.getCache().lookupTicketsByOwner(user.getUniqueId());
+            future = ticketDataManager.getCache().lookupTicketsByAssignee(user.getUniqueId());
         } catch (SQLException ex) {
             ex.printStackTrace();
+            future.completeExceptionally(ex);
         }
 
-        return CompletableFuture.completedFuture(Lists.newArrayList()); //Failed
+        return future;
     }
 
     @Override
-    public CompletableFuture<List<Ticket>> getTicketsByStatus(boolean closed) {
+    public CompletableFuture<Collection<Ticket>> getTicketsByStatus(boolean closed) {
+        CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         try {
-            return ticketDataManager.getCache().lookupTicketsByStatus(closed);
+            future = ticketDataManager.getCache().lookupTicketsByStatus(closed);
         } catch (SQLException ex) {
             ex.printStackTrace();
+            future.completeExceptionally(ex);
         }
 
-        return CompletableFuture.completedFuture(Lists.newArrayList()); //Failed
+        return future;
     }
 
     @Override
-    public CompletableFuture<List<Ticket>> getTicketsByArguments(List<Triple<String, String, String>> arguments) {
+    public CompletableFuture<Collection<Ticket>> getTicketsByArguments(TicketQuery query) {
+        CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
         try {
-            return ticketDataManager.getCache().lookupTicket(arguments);
+            future = ticketDataManager.getCache().lookupTicket(query);
         } catch (SQLException ex) {
             ex.printStackTrace();
+            future.completeExceptionally(ex);
         }
 
-        return CompletableFuture.completedFuture(Lists.newArrayList()); //Failed
+        return future;
     }
 
     @Override
@@ -97,14 +106,17 @@ public class TicketHandler implements NucleusTicketService {
         }
     }
 
-    @Override
+    @Override //TODO Improve
     public boolean addMessageByTicketID(int id, String message) {
         final Instant creationDate = Instant.now();
         try {
             CompletableFuture<Boolean> future = ticketDataManager.getCache().lookupTicketByID(id)
                     .thenApply(ticket -> {
                         try {
-                            if (!ticket.isPresent()) return false;
+                            if (!ticket.isPresent()) {
+                                return false;
+                            }
+
                             ticketDataManager.createTicketMessage(ticket.get(), creationDate, message);
                         } catch (SQLException ex) {
                             ex.printStackTrace();

@@ -56,7 +56,7 @@ import java.util.Optional;
 
 @Permissions
 @RunAsync
-@RegisterCommand({"seen", "seenplayer", "lookupTicket"})
+@RegisterCommand({"seen", "seenplayer", "lookup"})
 @EssentialsEquivalent("seen")
 public class SeenCommand extends AbstractCommand<CommandSource> {
 
