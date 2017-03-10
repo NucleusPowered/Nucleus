@@ -10,8 +10,8 @@ import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.modules.ticket.config.TicketConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
-import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketQueryBuilder;
 import io.github.nucleuspowered.nucleus.modules.ticket.handlers.TicketHandler;
+import io.github.nucleuspowered.nucleus.modules.ticket.query.TicketQueryBuilder;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
@@ -32,15 +32,16 @@ public class TicketModule extends ConfigurableModule<TicketConfigAdapter> {
         super.performPreTasks();
 
         try {
-            TicketHandler ticketHandler = new TicketHandler(plugin);
-            plugin.getInjector().injectMembers(ticketHandler);
-            game.getServiceManager().setProvider(plugin, NucleusTicketService.class, ticketHandler);
-            serviceManager.registerService(TicketHandler.class, ticketHandler);
-
-            TicketDataManager ticketDataManager = plugin.getInjector().getInstance(TicketDataManager.class);
+            TicketDataManager ticketDataManager = new TicketDataManager();
+            plugin.getInjector().injectMembers(ticketDataManager);
             ticketDataManager.createTables();
 
             Sponge.getGame().getRegistry().registerBuilderSupplier(NucleusTicketQuery.Builder.class, TicketQueryBuilder::new);
+
+            TicketHandler ticketHandler = new TicketHandler(plugin, ticketDataManager);
+            plugin.getInjector().injectMembers(ticketHandler);
+            game.getServiceManager().setProvider(plugin, NucleusTicketService.class, ticketHandler);
+            serviceManager.registerService(TicketHandler.class, ticketHandler);
         } catch (Exception ex) {
             logger.warn("Could not load the ticketing module for the reason below.");
             ex.printStackTrace();

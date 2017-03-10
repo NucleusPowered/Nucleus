@@ -13,6 +13,14 @@ import java.util.UUID;
  * Information about a support ticket.
  */
 public interface Ticket {
+
+    /**
+     * Gets if the ticket is deleted and shouldn't be saved.
+     *
+     * @return <code>true</code> if so.
+     */
+    boolean isDeleted();
+
     /**
      * The unique Integer ID of this ticket
      *
@@ -62,4 +70,11 @@ public interface Ticket {
      * @return <code>true</code> if so.
      */
     boolean isClosed();
+
+    /**
+     * Sets if the ticket has been deleted from storage.
+     *
+     * @param deleted The new deletion status.
+     */
+    void setDeleted(boolean deleted);
 }

@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.ticket.data;
+package io.github.nucleuspowered.nucleus.modules.ticket.query;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -104,20 +104,20 @@ public class TicketQuery implements NucleusTicketQuery {
 
         public static final QueryColumnProperties STATUS = new ColumnProperties("Closed", JDBCType.BOOLEAN, Boolean.class);
 
-        public static QueryColumnProperties getColumnProperties(NucleusTicketQuery.Column column) {
+        public static QueryColumnProperties of(NucleusTicketQuery.Column column) {
             switch (column) {
                 case ID:
-                    return TicketColumnProperties.ID;
+                    return TicketQuery.TicketColumnProperties.ID;
                 case OWNER:
-                    return TicketColumnProperties.OWNER;
+                    return TicketQuery.TicketColumnProperties.OWNER;
                 case ASSIGNEE:
-                    return TicketColumnProperties.ASSIGNEE;
+                    return TicketQuery.TicketColumnProperties.ASSIGNEE;
                 case CREATION_DATE:
-                    return TicketColumnProperties.CREATION_DATE;
+                    return TicketQuery.TicketColumnProperties.CREATION_DATE;
                 case LAST_UPDATE_DATE:
-                    return TicketColumnProperties.LAST_UPDATE_DATE;
+                    return TicketQuery.TicketColumnProperties.LAST_UPDATE_DATE;
                 case STATUS:
-                    return TicketColumnProperties.STATUS;
+                    return TicketQuery.TicketColumnProperties.STATUS;
                 default:
                     return null;
             }

@@ -87,7 +87,7 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
             ticketQueryBuilder.filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, status.get());
         }
 
-        CompletableFuture<Collection<Ticket>> futureTickets = handler.getTicketsByArguments(ticketQueryBuilder.build());
+        CompletableFuture<Collection<Ticket>> futureTickets = handler.lookupTicket(ticketQueryBuilder.build());
         futureTickets.thenAccept(tickets -> {
             //TODO Check, format, send.
         });

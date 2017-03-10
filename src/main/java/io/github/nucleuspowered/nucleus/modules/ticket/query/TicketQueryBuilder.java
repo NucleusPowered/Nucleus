@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.ticket.data;
+package io.github.nucleuspowered.nucleus.modules.ticket.query;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -25,7 +25,7 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
 
     @Override
     public NucleusTicketQuery.Builder column(NucleusTicketQuery.Column column) {
-        Preconditions.checkState(TicketQuery.TicketColumnProperties.getColumnProperties(column) != null,
+        Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column) != null,
                 "The column " + column.toString() + " does not have a valid set of column properties.");
 
         this.column = column;
@@ -44,11 +44,11 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
                 "You must first declare the column you are querying before declaring a value to filter by.");
         Preconditions.checkState(comparator != null,
                 "You must first declare the comparator you are using to filter by before declaring a value to use with the filter.");
-        Preconditions.checkState(values.size() < comparator.getExpectedValueCount(),
+        Preconditions.checkState(values.size() < TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
                 "This query already has the maximum number of assigned values.");
-        Preconditions.checkState(TicketQuery.TicketColumnProperties.getColumnProperties(column).getJavaType().isAssignableFrom(value.getClass()),
+        Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column).getJavaType().isAssignableFrom(value.getClass()),
                 "The value is not of the expected type, the column " + column.toString() + " expects a query parameter of type " +
-                        TicketQuery.TicketColumnProperties.getColumnProperties(column).getJavaType().getSimpleName());
+                        TicketQuery.TicketColumnProperties.of(column).getJavaType().getSimpleName());
 
         replaceValue(values.size() + 1, value); //Add one to the size because the parameter index starts at 1, not 0.
         return this;
@@ -62,11 +62,11 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
                 "You must first declare the comparator you are using to filter by before declaring a value to use with the filter.");
         Preconditions.checkState(valueIndex > 0,
                 "The value index must be greater than 0.");
-        Preconditions.checkState(valueIndex <= comparator.getExpectedValueCount(),
+        Preconditions.checkState(valueIndex <= TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
                 "The provided value index is greater than the maximum possible number of values.");
-        Preconditions.checkState(TicketQuery.TicketColumnProperties.getColumnProperties(column).getJavaType().isAssignableFrom(value.getClass()),
+        Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column).getJavaType().isAssignableFrom(value.getClass()),
                 "The value is not of the expected type, the column " + column.toString() + " expects a query parameter of type " +
-                        TicketQuery.TicketColumnProperties.getColumnProperties(column).getJavaType().getSimpleName());
+                        TicketQuery.TicketColumnProperties.of(column).getJavaType().getSimpleName());
 
         values.put(valueIndex, value);
         return this;
@@ -78,16 +78,16 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
                 "The column to query must be defined.");
         Preconditions.checkState(comparator != null,
                 "The comparator to use in the query must be defined.");
-        Preconditions.checkState(values.size() == comparator.getExpectedValueCount(),
-                "The comparator expects " + comparator.getExpectedValueCount() + " value(s) but " +
+        Preconditions.checkState(values.size() == TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
+                "The comparator expects " + TicketQueryComparatorProperties.of(comparator).getExpectedValueCount() + " value(s) but " +
                         values.size() + " value(s) were provided.");
 
         switch (comparator) {
             case BETWEEN:
-                queries.put(TicketQuery.TicketColumnProperties.getColumnProperties(column).getColumnName() + " " + comparator.getComparator() + " ? AND ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
+                queries.put(TicketQuery.TicketColumnProperties.of(column).getColumnName() + " " + TicketQueryComparatorProperties.of(comparator).getComparator() + " ? AND ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
                 break;
             default:
-                queries.put(TicketQuery.TicketColumnProperties.getColumnProperties(column).getColumnName() + " " + comparator.getComparator() + " ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
+                queries.put(TicketQuery.TicketColumnProperties.of(column).getColumnName() + " " + TicketQueryComparatorProperties.of(comparator).getComparator() + " ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
                 break;
         }
 

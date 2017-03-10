@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 public class TicketData implements Ticket {
+    private transient boolean deleted;
     private int id;
     private UUID owner;
     private UUID assignee;
@@ -42,32 +43,49 @@ public class TicketData implements Ticket {
         this.closed = closed;
     }
 
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public UUID getOwner() {
         return owner;
     }
 
+    @Override
     public Optional<UUID> getAssignee() {
         return Optional.ofNullable(assignee);
     }
 
+    @Override
     public Instant getCreationDate() {
         return Instant.ofEpochMilli(creationDate);
     }
 
+    @Override
     public Instant getLastUpdateDate() {
         return Instant.ofEpochMilli(lastUpdateDate);
     }
 
+    @Override
     public TreeMap<Long, String> getMessages() {
         return messages;
     }
 
+    @Override
     public boolean isClosed() {
         return closed;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public void setId(int id) {
