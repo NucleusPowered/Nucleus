@@ -147,6 +147,7 @@ shadowJar {
     relocate 'com.maxmind.geoip2', 'io.github.nucleuspowered.relocate.com.maxmind.geoip2'
     relocate 'com.maxmind.db', 'io.github.nucleuspowered.relocate.com.maxmind.db'
     relocate 'com.fasterxml.jackson', 'io.github.nucleuspowered.relocate.com.fasterxml.jackson'
+    relocate 'com.github.benmanes.caffeine', 'io.github.nucleuspowered.relocate.com.github.benmanes.caffeine'
     relocate 'uk.co.drnaylor', 'io.github.nucleuspowered.relocate.uk.co.drnaylor'
 
     exclude "io/github/nucleuspowered/nucleus/api/NucleusAPIMod.class"
