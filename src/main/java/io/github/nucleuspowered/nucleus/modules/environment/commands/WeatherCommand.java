@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
@@ -101,9 +102,8 @@ public class WeatherCommand extends AbstractCommand<CommandSource> {
             oi =  i.isPresent() ? Optional.of((long)i.get()) : Optional.empty();
         }
 
-        if (oi.orElse(Long.MAX_VALUE) > eca.getNodeOrDefault().getMaximumWeatherTimespan() && !permissions.testSuffix(src, "exempt.length") && eca.getNodeOrDefault().getMaximumWeatherTimespan() != -1) {
-            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.weather.toolong", Util.getTimeStringFromSeconds(eca.getNodeOrDefault().getMaximumWeatherTimespan())));
-            return CommandResult.success();
+        if (oi.orElse(Long.MAX_VALUE) > eca.getNodeOrDefault().getMaximumWeatherTimespan() && !permissions.testSuffix(src, "exempt.length") && eca.getNodeOrDefault().getMaximumWeatherTimespan() > 0) {
+            throw ReturnMessageException.fromKey("command.weather.toolong", Util.getTimeStringFromSeconds(eca.getNodeOrDefault().getMaximumWeatherTimespan()));
         }
 
         if (oi.isPresent()) {
