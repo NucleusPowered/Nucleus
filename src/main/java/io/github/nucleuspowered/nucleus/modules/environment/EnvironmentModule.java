@@ -4,8 +4,15 @@
  */
 package io.github.nucleuspowered.nucleus.modules.environment;
 
-import io.github.nucleuspowered.nucleus.internal.qsml.module.StandardModule;
+import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
+import io.github.nucleuspowered.nucleus.modules.environment.config.EnvironmentConfigAdapter;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 
 @ModuleData(id = "environment", name = "Environment")
-public class EnvironmentModule extends StandardModule {}
+public class EnvironmentModule extends ConfigurableModule<EnvironmentConfigAdapter> {
+
+    @Override
+    public EnvironmentConfigAdapter createAdapter() {
+        return new EnvironmentConfigAdapter();
+    }
+}

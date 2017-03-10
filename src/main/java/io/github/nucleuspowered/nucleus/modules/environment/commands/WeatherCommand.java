@@ -14,6 +14,9 @@ import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
+import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
+import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.environment.config.EnvironmentConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.environment.datamodule.EnvironmentWorldDataModule;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -27,6 +30,8 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.weather.Weather;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Permissions
@@ -39,6 +44,14 @@ public class WeatherCommand extends AbstractCommand<CommandSource> {
     private final String timespan = "timespan";
 
     @Inject private WorldDataManager loader;
+    @Inject private EnvironmentConfigAdapter eca;
+
+    @Override
+    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> m = new HashMap<>();
+        m.put("exempt.length", PermissionInformation.getWithTranslation("permission.weather.exempt.length", SuggestedLevel.ADMIN));
+        return m;
+    }
 
     @Override
     public CommandElement[] getArguments() {
@@ -86,6 +99,11 @@ public class WeatherCommand extends AbstractCommand<CommandSource> {
         if (!oi.isPresent()) {
             Optional<Integer> i = args.getOne(duration);
             oi =  i.isPresent() ? Optional.of((long)i.get()) : Optional.empty();
+        }
+
+        if (oi.orElse(Long.MAX_VALUE) > eca.getNodeOrDefault().getMaximumWeatherTimespan() && !permissions.testSuffix(src, "exempt.length") && eca.getNodeOrDefault().getMaximumWeatherTimespan() != -1) {
+            src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.weather.toolong", Util.getTimeStringFromSeconds(eca.getNodeOrDefault().getMaximumWeatherTimespan())));
+            return CommandResult.success();
         }
 
         if (oi.isPresent()) {
