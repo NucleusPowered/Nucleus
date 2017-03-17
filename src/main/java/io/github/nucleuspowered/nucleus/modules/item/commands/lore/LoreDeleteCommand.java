@@ -42,6 +42,12 @@ public class LoreDeleteCommand extends AbstractCommand<Player> {
 
     @Override
     protected CommandResult executeCommand(Player src, CommandContext args) throws Exception {
+        int line = args.<Integer>getOne(loreLine).get();
+        if(line < 0){
+            src.sendMessage(provider.getTextMessageWithFormat("command.lore.set.invalidLine"));
+            return CommandResult.empty();
+        }
+
         if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
             src.sendMessage(provider.getTextMessageWithFormat("command.lore.clear.noitem"));
             return CommandResult.empty();
@@ -50,7 +56,6 @@ public class LoreDeleteCommand extends AbstractCommand<Player> {
         ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).get();
         LoreData loreData = stack.getOrCreate(LoreData.class).get();
 
-        int line = args.<Integer>getOne(loreLine).get();
         List<Text> loreList = loreData.lore().get();
         if(loreList.size() <= line){
             src.sendMessage(provider.getTextMessageWithFormat("command.lore.set.invalidLine"));
