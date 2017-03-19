@@ -5,17 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.item.commands.lore;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.argumentparsers.MessageTargetArgument;
-import io.github.nucleuspowered.nucleus.argumentparsers.NicknameArgument;
-import io.github.nucleuspowered.nucleus.argumentparsers.SelectorWrapperArgument;
+import io.github.nucleuspowered.nucleus.argumentparsers.PositiveIntegerArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
-import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.item.LoreData;
 import org.spongepowered.api.data.type.HandTypes;
@@ -36,30 +34,21 @@ public class LoreDeleteCommand extends AbstractCommand<Player> {
     @Override
     public CommandElement[] getArguments() {
         return new CommandElement[] {
-                GenericArguments.integer(Text.of(loreLine))
+                new PositiveIntegerArgument(Text.of(loreLine))
         };
     }
 
     @Override
     protected CommandResult executeCommand(Player src, CommandContext args) throws Exception {
         int line = args.<Integer>getOne(loreLine).get();
-        if(line < 0){
-            src.sendMessage(provider.getTextMessageWithFormat("command.lore.set.invalidLine"));
-            return CommandResult.empty();
-        }
+        if(line != 0) --line;
 
-        if (!src.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
-            src.sendMessage(provider.getTextMessageWithFormat("command.lore.clear.noitem"));
-            return CommandResult.empty();
-        }
-
-        ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).get();
+        ItemStack stack = src.getItemInHand(HandTypes.MAIN_HAND).orElseThrow(() -> ReturnMessageException.fromKey("command.lore.clear.noitem"));
         LoreData loreData = stack.getOrCreate(LoreData.class).get();
 
         List<Text> loreList = loreData.lore().get();
-        if(loreList.size() <= line){
-            src.sendMessage(provider.getTextMessageWithFormat("command.lore.set.invalidLine"));
-            return CommandResult.empty();
+        if(loreList.size() < line){
+            throw ReturnMessageException.fromKey("command.lore.set.invalidLine");
         }
 
         loreList.remove(line);
@@ -71,7 +60,6 @@ public class LoreDeleteCommand extends AbstractCommand<Player> {
             return CommandResult.success();
         }
 
-        src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.lore.set.fail"));
-        return CommandResult.empty();
+        throw ReturnMessageException.fromKey("command.lore.set.fail");
     }
 }
