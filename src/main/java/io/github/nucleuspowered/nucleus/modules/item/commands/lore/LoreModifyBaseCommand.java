@@ -55,12 +55,12 @@ abstract class LoreModifyBaseCommand extends AbstractCommand<Player> {
 
         List<Text> loreList = loreData.lore().get();
         if(editOrInsert){
-            if(loreList.size() <= line){
+            if(loreList.size() < line){
                 throw ReturnMessageException.fromKey("command.lore.set.invalidEdit");
             }
             loreList.set(line, getLore);
         } else {
-            if(loreList.size() <= line){
+            if(loreList.size() < line){
                 loreList.add(getLore);
             } else {
                 loreList.add(line, getLore);
