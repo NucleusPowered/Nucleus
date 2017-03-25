@@ -7,12 +7,15 @@ package io.github.nucleuspowered.nucleus.modules.ticket.config;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
+import java.util.Optional;
+
 @ConfigSerializable
 public class TicketConfig {
-    @Setting(value = "database", comment = "config.ticket.database")
-    private TicketDatabaseConfig ticketDatabaseConfig = new TicketDatabaseConfig();
 
-    public TicketDatabaseConfig getTicketDatabaseConfig() {
-        return ticketDatabaseConfig;
+    @Setting(value = "default-assignee", comment = "config.ticket.defaultassignee")
+    private String defaultAssignee;
+
+    public Optional<String> getDefaultAssignee() {
+        return Optional.ofNullable(defaultAssignee);
     }
 }

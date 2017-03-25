@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.modules.ticket.query;
 
 
@@ -19,7 +23,7 @@ public final class TicketQueryComparatorProperties {
 
     public static final QueryComparatorProperties GREATER_THAN = new ComparatorProperties(">", 1);
 
-    public static final QueryComparatorProperties BETWEEN = new ComparatorProperties("BETWEEN", 1);
+    public static final QueryComparatorProperties BETWEEN = new ComparatorProperties("BETWEEN", 2);
 
     public static QueryComparatorProperties of(QueryComparator comparator) {
         switch (comparator) {

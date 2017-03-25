@@ -84,6 +84,16 @@ public interface NucleusTicketService {
     CompletableFuture<Ticket> lookupTicketById(int id);
 
     /**
+     * Creates a Ticket with an initial message and assignee, it is saved in the database and cached.
+     *
+     * @param creator        The {@link User} which has created this ticket.
+     * @param initialMessage The initial message the Ticket should be created with.
+     * @param assignee       The UUID of the user to assign to this ticket.
+     * @return <code>true</code> if successful.
+     */
+    CompletableFuture<Boolean> createTicket(User creator, String initialMessage, UUID assignee);
+
+    /**
      * Creates a Ticket with an initial message, it is saved in the database and cached.
      *
      * @param creator        The {@link User} which has created this ticket.
@@ -97,9 +107,21 @@ public interface NucleusTicketService {
      *
      * @param updatedTicket  The ticket object with the updated properties.
      * @param updateMessages If the messages should also be updated in the database.
+     * @param reCache        If the ticket should be cached after being updated in the database.
      * @return <code>true</code> if successful.
      */
-    CompletableFuture<Boolean> updateTicket(Ticket updatedTicket, boolean updateMessages);
+    CompletableFuture<Boolean> updateTicket(Ticket updatedTicket, boolean updateMessages, boolean reCache);
+
+    /**
+     * Updates a Ticket in the database and re-caches it.
+     *
+     * @param updatedTicket  The ticket object with the updated properties.
+     * @param updateMessages If the messages should also be updated in the database.
+     * @return <code>true</code> if successful.
+     */
+    default CompletableFuture<Boolean> updateTicket(Ticket updatedTicket, boolean updateMessages) {
+        return updateTicket(updatedTicket, updateMessages, true);
+    }
 
     /**
      * Deletes the ticket with the provided id.
@@ -140,6 +162,34 @@ public interface NucleusTicketService {
      * @return <code>true</code> if successful.
      */
     CompletableFuture<Boolean> deleteMessageInTicket(int id, Instant creationDate, String message);
+
+    /**
+     * Sets the status for a ticket, if it is open or closed and saves the changes to the database.
+     *
+     * @param closed The status of the ticket, <code>true</code> if closed.
+     * @return <code>true</code> if successful.
+     */
+    CompletableFuture<Boolean> setTicketStatus(int id, boolean closed);
+
+    /**
+     * Re-opens the Ticket with the specified ID.
+     *
+     * @param id The ID of the Ticket to re-open.
+     * @return <code>true</code> if successful.
+     */
+    default CompletableFuture<Boolean> reopenTicket(int id) {
+        return setTicketStatus(id, false);
+    }
+
+    /**
+     * Closes the Ticket with the specified ID.
+     *
+     * @param id The ID of the Ticket to close.
+     * @return <code>true</code> if successful.
+     */
+    default CompletableFuture<Boolean> closeTicket(int id) {
+        return setTicketStatus(id, true);
+    }
 
     /**
      * Invalidates the Ticket cache entry for the provided ID.

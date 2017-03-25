@@ -25,10 +25,14 @@ public class TicketData implements Ticket {
     public TicketData() { }
 
     public TicketData(UUID owner, String initialMessage) {
-        this(-1, owner, initialMessage);
+        this(-1, owner, null, initialMessage);
     }
 
-    public TicketData(int id, UUID owner, String initialMessage) {
+    public TicketData(UUID owner, UUID assignee, String initialMessage) {
+        this(-1, owner, assignee, initialMessage);
+    }
+
+    public TicketData(int id, UUID owner, UUID assignee, String initialMessage) {
         this(id, owner, null, Instant.now().toEpochMilli(), Instant.now().toEpochMilli(), Maps.newTreeMap(), false);
         messages.put(Instant.now().toEpochMilli(), initialMessage);
     }

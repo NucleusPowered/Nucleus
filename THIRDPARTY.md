@@ -33,13 +33,6 @@ Used in the GeoIP module, included in the plugin JAR.
 These libraries are available under the terms of the Apache 2 licence, certified as open source and compatible with the MIT licence.
 The Apache 2 licence will be reproduced at the bottom of this file.
 
-## Caffeine Caching Library
-
-Used in the Ticket module, included in the plugin JAR.
-
-These libraries are available under the terms of the Apache 2 licence, certified as open source and compatible with the MIT licence.
-The Apache 2 licence will be reproduced at the bottom of this file.
-
 ## Apache Licence Version 2.0
 
 Apache License<br/>

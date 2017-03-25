@@ -149,15 +149,14 @@ public class TicketDataManager {
                 int id = resultSet.getInt("ID");
                 UUID owner = UUID.fromString(resultSet.getString("Owner"));
                 UUID assignee = resultSet.getString("Assignee") != null ? UUID.fromString(resultSet.getString("Assignee")) : null;
-                long creationDate = resultSet.getTimestamp("CreationDate").getTime();
-                long lastUpdateDate = resultSet.getTimestamp("LastUpdateDate").getTime();
+                long creationDate = Timestamp.valueOf(resultSet.getString("CreationDate")).getTime();
+                long lastUpdateDate = Timestamp.valueOf(resultSet.getString("LastUpdateDate")).getTime();
                 boolean closed = resultSet.getBoolean("Closed");
                 TreeMap<Long, String> messages = lookupTicketMessagesByTicketID(id);
 
                 result.add(new TicketData(id, owner, assignee, creationDate, lastUpdateDate, messages, closed));
             }
         }
-
         return result;
     }
 
@@ -266,9 +265,9 @@ public class TicketDataManager {
         ) {
             statement.setInt(1, id);
 
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                long date = resultSet.getLong("MessageDate");
+                long date = resultSet.getTimestamp("MessageDate").getTime();
                 String message = resultSet.getString("Message");
 
                 result.put(date, message);

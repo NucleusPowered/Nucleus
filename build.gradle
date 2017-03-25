@@ -80,7 +80,6 @@ dependencies {
     }
 
     compile "com.github.hsyyid:EssentialCmds:v8.1.7"
-    compile 'com.github.ben-manes.caffeine:caffeine:2.4.0'
 
     // For Geo IP
     compile geoIpDep
@@ -141,13 +140,11 @@ shadowJar {
         include(dependency("com.fasterxml.jackson.core:jackson-core"))
         include(dependency("com.fasterxml.jackson.core:jackson-databind"))
         include(dependency("com.fasterxml.jackson.core:jackson-annotations"))
-        include(dependency("com.github.ben-manes.caffeine:caffeine:2.4.0"))
     }
 
     relocate 'com.maxmind.geoip2', 'io.github.nucleuspowered.relocate.com.maxmind.geoip2'
     relocate 'com.maxmind.db', 'io.github.nucleuspowered.relocate.com.maxmind.db'
     relocate 'com.fasterxml.jackson', 'io.github.nucleuspowered.relocate.com.fasterxml.jackson'
-    relocate 'com.github.benmanes.caffeine', 'io.github.nucleuspowered.relocate.com.github.benmanes.caffeine'
     relocate 'uk.co.drnaylor', 'io.github.nucleuspowered.relocate.uk.co.drnaylor'
 
     exclude "io/github/nucleuspowered/nucleus/api/NucleusAPIMod.class"

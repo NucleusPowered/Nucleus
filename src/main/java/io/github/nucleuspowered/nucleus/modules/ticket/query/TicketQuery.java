@@ -65,7 +65,7 @@ public class TicketQuery implements NucleusTicketQuery {
                 if (entryIterator.hasNext()) query += " AND ";
             }
         }
-        query += ");";
+        query += ";";
 
         return query;
     }

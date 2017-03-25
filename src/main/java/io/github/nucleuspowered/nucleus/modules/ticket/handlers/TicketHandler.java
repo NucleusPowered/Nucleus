@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -37,11 +38,11 @@ public class TicketHandler implements NucleusTicketService {
 
         this.executor = Sponge.getScheduler().createAsyncExecutor(nucleus);
         this.cache = Caffeine.newBuilder()
-                .expireAfterAccess(5, TimeUnit.MINUTES)
+                .expireAfterAccess(5, TimeUnit.SECONDS)
                 .executor(executor)
                 .removalListener((RemovalListener<Integer, Ticket>) (id, ticket, removalCause) -> {
                     if (!ticket.isDeleted()) { //We only want to update the ticket in the database if it hasn't been removed from the cache because it was deleted.
-                        this.updateTicket(ticket, true);
+                        this.updateTicket(ticket, true, false);
                     }
                 })
                 .buildAsync(id -> this.lookupTicketById(id, false).get());
@@ -116,9 +117,9 @@ public class TicketHandler implements NucleusTicketService {
     }
 
     @Override
-    public CompletableFuture<Boolean> createTicket(User creator, String initialMessage) {
+    public CompletableFuture<Boolean> createTicket(User creator, String initialMessage, UUID assignee) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        TicketData ticketData = new TicketData(creator.getUniqueId(), initialMessage);
+        TicketData ticketData = new TicketData(creator.getUniqueId(), assignee, initialMessage);
 
         //Create the ticket in the database.
         executor.execute(() -> {
@@ -143,7 +144,12 @@ public class TicketHandler implements NucleusTicketService {
     }
 
     @Override
-    public CompletableFuture<Boolean> updateTicket(Ticket updatedTicket, boolean updateMessages) {
+    public CompletableFuture<Boolean> createTicket(User creator, String initialMessage) {
+        return createTicket(creator, initialMessage, null);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> updateTicket(Ticket updatedTicket, boolean updateMessages, boolean reCache) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
         //Update the ticket in the database.
@@ -156,14 +162,16 @@ public class TicketHandler implements NucleusTicketService {
             }
         });
 
-        //After the future is computed put it in the cache. We have to wait until it is computed as if it fails data would be lost on a reboot.
-        future.thenAcceptAsync(success -> {
-            if (!success) {
-                return;
-            }
+        if (reCache) {
+            //After the future is computed put it in the cache. We have to wait until it is computed as if it fails data would be lost on a reboot.
+            future.thenAcceptAsync(success -> {
+                if (!success) {
+                    return;
+                }
 
-            cache.put(updatedTicket.getId(), CompletableFuture.completedFuture(updatedTicket));
-        }, executor);
+                cache.put(updatedTicket.getId(), CompletableFuture.completedFuture(updatedTicket));
+            }, executor);
+        }
 
         return future;
     }
@@ -204,7 +212,7 @@ public class TicketHandler implements NucleusTicketService {
 
         //Lookup the ticket, and then try to add the message.
         CompletableFuture<Boolean> future = lookupTicketById(id)
-                .thenApplyAsync((Ticket ticket) -> {
+                .thenApplyAsync(ticket -> {
                     if (ticket == null) {
                         return false;
                     }
@@ -229,7 +237,7 @@ public class TicketHandler implements NucleusTicketService {
     public CompletableFuture<Boolean> editMessageInTicket(int id, Instant creationDate, String newMessage) {
         //Lookup the ticket, and then try to edit the message.
         CompletableFuture<Boolean> future = lookupTicketById(id)
-                .thenApplyAsync((Ticket ticket) -> {
+                .thenApplyAsync(ticket -> {
                     if (ticket == null) {
                         return false;
                     }
@@ -254,7 +262,7 @@ public class TicketHandler implements NucleusTicketService {
     public CompletableFuture<Boolean> deleteMessageInTicket(int id, Instant creationDate, String message) {
         //Lookup the ticket, and then try to delete the message.
         CompletableFuture<Boolean> future = lookupTicketById(id)
-                .thenApplyAsync((Ticket ticket) -> {
+                .thenApplyAsync(ticket -> {
                     if (ticket == null) {
                         return false;
                     }
@@ -271,6 +279,29 @@ public class TicketHandler implements NucleusTicketService {
                         return false;
                     }
                 }, executor);
+
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Boolean> setTicketStatus(int id, boolean closed) {
+        CompletableFuture<Boolean> future = lookupTicketById(id)
+                .thenApplyAsync(ticket -> {
+                    if (ticket == null) {
+                        return false;
+                    }
+
+                    TicketData ticketData = (TicketData) ticket;
+                    ticketData.setClosed(closed);
+
+                    try {
+                        return updateTicket(ticketData, false, true).get();
+                    } catch (InterruptedException | ExecutionException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    return false;
+                });
 
         return future;
     }
