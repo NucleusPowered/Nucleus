@@ -35,6 +35,8 @@ public class KitDataNode implements Kit {
 
     @Setting private double cost = 0;
 
+    @Setting private boolean autoRedeem = false;
+
     @Setting private boolean oneTime = false;
 
     @Setting private List<String> commands = Lists.newArrayList();
@@ -73,6 +75,17 @@ public class KitDataNode implements Kit {
     @Override
     public Kit setCost(double cost) {
         this.cost = cost;
+        return this;
+    }
+
+    @Override
+    public boolean isAutoRedeem() {
+        return this.autoRedeem;
+    }
+
+    @Override
+    public Kit setAutoRedeem(boolean autoRedeem) {
+        this.autoRedeem = autoRedeem;
         return this;
     }
 

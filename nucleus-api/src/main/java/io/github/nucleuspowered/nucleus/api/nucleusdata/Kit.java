@@ -63,6 +63,21 @@ public interface Kit {
     Kit setCost(double cost);
 
     /**
+     * Gets whether the kit is automatically redeemed on login.
+     *
+     * @return <code>true</code> if so
+     */
+    boolean isAutoRedeem();
+
+    /**
+     * Sets whether the kit is automatically redeemed on login.
+     *
+     * @param autoRedeem Set <code>true</code> if the kit should automatically redeemed, <code>false</code> otherwise.
+     * @return this {@link Kit}, for chaining.
+     */
+    Kit setAutoRedeem(boolean autoRedeem);
+
+    /**
      * Gets whether the kit is only allowed to be used one time, ever.
      *
      * @return <code>true</code> if so
