@@ -18,6 +18,9 @@ public class WorldConfig {
     @Setting(value = "display-generation-warning", comment = "config.world.gen.warning")
     private boolean displayWarningGeneration = true;
 
+    @Setting(value = "separate-permissions", comment = "config.worlds.separate")
+    private boolean separatePermissions = false;
+
     public boolean isDisplayWarningGeneration() {
         return displayWarningGeneration;
     }
@@ -28,5 +31,9 @@ public class WorldConfig {
         }
 
         return Optional.of(worldBorderDefault);
+    }
+
+    public boolean isSeparatePermissions() {
+        return separatePermissions;
     }
 }
