@@ -172,7 +172,7 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
         String lastUpdateDate = dtf.format(ticket.getCreationDate());
 
         //Create a clickable name providing more information about the ticket
-        Text.Builder information = Text.builder(String.valueOf(ticket.getId()))
+        Text.Builder information = Text.builder(String.valueOf("[" + ticket.getId() + "]"))
                 .onHover(TextActions.showText(plugin.getMessageProvider().getTextMessageWithFormat("command.checktickets.hover.check")))
                 .onClick(TextActions.executeCallback(commandSource -> {
                     //Send general ticket related information
@@ -201,7 +201,7 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
         //Create the ticket message
         Text.Builder message = Text.builder()
                 .append(Text.of(TextColors.GREEN, information.build()))
-                .append(Text.of(": "))
+                .append(Text.of(" "))
                 .append(Text.of(TextColors.YELLOW, ticket.getMessages().firstEntry().getValue())); //Use first message as title.
 
         return message.build();

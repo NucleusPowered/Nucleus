@@ -39,6 +39,18 @@ public class TicketDataManager {
             "CREATE INDEX IF NOT EXISTS owner ON Tickets(Owner);",
             "CREATE INDEX IF NOT EXISTS assignee ON Tickets(Assignee);",
             "CREATE INDEX IF NOT EXISTS closed ON Tickets(Closed);",
+
+            //Create table to store actions conducted on Tickets
+            "CREATE TABLE IF NOT EXISTS Ticket_Actions(" +
+                    "ID INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, " +
+                    "TicketID INTEGER NOT NULL, " +
+                    "ACTOR CHAR(36) NOT NULL, " +
+                    "ActionDate TIMESTAMP NOT NULL, " +
+                    "ActionMessage TEXT NOT NULL);",
+            //Create index for Ticket_Audits table by TicketID.
+            "CREATE INDEX IF NOT EXISTS ticketid ON Ticket_Actions(TicketID);",
+            "CREATE INDEX IF NOT EXISTS actiondate ON Ticket_Actions(ActionDate);",
+
             //Create table to store ticket messages
             "CREATE TABLE IF NOT EXISTS Ticket_Messages(" +
                     "ID INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, " +
@@ -57,6 +69,8 @@ public class TicketDataManager {
     public static final String CREATE_TICKET_MESSAGE_QUERY = "INSERT INTO Ticket_Messages(TicketID, MessageDate, Message) VALUES(?, ?, ?);";
     public static final String UPDATE_TICKET_MESSAGE_QUERY = "UPDATE Ticket_Messages SET Message = ? WHERE(TicketID = ? AND MessageDate = ?);";
     public static final String DELETE_TICKET_MESSAGE_QUERY = "DELETE FROM Ticket_Messages WHERE(TicketID = ? AND MessageDate = ? AND Message = ?);";
+
+    public static final String CREATE_TICKET_ACTION_QUERY = "INSERT INTO Ticket_Actions(TicketID, ActionDate, ActionMessage) VALUES(?, ?, ?);";
 
     public Optional<DataSource> getDataSource() {
         SqlService sqlService = Sponge.getServiceManager().provide(SqlService.class).get();
@@ -350,4 +364,29 @@ public class TicketDataManager {
 
         return true;
     }
+
+    public boolean createTicketAction(Ticket ticket, Instant date, String action) throws SQLException {
+        if (!getDataSource().isPresent()) {
+            throw new SQLException("Creating the Ticket Action in the database failed... the data source is not present.");
+        }
+
+        try (
+                Connection connection = getDataSource().get().getConnection();
+                PreparedStatement statement = connection.prepareStatement(CREATE_TICKET_ACTION_QUERY)
+        ) {
+            statement.setInt(1, ticket.getId());
+            statement.setTimestamp(2, Timestamp.from(date));
+            statement.setString(3, action);
+
+            //Check if anything was affected, if it wasn't throw an exception.
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Creating the Ticket Action in the database failed... no rows were affected.");
+            }
+        }
+
+        return true;
+    }
+
+    //TODO Create Retrieve query for Ticket Actions
 }
