@@ -8,9 +8,9 @@ import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
+import io.github.nucleuspowered.nucleus.api.filter.FilterComparator;
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
-import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
 import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketData;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
@@ -20,6 +20,7 @@ import org.spongepowered.api.entity.living.player.User;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -49,12 +50,12 @@ public class TicketHandler implements NucleusTicketService {
     }
 
     @Override
-    public CompletableFuture<Collection<Ticket>> lookupTicket(NucleusTicketQuery query) {
+    public CompletableFuture<Collection<Ticket>> lookupTicket(Set<NucleusTicketFilter> filters) {
         CompletableFuture<Collection<Ticket>> future = new CompletableFuture<>();
 
         executor.execute(() -> {
             try {
-                Collection<Ticket> ticket = ticketDataManager.lookupTicket(query);
+                Collection<Ticket> ticket = ticketDataManager.lookupTicket(filters);
                 future.complete(ticket);
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -67,27 +68,27 @@ public class TicketHandler implements NucleusTicketService {
 
     @Override
     public CompletableFuture<Collection<Ticket>> lookupTicketsByOwner(UUID uuid) {
-        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.OWNER, QueryComparator.EQUALS, uuid).build());
+        return lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.OWNER, FilterComparator.EQUALS, uuid).build());
     }
 
     @Override
     public CompletableFuture<Collection<Ticket>> lookupTicketsByAssignee(UUID uuid) {
-        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, uuid).build());
+        return lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.ASSIGNEE, FilterComparator.EQUALS, uuid).build());
     }
 
     @Override
     public CompletableFuture<Collection<Ticket>> lookupTicketsInCreationDateRange(Instant lowerDate, Instant higherDate) {
-        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
+        return lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.CREATION_DATE, FilterComparator.BETWEEN, lowerDate, higherDate).build());
     }
 
     @Override
     public CompletableFuture<Collection<Ticket>> lookupTicketsInUpdateDateRange(Instant lowerDate, Instant higherDate) {
-        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, lowerDate, higherDate).build());
+        return lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.LAST_UPDATE_DATE, FilterComparator.BETWEEN, lowerDate, higherDate).build());
     }
 
     @Override
     public CompletableFuture<Collection<Ticket>> lookupTicketsByStatus(boolean closed) {
-        return lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, closed).build());
+        return lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.STATUS, FilterComparator.EQUALS, closed).build());
     }
 
     @Override

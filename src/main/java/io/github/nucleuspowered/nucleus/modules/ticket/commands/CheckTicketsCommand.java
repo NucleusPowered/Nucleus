@@ -6,9 +6,9 @@ package io.github.nucleuspowered.nucleus.modules.ticket.commands;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.api.filter.FilterComparator;
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
-import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
 import io.github.nucleuspowered.nucleus.argumentparsers.TimespanArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.*;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -70,24 +70,24 @@ public class CheckTicketsCommand extends AbstractCommand<CommandSource> {
         Optional<Long> updatedSince = args.getOne(updatedSinceKey);
         Optional<Boolean> status = args.getOne(statusKey);
 
-        //Construct the query.
-        NucleusTicketQuery.Builder ticketQueryBuilder = NucleusTicketQuery.builder();
+        //Construct the filter.
+        NucleusTicketFilter.Builder ticketQueryBuilder = NucleusTicketFilter.builder();
         if (owner.isPresent()) {
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.ID, QueryComparator.EQUALS, owner.get().getUniqueId());
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.ID, FilterComparator.EQUALS, owner.get().getUniqueId());
         }
         if (assignee.isPresent()) {
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.ASSIGNEE, QueryComparator.EQUALS, assignee.get().getUniqueId());
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.ASSIGNEE, FilterComparator.EQUALS, assignee.get().getUniqueId());
         }
         if (createdSince.isPresent()) {
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.CREATION_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(createdSince.get()), Instant.now());
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.CREATION_DATE, FilterComparator.BETWEEN, Instant.now().minusSeconds(createdSince.get()), Instant.now());
         }
         if (updatedSince.isPresent()) {
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.LAST_UPDATE_DATE, QueryComparator.BETWEEN, Instant.now().minusSeconds(updatedSince.get()), Instant.now());
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.LAST_UPDATE_DATE, FilterComparator.BETWEEN, Instant.now().minusSeconds(updatedSince.get()), Instant.now());
         }
         if (status.isPresent()) {
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, status.get());
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.STATUS, FilterComparator.EQUALS, status.get());
         } else { //Get only open tickets by default
-            ticketQueryBuilder.filter(NucleusTicketQuery.Column.STATUS, QueryComparator.EQUALS, false);
+            ticketQueryBuilder.filter(NucleusTicketFilter.Property.STATUS, FilterComparator.EQUALS, false);
         }
 
         src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.checktickets.inprogress"));

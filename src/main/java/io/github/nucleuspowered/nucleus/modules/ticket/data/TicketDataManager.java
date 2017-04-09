@@ -8,19 +8,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
+import io.github.nucleuspowered.nucleus.api.filter.FilterComparator;
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
-import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
+import io.github.nucleuspowered.nucleus.modules.ticket.filter.sql.TicketQuery;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.sql.SqlService;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class TicketDataManager {
@@ -134,7 +132,7 @@ public class TicketDataManager {
         return true;
     }
 
-    public Collection<Ticket> lookupTicket(NucleusTicketQuery query) throws SQLException {
+    public Collection<Ticket> lookupTicket(Set<NucleusTicketFilter> filters) throws SQLException {
         if (!getDataSource().isPresent()) {
             throw new SQLException("Retrieving Tickets from the database failed... the data source is not present.");
         }
@@ -142,7 +140,7 @@ public class TicketDataManager {
         Collection<Ticket> result = Lists.newArrayList();
         try (
                 Connection connection = getDataSource().get().getConnection();
-                PreparedStatement statement = query.constructQuery(connection)
+                PreparedStatement statement = TicketQuery.fromFilters(filters).constructQuery(connection)
         ) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -161,7 +159,7 @@ public class TicketDataManager {
     }
 
     public Ticket lookupTicketByID(int id) throws SQLException {
-        Collection<Ticket> tickets = lookupTicket(NucleusTicketQuery.builder().filter(NucleusTicketQuery.Column.ID, QueryComparator.EQUALS, id).build());
+        Collection<Ticket> tickets = lookupTicket(NucleusTicketFilter.builder().filter(NucleusTicketFilter.Property.ID, FilterComparator.EQUALS, id).build());
         if (tickets.isEmpty()) {
             return null;
         } else {

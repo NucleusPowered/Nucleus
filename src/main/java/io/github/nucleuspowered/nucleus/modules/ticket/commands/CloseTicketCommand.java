@@ -51,7 +51,7 @@ public class CloseTicketCommand extends AbstractCommand<CommandSource> {
                 }
             } else {
                 if (success) {
-                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.close", String.valueOf(id)));
+                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.close.success", String.valueOf(id)));
                 } else {
                     src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.close.error", String.valueOf(id)));
                 }

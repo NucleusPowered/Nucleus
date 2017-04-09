@@ -51,7 +51,7 @@ public class ReOpenTicketCommand extends AbstractCommand<CommandSource> {
                 }
             } else {
                 if (success) {
-                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.reopen", String.valueOf(id)));
+                    src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.reopen.success", String.valueOf(id)));
                 } else {
                     src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.ticket.reopen.error", String.valueOf(id)));
                 }

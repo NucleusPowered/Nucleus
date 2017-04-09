@@ -5,13 +5,13 @@
 package io.github.nucleuspowered.nucleus.modules.ticket;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
 import io.github.nucleuspowered.nucleus.api.service.NucleusTicketService;
 import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.modules.ticket.config.TicketConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.ticket.data.TicketDataManager;
 import io.github.nucleuspowered.nucleus.modules.ticket.handlers.TicketHandler;
-import io.github.nucleuspowered.nucleus.modules.ticket.query.TicketQueryBuilder;
+import io.github.nucleuspowered.nucleus.modules.ticket.filter.sql.TicketQueryBuilder;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
@@ -36,7 +36,7 @@ public class TicketModule extends ConfigurableModule<TicketConfigAdapter> {
             plugin.getInjector().injectMembers(ticketDataManager);
             ticketDataManager.createTables();
 
-            Sponge.getGame().getRegistry().registerBuilderSupplier(NucleusTicketQuery.Builder.class, TicketQueryBuilder::new);
+            Sponge.getGame().getRegistry().registerBuilderSupplier(NucleusTicketFilter.Builder.class, TicketQueryBuilder::new);
 
             TicketHandler ticketHandler = new TicketHandler(plugin, ticketDataManager);
             plugin.getInjector().injectMembers(ticketHandler);

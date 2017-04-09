@@ -4,24 +4,25 @@
  */
 package io.github.nucleuspowered.nucleus.api.service;
 
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Ticket;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface NucleusTicketService {
 
     /**
-     * Looks up all Tickets that fulfill the provided query criteria.
+     * Looks up all Tickets that fulfill the provided filter criteria.
      *
-     * @param query The query to use when loooking up tickets.
-     * @return A collection of all {@link Ticket}s which fulfill the provided query.
+     * @param filters The filters to use when loooking up tickets.
+     * @return A collection of all {@link Ticket}s which fulfill the provided filters.
      */
-    CompletableFuture<Collection<Ticket>> lookupTicket(NucleusTicketQuery query);
+    CompletableFuture<Collection<Ticket>> lookupTicket(Set<NucleusTicketFilter> filters);
 
     /**
      * Looks up all Tickets that were created by the user with the provided {@link UUID}.
@@ -37,7 +38,7 @@ public interface NucleusTicketService {
      * @param uuid The uuid of the assignee to lookup tickets for.
      * @return A collection of all {@link Ticket}s assigned to the provided {@link UUID}.
      */
-    public CompletableFuture<Collection<Ticket>> lookupTicketsByAssignee(UUID uuid);
+    CompletableFuture<Collection<Ticket>> lookupTicketsByAssignee(UUID uuid);
 
     /**
      * Looks up all Tickets that were created in the specified range of dates.

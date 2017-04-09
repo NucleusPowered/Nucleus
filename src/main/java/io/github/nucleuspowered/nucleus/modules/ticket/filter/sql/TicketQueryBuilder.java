@@ -2,29 +2,30 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.ticket.query;
+package io.github.nucleuspowered.nucleus.modules.ticket.filter.sql;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.api.query.NucleusTicketQuery;
-import io.github.nucleuspowered.nucleus.api.query.QueryComparator;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import io.github.nucleuspowered.nucleus.api.filter.FilterComparator;
+import io.github.nucleuspowered.nucleus.api.filter.NucleusTicketFilter;
+import io.github.nucleuspowered.nucleus.modules.ticket.filter.TicketFilter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Set;
 
-public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
-    private Map<String, Map<Integer, Object>> queries = Maps.newHashMap(); //The value is a map of the parameter index for the prepared statement and the value to replace.
-    private NucleusTicketQuery.Column column;
-    private QueryComparator comparator;
-    private Map<Integer, Object> values = Maps.newHashMap();
+public class TicketQueryBuilder implements NucleusTicketFilter.Builder {
+    private Set<NucleusTicketFilter> filters = Sets.newHashSet();
+    private NucleusTicketFilter.Property column;
+    private FilterComparator comparator;
+    private ArrayList<Object> values = Lists.newArrayList();
 
     public TicketQueryBuilder() {
         reset();
     }
 
     @Override
-    public NucleusTicketQuery.Builder column(NucleusTicketQuery.Column column) {
+    public NucleusTicketFilter.Builder property(NucleusTicketFilter.Property column) {
         Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column) != null,
                 "The column " + column.toString() + " does not have a valid set of column properties.");
 
@@ -33,29 +34,29 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
     }
 
     @Override
-    public NucleusTicketQuery.Builder comparator(QueryComparator comparator) {
+    public NucleusTicketFilter.Builder comparator(FilterComparator comparator) {
         this.comparator = comparator;
         return this;
     }
 
     @Override
-    public NucleusTicketQuery.Builder value(Object value) {
+    public NucleusTicketFilter.Builder value(Object value) {
         Preconditions.checkState(column != null,
                 "You must first declare the column you are querying before declaring a value to filter by.");
         Preconditions.checkState(comparator != null,
                 "You must first declare the comparator you are using to filter by before declaring a value to use with the filter.");
         Preconditions.checkState(values.size() < TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
-                "This query already has the maximum number of assigned values.");
+                "This filter already has the maximum number of assigned values.");
         Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column).getJavaType().isAssignableFrom(value.getClass()),
-                "The value is not of the expected type, the column " + column.toString() + " expects a query parameter of type " +
+                "The value is not of the expected type, the column " + column.toString() + " expects a filter parameter of type " +
                         TicketQuery.TicketColumnProperties.of(column).getJavaType().getSimpleName());
 
-        replaceValue(values.size() + 1, value); //Add one to the size because the parameter index starts at 1, not 0.
+        values.add(value);
         return this;
     }
 
     @Override
-    public NucleusTicketQuery.Builder replaceValue(int valueIndex, Object value) {
+    public NucleusTicketFilter.Builder replaceValue(int valueIndex, Object value) {
         Preconditions.checkState(column != null,
                 "You must first declare the column you are querying before declaring a value to filter by.");
         Preconditions.checkState(comparator != null,
@@ -65,41 +66,36 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
         Preconditions.checkState(valueIndex <= TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
                 "The provided value index is greater than the maximum possible number of values.");
         Preconditions.checkState(TicketQuery.TicketColumnProperties.of(column).getJavaType().isAssignableFrom(value.getClass()),
-                "The value is not of the expected type, the column " + column.toString() + " expects a query parameter of type " +
+                "The value is not of the expected type, the column " + column.toString() + " expects a filter parameter of type " +
                         TicketQuery.TicketColumnProperties.of(column).getJavaType().getSimpleName());
 
-        values.put(valueIndex, value);
+        values.set(valueIndex, value);
         return this;
     }
 
     @Override
-    public NucleusTicketQuery.Builder completeFilter() {
+    public NucleusTicketFilter.Builder completeFilter() {
         Preconditions.checkState(column != null,
-                "The column to query must be defined.");
+                "The column to filter must be defined.");
         Preconditions.checkState(comparator != null,
-                "The comparator to use in the query must be defined.");
+                "The comparator to use in the filter must be defined.");
         Preconditions.checkState(values.size() == TicketQueryComparatorProperties.of(comparator).getExpectedValueCount(),
                 "The comparator expects " + TicketQueryComparatorProperties.of(comparator).getExpectedValueCount() + " value(s) but " +
                         values.size() + " value(s) were provided.");
 
-        switch (comparator) {
-            case BETWEEN:
-                queries.put(TicketQuery.TicketColumnProperties.of(column).getColumnName() + " " + TicketQueryComparatorProperties.of(comparator).getComparator() + " ? AND ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
-                break;
-            default:
-                queries.put(TicketQuery.TicketColumnProperties.of(column).getColumnName() + " " + TicketQueryComparatorProperties.of(comparator).getComparator() + " ?", ImmutableMap.copyOf(values)); //Since this will be used to create a prepared statement use a token instead of the value.
-                break;
-        }
+
+        filters.add(new TicketFilter(column, comparator, Lists.newArrayList(values)));
 
         this.column = null;
         this.comparator = null;
         values.clear();
+
         return this;
     }
 
     @Override
-    public NucleusTicketQuery.Builder filter(NucleusTicketQuery.Column column, QueryComparator comparator, Object... values) {
-        column(column);
+    public NucleusTicketFilter.Builder filter(NucleusTicketFilter.Property column, FilterComparator comparator, Object... values) {
+        property(column);
         comparator(comparator);
         for (Object value : values) {
             value(value);
@@ -110,24 +106,19 @@ public class TicketQueryBuilder implements NucleusTicketQuery.Builder {
     }
 
     @Override
-    public Map<String, Map<Integer, Object>> getQueries() {
-        return queries;
+    public Set<NucleusTicketFilter> build() {
+        return filters;
     }
 
     @Override
-    public NucleusTicketQuery build() {
-        return new TicketQuery(this);
-    }
-
-    @Override
-    public NucleusTicketQuery.Builder from(NucleusTicketQuery value) {
-        this.queries = new HashMap<>(value.getQueries());
+    public NucleusTicketFilter.Builder from(Set<NucleusTicketFilter> value) {
+        this.filters = value;
         return this;
     }
 
     @Override
-    public NucleusTicketQuery.Builder reset() {
-        queries.clear();
+    public NucleusTicketFilter.Builder reset() {
+        filters.clear();
         column = null;
         comparator = null;
         values.clear();

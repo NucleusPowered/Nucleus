@@ -2,12 +2,12 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.api.query;
+package io.github.nucleuspowered.nucleus.api.filter;
 
 /**
- * An enumeration of comparators that can be used in a query.
+ * An enumeration of comparators that can be used in a filter.
  */
-public enum QueryComparator {
+public enum FilterComparator {
 
     /**
      * Compares if a value is less than another value.
