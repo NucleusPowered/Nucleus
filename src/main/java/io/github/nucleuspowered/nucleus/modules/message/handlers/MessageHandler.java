@@ -113,7 +113,7 @@ public class MessageHandler implements NucleusPrivateMessagingService {
     }
 
     @Override public Tristate forcedSocialSpyState(User user) {
-        if (socialspypermissions.testSuffix(user, "base")) {
+        if (messageConfig.isSocialSpyAllowForced() && socialspypermissions.testSuffix(user, "base")) {
             if (socialspypermissions.testSuffix(user, "force")) {
                 return Tristate.TRUE;
             }

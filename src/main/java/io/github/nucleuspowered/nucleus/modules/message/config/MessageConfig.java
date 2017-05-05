@@ -43,6 +43,10 @@ public class MessageConfig {
         return socialSpy.messageSocialSpyPrefix;
     }
 
+    public boolean isSocialSpyAllowForced() {
+        return socialSpy.allowForced;
+    }
+
     public boolean isSocialSpyLevels() {
         return socialSpy.socialSpyLevels;
     }
@@ -76,6 +80,9 @@ public class MessageConfig {
         @Setting(value = "msg-prefix", comment = "config.message.socialspy.prefix")
         @Default(value = "&7[SocialSpy] [{{fromDisplay}}&7 -> {{toDisplay}}&7]: &r", saveDefaultIfNull = true)
         private NucleusTextTemplateImpl messageSocialSpyPrefix;
+
+        @Setting(value = "allow-forced", comment = "config.message.socialspy.force")
+        private boolean allowForced = false;
 
         @Setting(value = "use-levels", comment = "config.message.socialspy.levels")
         private boolean socialSpyLevels = false;
