@@ -119,7 +119,7 @@ public interface Kit {
     }
 
     /**
-     * Convenience method for updating the kit with the contents of the player's inventory.
+     * Convenience method for updating the kit with the contents of an inventory.
      *
      * @param inventory The inventory to get the kit from.
      * @return This {@link Kit} for chaining.
