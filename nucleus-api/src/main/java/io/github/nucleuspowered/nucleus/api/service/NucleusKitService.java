@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.api.service;
 
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,6 +20,12 @@ public interface NucleusKitService {
      * @return A {@link Set} of {@link String}s.
      */
     Set<String> getKitNames();
+
+    /**
+     * Gets all the kits currently in NucleusPlugin.
+     * @return A {@link Map} of names to {@link Kit}s.
+     */
+    Map<String, Kit> getKits();
 
     /**
      * Gets the requested kit if it exists.

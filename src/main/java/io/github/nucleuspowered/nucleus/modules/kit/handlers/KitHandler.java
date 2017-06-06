@@ -65,6 +65,7 @@ public class KitHandler implements NucleusKitService {
 
     @Inject private KitService store;
 
+    @Override
     public ImmutableMap<String, Kit> getKits() {
         return ImmutableMap.copyOf(store.getKits());
     }
