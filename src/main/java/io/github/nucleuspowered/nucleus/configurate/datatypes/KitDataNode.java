@@ -132,6 +132,11 @@ public class KitDataNode implements Kit {
         return updateKitInventory(Util.getStandardInventory(player));
     }
 
+    @Override public boolean redeemKitItems(Player player) {
+        //TODO: Move KitHandler#redeemKit to KitDataNode
+        return false;
+    }
+
     @Override public void redeemKitCommands(Player player) {
         ConsoleSource source = Sponge.getServer().getConsole();
         String playerName = player.getName();

@@ -135,6 +135,26 @@ public interface Kit {
     Kit updateKitInventory(Player player);
 
     /**
+     * Redeems any items and commands in this kit for the specified player.
+     *
+     * @param player The player.
+     * @return <code>true</code> if the redemption was successful
+     */
+    default boolean redeem(Player player) {
+        boolean success = redeemKitItems(player);
+        if (success) redeemKitCommands(player);
+        return success;
+    }
+
+    /**
+     * Redeems the items in this kit for the specified player.
+     *
+     * @param player The player.
+     * @return <code>true</code> if the redemption was successful
+     */
+    boolean redeemKitItems(Player player);
+
+    /**
      * Redeems the commands in this kit for the specified player.
      *
      * @param player The player.
