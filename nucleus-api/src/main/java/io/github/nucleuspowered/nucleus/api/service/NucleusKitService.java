@@ -23,7 +23,7 @@ public interface NucleusKitService {
 
     /**
      * Gets all the kits currently in NucleusPlugin.
-     * @return A {@link Map} of names to {@link Kit}s.
+     * @return An immutable {@link Map} of names to all {@link Kit}s.
      */
     Map<String, Kit> getKits();
 
