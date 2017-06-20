@@ -6,9 +6,19 @@ package io.github.nucleuspowered.nucleus.configurate.datatypes;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.KitResult;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.KitResultType;
 import io.github.nucleuspowered.nucleus.configurate.wrappers.NucleusItemStackSnapshot;
+import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
+import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
+import io.github.nucleuspowered.nucleus.modules.kit.KitModule;
+import io.github.nucleuspowered.nucleus.modules.kit.NucleusKitResult;
+import io.github.nucleuspowered.nucleus.modules.kit.commands.kit.KitCommand;
+import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfigAdapter;
+import io.github.nucleuspowered.nucleus.modules.kit.datamodules.KitUserDataModule;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.Sponge;
@@ -19,8 +29,10 @@ import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ConfigSerializable
@@ -132,15 +144,70 @@ public class KitDataNode implements Kit {
         return updateKitInventory(Util.getStandardInventory(player));
     }
 
-    @Override public boolean redeemKitItems(Player player) {
+    @Override public KitResult redeemKitItems(Player player, boolean performChecks) {
+        KitResult result = new NucleusKitResult(KitResultType.SUCCESS);
+        if (performChecks){
+            result = performChecks(player);
+            if (!result.successful()) return result;
+        }
         //TODO: Move KitHandler#redeemKit to KitDataNode
-        return false;
+        return result;
     }
 
-    @Override public void redeemKitCommands(Player player) {
+    @Override public KitResult redeemKitCommands(Player player, boolean performChecks) {
+        KitResult result = new NucleusKitResult(KitResultType.SUCCESS);
+        if (performChecks){
+            result = performChecks(player);
+            if (!result.successful()) return result;
+        }
         ConsoleSource source = Sponge.getServer().getConsole();
         String playerName = player.getName();
         getCommands().forEach(x -> Sponge.getCommandManager().process(source, x.replace("{{player}}", playerName)));
+        return result;
+    }
+
+    @Override public KitResult performChecks(Player player) {
+        CommandPermissionHandler cph = Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(KitCommand.class);
+        KitUserDataModule user = Nucleus.getNucleus().getUserDataManager().get(player.getUniqueId()).get().get(KitUserDataModule.class);
+        KitConfigAdapter config = Nucleus.getNucleus().getConfigAdapter(KitModule.ID, KitConfigAdapter.class).get();
+
+        String kitName = ""; // TODO: Need a way to retrieve the kit name.
+        Optional<Instant> oi = Util.getValueIgnoreCase(user.getKitLastUsedTime(), kitName);
+        Instant now = Instant.now();
+
+        if (config.getNodeOrDefault().isSeparatePermissions()
+            && !ignoresPermission()
+            || !player.hasPermission(PermissionRegistry.PERMISSIONS_PREFIX + "kits." + kitName))
+            return new NucleusKitResult(KitResultType.NO_PERMISSION);
+
+        // If the kit was used before...
+        if (oi.isPresent()) {
+
+            // if it's one time only and the user does not have an exemption...
+            if (isOneTime() && !player.hasPermission(cph.getPermissionWithSuffix("exempt.onetime"))) {
+                // tell the user.
+                return new NucleusKitResult(KitResultType.ALREADY_REDEEMED);
+            }
+
+            // If we have a cooldown for the kit, and we don't have permission to
+            // bypass it...
+            if (!cph.testCooldownExempt(player) && getInterval().getSeconds() > 0) {
+
+                // ...and we haven't reached the cooldown point yet...
+                Instant timeForNextUse = oi.get().plus(getInterval());
+                if (timeForNextUse.isAfter(now)) {
+                    Duration d = Duration.between(now, timeForNextUse);
+
+                    // tell the user.
+                    return new NucleusKitResult(KitResultType.ON_COOLDOWN, d);
+                }
+            }
+        }
+
+        if (player.getInventory().capacity() - player.getInventory().size() < getStacks().size())
+            return new NucleusKitResult(KitResultType.INVENTORY_FULL);
+
+        return new NucleusKitResult(KitResultType.SUCCESS);
     }
 
     @Override public boolean isDisplayMessageOnRedeem() {
@@ -182,6 +249,4 @@ public class KitDataNode implements Kit {
 
         return this;
     }
-
-
 }
