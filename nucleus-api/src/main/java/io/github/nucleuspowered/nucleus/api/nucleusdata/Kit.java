@@ -119,7 +119,7 @@ public interface Kit {
     }
 
     /**
-     * Convenience method for updating the kit with the contents of the player's inventory.
+     * Convenience method for updating the kit with the contents of an inventory.
      *
      * @param inventory The inventory to get the kit from.
      * @return This {@link Kit} for chaining.
@@ -135,11 +135,61 @@ public interface Kit {
     Kit updateKitInventory(Player player);
 
     /**
+     * Redeems any items and commands in this kit for the specified player.
+     *
+     * @param player The player.
+     * @param performChecks Whether nucleus should perform usage, cooldown, and permission checks before redeeming
+     * @return The {@link KitResult}
+     */
+    default KitResult redeem(Player player, boolean performChecks) {
+        KitResult result = redeemKitItems(player, performChecks);
+        if (result.successful()) redeemKitCommands(player);
+        return result;
+    }
+
+    /**
+     * Redeems the items in this kit for the specified player.
+     *
+     * @param player The player.
+     */
+    default void redeemKitItems(Player player) {
+        redeemKitItems(player, false);
+    }
+
+    /**
+     * Redeems the items in this kit for the specified player.
+     *
+     * @param player The player.
+     * @param performChecks Whether nucleus should perform usage, cooldown, and permission checks before redeeming
+     * @return The {@link KitResult}
+     */
+    KitResult redeemKitItems(Player player, boolean performChecks);
+
+    /**
      * Redeems the commands in this kit for the specified player.
      *
      * @param player The player.
      */
-    void redeemKitCommands(Player player);
+    default void redeemKitCommands(Player player) {
+        redeemKitItems(player, false);
+    }
+
+    /**
+     * Redeems the commands in this kit for the specified player.
+     *
+     * @param player The player.
+     * @param performChecks Whether nucleus should perform usage, cooldown, and permission checks before redeeming
+     * @return The {@link KitResult}
+     */
+    KitResult redeemKitCommands(Player player, boolean performChecks);
+
+    /**
+     * Returns the result of the kit permission, usage, and cooldown checks.
+     *
+     * @param player The player.
+     * @return {@link KitResult}
+     */
+    KitResult performChecks(Player player);
 
     /**
      * Gets whether a message is displayed to the player when a kit is redeemed.

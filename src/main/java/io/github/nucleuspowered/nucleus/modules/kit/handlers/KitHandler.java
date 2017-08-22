@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.events.NucleusKitEvent;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.KitResult;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
 import io.github.nucleuspowered.nucleus.argumentparsers.KitArgument;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.KitDataNode;
@@ -65,6 +66,7 @@ public class KitHandler implements NucleusKitService {
 
     @Inject private KitService store;
 
+    @Override
     public ImmutableMap<String, Kit> getKits() {
         return ImmutableMap.copyOf(store.getKits());
     }
@@ -156,45 +158,32 @@ public class KitHandler implements NucleusKitService {
     public boolean redeemKit(Kit kit, String kitName, Player player, CommandSource source, boolean performChecks,
             boolean isFirstJoin) throws ReturnMessageException {
 
-        KitUserDataModule user = Nucleus.getNucleus().getUserDataManager()
-                .get(player.getUniqueId()).get().get(KitUserDataModule.class);
+        KitUserDataModule user = Nucleus.getNucleus().getUserDataManager().get(player.getUniqueId()).get().get(KitUserDataModule.class);
         MessageProvider messageProvider = Nucleus.getNucleus().getMessageProvider();
         Optional<Instant> oi = Util.getValueIgnoreCase(user.getKitLastUsedTime(), kitName);
         Instant now = Instant.now();
         if (performChecks) {
-
-            // If the kit was used before...
-            if (oi.isPresent()) {
-
-                // if it's one time only and the user does not have an exemption...
-                if (kit.isOneTime() && !player.hasPermission(cph.getPermissionWithSuffix("exempt.onetime"))) {
-                    // tell the user.
+            KitResult result = kit.performChecks(player);
+            switch (result.getResultType()) {
+                case SUCCESS:
+                    break;
+                case NO_PERMISSION:
+                    break;
+                case ALREADY_REDEEMED:
                     if (player == source) {
                         throw ReturnMessageException.fromKey("command.kit.onetime.alreadyredeemed", kitName);
-                    }
-
-                    throw ReturnMessageException.fromKey("command.kit.give.onetime.alreadyredeemed",
+                    } else {
+                        throw ReturnMessageException.fromKey("command.kit.give.onetime.alreadyredeemed",
                             Nucleus.getNucleus().getNameUtil().getSerialisedName(player), kitName);
-                }
-
-                // If we have a cooldown for the kit, and we don't have permission to
-                // bypass it...
-                if (!cph.testCooldownExempt(player) && kit.getInterval().getSeconds() > 0) {
-
-                    // ...and we haven't reached the cooldown point yet...
-                    Instant timeForNextUse = oi.get().plus(kit.getInterval());
-                    if (timeForNextUse.isAfter(now)) {
-                        Duration d = Duration.between(now, timeForNextUse);
-
-                        // tell the user.
-                        if (player == source) {
-                            throw ReturnMessageException.fromKey("command.kit.cooldown", Util.getTimeStringFromSeconds(d.getSeconds()), kitName);
-                        }
-
+                    }
+                case ON_COOLDOWN:
+                    Duration d = result.getRemainingCooldown().orElse(Duration.ZERO);
+                    if (player == source) {
+                        throw ReturnMessageException.fromKey("command.kit.cooldown", Util.getTimeStringFromSeconds(d.getSeconds()), kitName);
+                    } else {
                         throw ReturnMessageException.fromKey("command.kit.give.cooldown",
                             Nucleus.getNucleus().getNameUtil().getSerialisedName(player), Util.getTimeStringFromSeconds(d.getSeconds()), kitName);
                     }
-                }
             }
         }
 
