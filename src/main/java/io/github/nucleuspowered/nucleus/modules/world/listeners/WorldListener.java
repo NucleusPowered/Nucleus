@@ -47,7 +47,7 @@ public class WorldListener extends ListenerBase implements ListenerBase.Conditio
 	}
 
 	private Consumer<Task> relocate(Player player) {
-		return src -> {
+		return task -> {
 			Optional<Location<World>> location = Sponge.getTeleportHelper().getSafeLocationWithBlacklist(player.getLocation(), 5, 5, 5, TeleportHelperFilters.NO_PORTAL);
 			if (location.isPresent()) {
 				player.setLocation(location.get());
