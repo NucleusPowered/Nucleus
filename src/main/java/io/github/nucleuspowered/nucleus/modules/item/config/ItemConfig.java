@@ -10,8 +10,15 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 @ConfigSerializable
 public class ItemConfig {
 
+    @Setting("repair")
+    private RepairConfig repairConfig = new RepairConfig();
+
     @Setting("skull")
     private SkullConfig skullConfig = new SkullConfig();
+
+    public RepairConfig getRepairConfig() {
+        return repairConfig;
+    }
 
     public SkullConfig getSkullConfig() {
         return skullConfig;

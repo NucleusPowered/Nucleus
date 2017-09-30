@@ -4,11 +4,14 @@
  */
 package io.github.nucleuspowered.nucleus.modules.item.commands;
 
+import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
+import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
+import io.github.nucleuspowered.nucleus.modules.item.config.ItemConfigAdapter;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -19,6 +22,7 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
@@ -26,17 +30,29 @@ import org.spongepowered.api.item.inventory.equipment.EquipmentType;
 import org.spongepowered.api.item.inventory.equipment.WornEquipmentType;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @NonnullByDefault
 @Permissions(supportsOthers = true)
 @RegisterCommand({"repair", "mend"})
 @EssentialsEquivalent({"repair", "fix"})
-public class RepairCommand extends AbstractCommand<Player> {
+public class RepairCommand extends AbstractCommand<Player> implements Reloadable {
 
     private int successCount = 0;
     private int errorCount = 0;
     private int noRepairCount = 0;
+
+    private boolean whitelist = false;
+    private List<ItemType> restrictions = new ArrayList<>();
+
+    @Override public void onReload() throws Exception {
+        this.whitelist = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(ItemConfigAdapter.class)
+            .getNodeOrDefault().getRepairConfig().isWhitelist();
+        this.restrictions = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(ItemConfigAdapter.class)
+            .getNodeOrDefault().getRepairConfig().getRestrictions();
+    }
 
     @Override public CommandElement[] getArguments() {
         return new CommandElement[]{
@@ -111,6 +127,9 @@ public class RepairCommand extends AbstractCommand<Player> {
     }
 
     private Optional<ItemStack> repairStack(ItemStack stack) {
+        if (whitelist && !restrictions.contains(stack.getType()) || restrictions.contains(stack.getType())) {
+            return Optional.empty();
+        }
         if (stack.get(DurabilityData.class).isPresent()) {
             DurabilityData durabilityData = stack.get(DurabilityData.class).get();
             DataTransactionResult transactionResult = stack.offer(Keys.ITEM_DURABILITY, durabilityData.durability().getMaxValue());
