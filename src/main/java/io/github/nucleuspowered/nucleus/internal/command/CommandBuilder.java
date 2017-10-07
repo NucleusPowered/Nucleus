@@ -7,16 +7,21 @@ package io.github.nucleuspowered.nucleus.internal.command;
 import com.google.common.collect.Sets;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
+import io.github.nucleuspowered.nucleus.PluginInfo;
 import io.github.nucleuspowered.nucleus.internal.annotations.SkipOnError;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandMapping;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 public class CommandBuilder {
 
@@ -81,13 +86,14 @@ public class CommandBuilder {
                     String first = c.getAliases()[0];
                     String[] aliases = Arrays.stream(c.getAliases()).filter(x -> x.equals(first) || node.getNode(x).getBoolean(true))
                             .toArray(String[]::new);
-                    Sponge.getCommandManager().register(plugin, c, aliases);
+                    checkMapping(Sponge.getCommandManager().register(plugin, c, aliases).orElse(null), aliases);
                 }
 
                 // Register as another full blown command.
-                for (String s : c.getRootCommandAliases()) {
-                    if (cn.getNode("aliases", s).getBoolean(true)) {
-                        Sponge.getCommandManager().register(plugin, c, s);
+                for (String st : c.getRootCommandAliases()) {
+                    if (cn.getNode("aliases", st).getBoolean(true)) {
+                        checkMapping(Sponge.getCommandManager().register(plugin, c, st).orElse(null), new String[] { st });
+                        // Sponge.getCommandManager().register(plugin, c, st);
                     }
                 }
 
@@ -132,5 +138,34 @@ public class CommandBuilder {
 
     public CommentedConfigurationNode getNodeToMerge() {
         return sn;
+    }
+
+    private void checkMapping(@Nullable CommandMapping commandMapping, String[] aliases) {
+        if (commandMapping != null) {
+            for (String a : aliases) {
+                Optional<PluginContainer> opc = Sponge.getCommandManager().get(aliases[0])
+                        .map(x -> Sponge.getCommandManager().getOwner(x).orElse(null));
+                if (opc.isPresent() && !opc.get().getId().equalsIgnoreCase(PluginInfo.ID)) {
+                    Nucleus.getNucleus().addStartupMessage(
+                            Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("startup.command.plugin",
+                                    a, opc.get().getName(), PluginInfo.ID, aliases[0]));
+                } else if (!opc.isPresent()) {
+                    Nucleus.getNucleus().addStartupMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("startup.command.fallback",
+                            a, PluginInfo.ID, aliases[0]));
+                }
+            }
+        } else {
+            Optional<PluginContainer> ocm = Sponge.getCommandManager().get(aliases[0])
+                    .map(x -> Sponge.getCommandManager().getOwner(x).orElse(null));
+            if (ocm.isPresent()) {
+                Nucleus.getNucleus().addStartupMessage(
+                        Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("startup.command.noregisterplugin",
+                                aliases[0], ocm.get().getName()));
+            } else {
+                Nucleus.getNucleus().addStartupMessage(
+                        Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("startup.command.couldnotregister",
+                                aliases[0]));
+            }
+        }
     }
 }

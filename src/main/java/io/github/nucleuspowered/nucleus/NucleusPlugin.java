@@ -136,6 +136,8 @@ public class NucleusPlugin extends Nucleus {
     private final NucleusTeleportHandler teleportHandler = new NucleusTeleportHandler();
     private NucleusTokenServiceImpl nucleusChatService;
 
+    private final List<Text> startupMessages = Lists.newArrayList();
+
     private final InternalServiceManager serviceManager = new InternalServiceManager(this);
     private MessageProvider messageProvider = new ResourceMessageProvider(ResourceMessageProvider.messagesBundle);
     private MessageProvider commandMessageProvider = new ResourceMessageProvider(ResourceMessageProvider.commandMessagesBundle);
@@ -506,6 +508,19 @@ public class NucleusPlugin extends Nucleus {
             if (!lt.isEmpty()) {
                 lt.add(messageProvider.getTextMessageWithFormat("standard.line"));
                 lt.add(messageProvider.getTextMessageWithFormat("standard.seesuggested"));
+            }
+
+            if (!this.startupMessages.isEmpty()) {
+                if (lt.isEmpty()) {
+                    addTri(lt, 0);
+                }
+
+                lt.add(messageProvider.getTextMessageWithFormat("standard.line"));
+                lt.addAll(this.startupMessages);
+                this.startupMessages.clear();
+            }
+
+            if (!lt.isEmpty()) {
                 lt.add(messageProvider.getTextMessageWithFormat("standard.line"));
                 ConsoleSource c = Sponge.getServer().getConsole();
                 lt.forEach(c::sendMessage);
@@ -827,6 +842,10 @@ public class NucleusPlugin extends Nucleus {
         return this.isServer;
     }
 
+    @Override public void addStartupMessage(Text message) {
+        this.startupMessages.add(message);
+    }
+
     private void disable() {
         // Disable everything, just in case. Thanks to pie-flavor: https://forums.spongepowered.org/t/disable-plugin-disable-itself/15831/8
         Sponge.getEventManager().unregisterPluginListeners(this);
@@ -883,7 +902,6 @@ public class NucleusPlugin extends Nucleus {
         messages.add(Text.of(space, TextColors.YELLOW, " /      **      \\"));
         messages.add(Text.of(space, TextColors.YELLOW, "------------------"));
     }
-
 
     private void addX(List<Text> messages, int spacing) {
         Text space = Text.of(String.join("", Collections.nCopies(spacing, " ")));

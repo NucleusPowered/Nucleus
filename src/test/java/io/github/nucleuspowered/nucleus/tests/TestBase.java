@@ -284,5 +284,9 @@ public abstract class TestBase {
         @Override public boolean isServer() {
             return true;
         }
+
+        @Override public void addStartupMessage(Text message) {
+            // NOOP
+        }
     }
 }

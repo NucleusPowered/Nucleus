@@ -28,6 +28,7 @@ import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
 import org.slf4j.Logger;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.text.Text;
 import uk.co.drnaylor.quickstart.modulecontainers.DiscoveryModuleContainer;
 
 import java.io.IOException;
@@ -142,4 +143,6 @@ public abstract class Nucleus {
     protected abstract void registerPermissions();
 
     public abstract boolean isServer();
+
+    public abstract void addStartupMessage(Text message);
 }
