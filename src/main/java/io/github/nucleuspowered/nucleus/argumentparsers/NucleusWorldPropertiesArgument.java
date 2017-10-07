@@ -64,6 +64,7 @@ public class NucleusWorldPropertiesArgument extends CommandElement {
         DISABLED_ONLY(x -> !x.isEnabled(), "args.worldproperties.noexistdisabled"),
         ENABLED_ONLY(WorldProperties::isEnabled, "args.worldproperties.noexist"),
         LOADED_ONLY(x -> Sponge.getServer().getWorld(x.getUniqueId()).isPresent(), "args.worldproperties.notloaded"),
+        UNLOADED_ONLY(x -> !Sponge.getServer().getWorld(x.getUniqueId()).isPresent(), "args.worldproperties.loaded"),
         ALL(x -> true, "args.worldproperties.noexist");
 
         private final Predicate<WorldProperties> predicate;
