@@ -32,7 +32,6 @@ public class InfoListener extends ListenerBase implements Reloadable, ListenerBa
     private final String motdPerm = Nucleus.getNucleus().getPermissionRegistry()
             .getPermissionsForNucleusCommand(MotdCommand.class).getPermissionWithSuffix("login");
 
-    private String motdPermission = null;
     private boolean usePagination = true;
     private Text title = Text.EMPTY;
 
@@ -42,7 +41,7 @@ public class InfoListener extends ListenerBase implements Reloadable, ListenerBa
     public void playerJoin(ClientConnectionEvent.Join event, @Getter("getTargetEntity") Player player) {
         // Send message one second later on the Async thread.
         Sponge.getScheduler().createAsyncExecutor(plugin).schedule(() -> {
-                if (player.hasPermission(this.motdPermission)) {
+                if (player.hasPermission(this.motdPerm)) {
                     plugin.getTextFileController(InfoModule.MOTD_KEY).ifPresent(x -> {
                         if (this.usePagination) {
                             x.sendToPlayer(player, title);
