@@ -69,7 +69,7 @@ public class KitInfoCommand extends AbstractCommand<CommandSource> {
     }
 
     private Text addCommandHover(MessageProvider mp, Kit kit) {
-        return mp.getTextMessageWithFormat("command.kit.info.commandcount", String.valueOf(kit.getStacks().size())).toBuilder()
+        return mp.getTextMessageWithFormat("command.kit.info.commandcount", String.valueOf(kit.getCommands().size())).toBuilder()
                 .onHover(TextActions.showText(mp.getTextMessageWithFormat("command.kit.info.hover.commandcount", kit.getName())))
                 .onClick(TextActions.runCommand("/nucleus:kit command " + kit.getName())).build();
     }
