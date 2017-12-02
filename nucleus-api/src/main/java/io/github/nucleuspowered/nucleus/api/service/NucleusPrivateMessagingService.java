@@ -228,4 +228,12 @@ public interface NucleusPrivateMessagingService {
      */
     <T extends CommandSource & Identifiable> void registerMessageTarget(UUID uniqueId, String targetName, @Nullable Text displayName, Supplier<T> target)
         throws NullPointerException, IllegalArgumentException, IllegalStateException;
+
+    /**
+     * Removes a previously registered message target.
+     *
+     * @param uniqueId The {@link UUID} of the target.
+     * @throws IllegalStateException thrown if the {@link UUID} is not registered.
+     */
+    void removeMessageTarget(UUID uniqueId) throws IllegalStateException;
 }

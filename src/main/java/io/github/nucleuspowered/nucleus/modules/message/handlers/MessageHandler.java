@@ -354,6 +354,14 @@ public class MessageHandler implements NucleusPrivateMessagingService {
         targetNames.put(targetName.toLowerCase(), uniqueId);
     }
 
+    @Override
+    public void removeMessageTarget(UUID uniqueId) throws IllegalStateException {
+        Preconditions.checkState(targets.containsKey(uniqueId), "UUID not registered");
+
+        targetNames.remove(targets.get(uniqueId).targetName.toLowerCase());
+        targets.remove(uniqueId);
+    }
+
     public Optional<CommandSource> getLastMessageFrom(UUID from) {
         Preconditions.checkNotNull(from);
         UUID to = messagesReceived.get(from);
