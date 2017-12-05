@@ -55,10 +55,10 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
         return new CommandElement[]{
                 GenericArguments.flags()
                         .flag("m", "-mainhand")
-                        .permissionFlag(permissions.getPermissionWithSuffix("all"), "a", "-all")
-                        .permissionFlag(permissions.getPermissionWithSuffix("hotbar"), "h", "-hotbar")
-                        .permissionFlag(permissions.getPermissionWithSuffix("equip"), "e", "-equip")
-                        .permissionFlag(permissions.getPermissionWithSuffix("offhand"), "o", "-offhand")
+                        .permissionFlag(permissions.getPermissionWithSuffix("flag.all"), "a", "-all")
+                        .permissionFlag(permissions.getPermissionWithSuffix("flag.hotbar"), "h", "-hotbar")
+                        .permissionFlag(permissions.getPermissionWithSuffix("flag.equip"), "e", "-equip")
+                        .permissionFlag(permissions.getPermissionWithSuffix("flag.offhand"), "o", "-offhand")
                         .buildWith(GenericArguments.none())
         };
     }
@@ -72,7 +72,7 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
         }};
         EnumMap<ResultType, ItemStackSnapshot> lastItem = new EnumMap<>(ResultType.class);
 
-        boolean checkRestrictions = !pl.hasPermission(permissions.getPermissionWithSuffix("exempt.restrictions"));
+        boolean checkRestrictions = !pl.hasPermission(permissions.getPermissionWithSuffix("exempt.restriction"));
 
         String location = "inventory";
         if (args.hasAny("a")) {
