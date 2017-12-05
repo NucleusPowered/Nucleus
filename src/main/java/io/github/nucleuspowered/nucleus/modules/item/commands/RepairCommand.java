@@ -72,21 +72,12 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
         }};
         EnumMap<ResultType, ItemStackSnapshot> lastItem = new EnumMap<>(ResultType.class);
 
+        boolean checkRestrictions = !pl.hasPermission(permissions.getPermissionWithSuffix("exempt.restrictions"));
+
         String location = "inventory";
         if (args.hasAny("a")) {
-            for (Inventory slot : pl.getInventory().slots()) {
-                if (slot.peek().isPresent() && !slot.peek().get().isEmpty()) {
-                    ItemStack stack = slot.peek().get();
-                    RepairResult result = repairStack(stack);
-                    resultCount.compute(result.type, (t, i) -> i += 1);
-                    lastItem.put(result.type, result.stack.createSnapshot());
-                    if (result.isSuccessful()) {
-                        slot.set(result.stack);
-                    }
-                }
-            }
+            repairInventory(pl.getInventory(), checkRestrictions, resultCount, lastItem);
         } else {
-
             boolean repairHotbar = args.hasAny("h");
             boolean repairEquip = args.hasAny("e");
             boolean repairOffhand = args.hasAny("o");
@@ -105,7 +96,7 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
             // Repair item in main hand
             if (repairMainhand && pl.getItemInHand(HandTypes.MAIN_HAND).isPresent()) {
                 ItemStack stack = pl.getItemInHand(HandTypes.MAIN_HAND).get();
-                RepairResult result = repairStack(stack);
+                RepairResult result = repairStack(stack, checkRestrictions);
                 resultCount.compute(result.type, (t, i) -> i += 1);
                 lastItem.put(result.type, result.stack.createSnapshot());
                 if (result.isSuccessful()) {
@@ -116,7 +107,7 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
             // Repair item in off hand
             if (repairOffhand && pl.getItemInHand(HandTypes.OFF_HAND).isPresent()) {
                 ItemStack stack = pl.getItemInHand(HandTypes.OFF_HAND).get();
-                RepairResult result = repairStack(stack);
+                RepairResult result = repairStack(stack, checkRestrictions);
                 resultCount.compute(result.type, (t, i) -> i += 1);
                 lastItem.put(result.type, result.stack.createSnapshot());
                 if (result.isSuccessful()) {
@@ -126,32 +117,12 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
 
             // Repair worn equipment
             if (repairEquip) {
-                for (Inventory slot : pl.getInventory().query(EquipmentInventory.class).slots()) {
-                    if (slot.peek().isPresent() && !slot.peek().get().isEmpty()) {
-                        ItemStack stack = slot.peek().get();
-                        RepairResult result = repairStack(stack);
-                        resultCount.compute(result.type, (t, i) -> i += 1);
-                        lastItem.put(result.type, result.stack.createSnapshot());
-                        if (result.isSuccessful()) {
-                            slot.set(result.stack);
-                        }
-                    }
-                }
+                repairInventory(pl.getInventory().query(EquipmentInventory.class), checkRestrictions, resultCount, lastItem);
             }
 
             // Repair Hotbar
             if (repairHotbar) {
-                for (Inventory slot : pl.getInventory().query(Hotbar.class).slots()) {
-                    if (slot.peek().isPresent() && !slot.peek().get().isEmpty()) {
-                        ItemStack stack = slot.peek().get();
-                        RepairResult result = repairStack(stack);
-                        resultCount.compute(result.type, (t, i) -> i += 1);
-                        lastItem.put(result.type, result.stack.createSnapshot());
-                        if (result.isSuccessful()) {
-                            slot.set(result.stack);
-                        }
-                    }
-                }
+                repairInventory(pl.getInventory().query(Hotbar.class), checkRestrictions, resultCount, lastItem);
             }
         }
 
@@ -240,10 +211,26 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
         }
     }
 
-    private RepairResult repairStack(ItemStack stack) {
-        if (whitelist && !restrictions.contains(stack.getType()) || restrictions.contains(stack.getType())) {
+    private void repairInventory(Inventory inventory, boolean checkRestrictions,
+            EnumMap<ResultType, Integer> resultCount, EnumMap<ResultType, ItemStackSnapshot> lastItem) {
+        for (Inventory slot : inventory.slots()) {
+            if (slot.peek().isPresent() && !slot.peek().get().isEmpty()) {
+                ItemStack stack = slot.peek().get();
+                RepairResult result = repairStack(stack, checkRestrictions);
+                resultCount.compute(result.type, (t, i) -> i += 1);
+                lastItem.put(result.type, result.stack.createSnapshot());
+                if (result.isSuccessful()) {
+                    slot.set(result.stack);
+                }
+            }
+        }
+    }
+
+    private RepairResult repairStack(ItemStack stack, boolean checkRestrictions) {
+        if (checkRestrictions && (whitelist && !restrictions.contains(stack.getType()) || restrictions.contains(stack.getType()))) {
             return new RepairResult(stack, ResultType.RESTRICTED);
-        } else if (stack.get(DurabilityData.class).isPresent()) {
+        }
+        if (stack.get(DurabilityData.class).isPresent()) {
             DurabilityData durabilityData = stack.get(DurabilityData.class).get();
             DataTransactionResult transactionResult = stack.offer(Keys.ITEM_DURABILITY, durabilityData.durability().getMaxValue());
             if (transactionResult.isSuccessful()) {
