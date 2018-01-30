@@ -150,23 +150,21 @@ public class KitHandler implements NucleusKitService {
         InventoryTransactionResult inventoryTransactionResult = EMPTY_ITR;
         if (!kit.getStacks().isEmpty()) {
             inventoryTransactionResult = addToStandardInventory(player, kit.getStacks(), isProcessTokens);
-            if (!isFirstJoin && inventoryTransactionResult.getType() != InventoryTransactionResult.Type.SUCCESS) {
-                if (isMustGetAll) {
-                    Inventory inventory = Util.getStandardInventory(player);
+            if (!isFirstJoin && !inventoryTransactionResult.getRejectedItems().isEmpty() && isMustGetAll) {
+                Inventory inventory = Util.getStandardInventory(player);
 
-                    // Slots
-                    Iterator<Inventory> slot = inventory.slots().iterator();
+                // Slots
+                Iterator<Inventory> slot = inventory.slots().iterator();
 
-                    // Slots to restore
-                    slotList.forEach(x -> {
-                        Inventory i = slot.next();
-                        i.clear();
-                        x.ifPresent(y -> i.offer(y.createStack()));
-                    });
+                // Slots to restore
+                slotList.forEach(x -> {
+                    Inventory i = slot.next();
+                    i.clear();
+                    x.ifPresent(y -> i.offer(y.createStack()));
+                });
 
-                    // My friend was playing No Man's Sky, I almost wrote "No free slots in suit inventory".
-                    throw new KitRedeemException("No free slots in player inventory", KitRedeemException.Reason.NO_SPACE);
-                }
+                // My friend was playing No Man's Sky, I almost wrote "No free slots in suit inventory".
+                throw new KitRedeemException("No free slots in player inventory", KitRedeemException.Reason.NO_SPACE);
             }
         }
 
