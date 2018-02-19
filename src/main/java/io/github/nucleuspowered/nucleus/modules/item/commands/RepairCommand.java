@@ -11,6 +11,8 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
+import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
+import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.item.config.ItemConfigAdapter;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -34,6 +36,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @NonnullByDefault
 @Permissions(supportsOthers = true)
@@ -63,8 +66,18 @@ public class RepairCommand extends AbstractCommand<Player> implements Reloadable
         };
     }
 
+    @Override
+    protected Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        Map<String, PermissionInformation> mspi = super.permissionSuffixesToRegister();
+        mspi.put("flag.all", PermissionInformation.getWithTranslation("permission.repair.flag.all", SuggestedLevel.ADMIN));
+        mspi.put("flag.hotbar", PermissionInformation.getWithTranslation("permission.repair.flag.hotbar", SuggestedLevel.ADMIN));
+        mspi.put("flag.equip", PermissionInformation.getWithTranslation("permission.repair.flag.equip", SuggestedLevel.ADMIN));
+        mspi.put("flag.offhand", PermissionInformation.getWithTranslation("permission.repair.flag.offhand", SuggestedLevel.ADMIN));
+        return mspi;
+    }
+
     @Override protected CommandResult executeCommand(Player pl, CommandContext args) throws Exception {
-        EnumMap<ResultType, Integer> resultCount = new EnumMap(ResultType.class) {{
+        EnumMap<ResultType, Integer> resultCount = new EnumMap<ResultType, Integer>(ResultType.class) {{
             put(ResultType.SUCCESS, 0);
             put(ResultType.ERROR, 0);
             put(ResultType.NO_DURABILITY, 0);
