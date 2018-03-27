@@ -122,29 +122,26 @@ public class SetupPermissionsCommand extends AbstractCommand<CommandSource> {
         // check for admin
         Subject admin = permissionService.getGroupSubjects().getSubject(adminGroup).orElseGet(() -> {
             src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.create", adminGroup));
-            SubjectReference ref = permissionService.getGroupSubjects().newSubjectReference(adminGroup);
-            return ref.resolve().join();
+            return permissionService.getGroupSubjects().loadSubject(adminGroup).join();
         });
 
         // create mod
         Subject mod = permissionService.getGroupSubjects().getSubject(modGroup).orElseGet(() -> {
             src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.create", modGroup));
-            SubjectReference ref = permissionService.getGroupSubjects().newSubjectReference(modGroup);
-            return ref.resolve().join();
+            return permissionService.getGroupSubjects().loadSubject(modGroup).join();
         });
 
         // right now, LuckPerms is the defacto permissions plugin. So we look for the "default" group
         Subject defaults = permissionService.getGroupSubjects().getSubject(defaultGroup).orElseGet(() -> {
             src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.create", defaultGroup));
-            SubjectReference ref = permissionService.getGroupSubjects().newSubjectReference(modGroup);
-            return ref.resolve().join();
+            return permissionService.getGroupSubjects().loadSubject(defaultGroup).join();
         });
 
         src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.inherit", modGroup, adminGroup));
         admin.getSubjectData().addParent(ImmutableSet.of(), mod.asSubjectReference());
 
         src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.inherit", defaults.getIdentifier(), modGroup));
-        mod.getSubjectData().addParent(ImmutableSet.of(), permissionService.getGroupSubjects().getDefaults().asSubjectReference());
+        mod.getSubjectData().addParent(ImmutableSet.of(), defaults.asSubjectReference());
 
         src.sendMessage(messageProvider.getTextMessageWithFormat("command.nucleus.permission.perms"));
         setupPerms(src, admin, SuggestedLevel.ADMIN, false, false);
