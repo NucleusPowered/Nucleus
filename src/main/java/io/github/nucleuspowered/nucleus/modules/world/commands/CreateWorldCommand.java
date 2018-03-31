@@ -167,8 +167,9 @@ public class CreateWorldCommand extends AbstractCommand<CommandSource> implement
         .commandsAllowed(allowCommands)
         .generateBonusChest(bonusChest);
 
-        WorldArchetype wa = worldSettingsBuilder.build(nameInput.toLowerCase(), nameInput);
         seedInput.ifPresent(worldSettingsBuilder::seed);
+
+        WorldArchetype wa = worldSettingsBuilder.build(nameInput.toLowerCase(), nameInput);
 
         src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.begin", nameInput));
         src.sendMessage(plugin.getMessageProvider().getTextMessageWithFormat("command.world.create.newparams",
