@@ -39,6 +39,7 @@ public class BlockZapCommand extends AbstractCommand<CommandSource> {
 
     @Override public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         Location<World> location = args.<Location<World>>getOne(this.locationKey).get();
+        String getBlockZapped = location.getBlockType ().getName ();
         if (location.getBlockType() == BlockTypes.AIR) {
             throw new ReturnMessageException(Nucleus.getNucleus()
                     .getMessageProvider().getTextMessageWithFormat("command.blockzap.alreadyair", location.getPosition().toString(), location.getExtent().getName()));
@@ -46,7 +47,7 @@ public class BlockZapCommand extends AbstractCommand<CommandSource> {
 
         if (CauseStackHelper.createFrameWithCausesWithReturn(c -> location.setBlock(BlockTypes.AIR.getDefaultState(), BlockChangeFlags.ALL), src)) {
             src.sendMessage(Nucleus.getNucleus()
-                    .getMessageProvider().getTextMessageWithFormat("command.blockzap.success", location.getPosition().toString(), location.getExtent().getName()));
+                    .getMessageProvider().getTextMessageWithFormat("command.blockzap.success", location.getPosition().toString(), location.getExtent().getName(), getBlockZapped));
             return CommandResult.success();
         }
 
