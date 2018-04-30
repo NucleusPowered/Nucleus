@@ -10,18 +10,32 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
+import io.github.nucleuspowered.nucleus.modules.item.commands.RepairCommand;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
+import jdk.nashorn.internal.ir.Block;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.text.Text;
+import java.*;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+
+
+import java.util.EnumMap;
+import java.util.Optional;
 
 @NonnullByDefault
 @Permissions
@@ -40,14 +54,20 @@ public class BlockZapCommand extends AbstractCommand<CommandSource> {
     @Override public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         Location<World> location = args.<Location<World>>getOne(this.locationKey).get();
         String getBlockZapped = location.getBlockType ().getName ();
+        ItemStack item = ItemStack.builder()
+                .fromBlockState(location.getBlock())
+                .build();
+        Text itemText = item.get(Keys.DISPLAY_NAME).orElse(Text.of(item.getTranslation().get())).toBuilder()
+                .onHover(TextActions.showItem(item.createSnapshot()))
+                .build();
         if (location.getBlockType() == BlockTypes.AIR) {
             throw new ReturnMessageException(Nucleus.getNucleus()
                     .getMessageProvider().getTextMessageWithFormat("command.blockzap.alreadyair", location.getPosition().toString(), location.getExtent().getName()));
         }
 
         if (CauseStackHelper.createFrameWithCausesWithReturn(c -> location.setBlock(BlockTypes.AIR.getDefaultState(), BlockChangeFlags.ALL), src)) {
-            src.sendMessage(Nucleus.getNucleus()
-                    .getMessageProvider().getTextMessageWithFormat("command.blockzap.success", location.getPosition().toString(), location.getExtent().getName(), getBlockZapped));
+
+            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.blockzap.success", Text.of(location.getPosition().toString()), Text.of(location.getExtent().getName()), itemText));
             return CommandResult.success();
         }
 
