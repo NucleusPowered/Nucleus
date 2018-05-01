@@ -53,17 +53,16 @@ public class BlockZapCommand extends AbstractCommand<CommandSource> {
 
     @Override public CommandResult executeCommand(CommandSource src, CommandContext args) throws Exception {
         Location<World> location = args.<Location<World>>getOne(this.locationKey).get();
+        if (location.getBlockType() == BlockTypes.AIR) {
+            throw new ReturnMessageException(Nucleus.getNucleus()
+                    .getMessageProvider().getTextMessageWithFormat("command.blockzap.alreadyair", location.getPosition().toString(), location.getExtent().getName()));
+        }
         ItemStack item = ItemStack.builder()
                 .fromBlockState(location.getBlock())
                 .build();
         Text itemText = item.get(Keys.DISPLAY_NAME).orElse(Text.of(item.getTranslation().get())).toBuilder()
                 .onHover(TextActions.showItem(item.createSnapshot()))
                 .build();
-        if (location.getBlockType() == BlockTypes.AIR) {
-            throw new ReturnMessageException(Nucleus.getNucleus()
-                    .getMessageProvider().getTextMessageWithFormat("command.blockzap.alreadyair", location.getPosition().toString(), location.getExtent().getName()));
-        }
-
         if (CauseStackHelper.createFrameWithCausesWithReturn(c -> location.setBlock(BlockTypes.AIR.getDefaultState(), BlockChangeFlags.ALL), src)) {
 
             src.sendMessage(Nucleus.getNucleus()
