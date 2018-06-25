@@ -46,16 +46,21 @@ public class BlockZapCommand extends AbstractCommand<CommandSource> {
             throw new ReturnMessageException(Nucleus.getNucleus()
                     .getMessageProvider().getTextMessageWithFormat("command.blockzap.alreadyair", location.getPosition().toString(), location.getExtent().getName()));
         }
-        ItemStack item = ItemStack.builder()
-                .fromBlockState(location.getBlock())
-                .build();
-        Text itemText = item.get(Keys.DISPLAY_NAME).orElseGet(() -> Text.of(item)).toBuilder()
-                .onHover(TextActions.showItem(item.createSnapshot()))
-                .build();
+
+        Text itemText = Text.of(location.getBlock().getName());
+        if (location.getBlockType().getItem().isPresent()) {
+            ItemStack item = ItemStack.builder()
+                    .fromBlockState(location.getBlock())
+                    .build();
+            itemText = item.get(Keys.DISPLAY_NAME).orElseGet(() -> Text.of(item)).toBuilder()
+                    .onHover(TextActions.showItem(item.createSnapshot()))
+                    .build();
+        }
+
         if (CauseStackHelper.createFrameWithCausesWithReturn(c -> location.setBlock(BlockTypes.AIR.getDefaultState(), BlockChangeFlags.ALL), src)) {
 
             src.sendMessage(Nucleus.getNucleus()
-                            .getMessageProvider().getTextMessageWithTextFormat("command.blockzap.success", Text.of(location.getPosition().toString()), Text.of(location.getExtent().getName()), itemText));
+                    .getMessageProvider().getTextMessageWithTextFormat("command.blockzap.success", Text.of(location.getPosition().toString()), Text.of(location.getExtent().getName()), itemText));
             return CommandResult.success();
         }
 
