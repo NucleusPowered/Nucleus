@@ -64,11 +64,12 @@ public class TeleportAskAllHereCommand extends AbstractCommand<Player> {
 
             TeleportHandler.TeleportBuilder tb = this.tpHandler.getBuilder().setFrom(x).setTo(src).setSafe(!args.<Boolean>getOne("f").orElse(false))
                     .setBypassToggle(true).setSilentSource(true);
-            this.tpHandler.addAskQuestion(x.getUniqueId(), new TeleportHandler.TeleportPrep(Instant.now().plus(30, ChronoUnit.SECONDS), null, 0, tb));
+            TeleportHandler.TeleportPrep tp = new TeleportHandler.TeleportPrep(Instant.now().plus(30, ChronoUnit.SECONDS), null, 0, tb);
+            this.tpHandler.addAskQuestion(x.getUniqueId(), tp);
 
             x.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpahere.question", src.getName()));
 
-            x.sendMessage(this.tpHandler.getAcceptDenyMessage());
+            x.sendMessage(this.tpHandler.getAcceptDenyMessage(src, tp));
         });
 
         src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpaall.success"));

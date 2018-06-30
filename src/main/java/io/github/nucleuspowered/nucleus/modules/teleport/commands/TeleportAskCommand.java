@@ -92,9 +92,10 @@ public class TeleportAskCommand extends AbstractCommand<Player> {
             tb.setCharge(src).setCost(cost);
         }
 
-        this.tpHandler.addAskQuestion(target.getUniqueId(), new TeleportHandler.TeleportPrep(Instant.now().plus(30, ChronoUnit.SECONDS), src, cost, tb));
+        TeleportHandler.TeleportPrep tp = new TeleportHandler.TeleportPrep(Instant.now().plus(30, ChronoUnit.SECONDS), src, cost, tb);
+        this.tpHandler.addAskQuestion(target.getUniqueId(), tp);
         target.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpa.question", src.getName()));
-        target.sendMessage(this.tpHandler.getAcceptDenyMessage());
+        target.sendMessage(this.tpHandler.getAcceptDenyMessage(src, tp));
 
         src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpask.sent", target.getName()));
         return CommandResult.success();
