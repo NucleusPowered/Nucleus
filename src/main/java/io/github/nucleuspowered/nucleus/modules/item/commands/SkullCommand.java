@@ -99,8 +99,6 @@ public class SkullCommand extends AbstractCommand<Player> implements Reloadable 
         // Set it to subject skull type and set the owner to the specified subject
         if (skullStack.offer(Keys.SKULL_TYPE, SkullTypes.PLAYER).isSuccessful()
                 && skullStack.offer(Keys.REPRESENTED_PLAYER, user.getProfile()).isSuccessful()) {
-            skullStack.toContainer().set(DataQuery.of("SkullOwner"), user.getName());
-
             List<ItemStack> itemStackList = Lists.newArrayList();
 
             // If there were stacks, create as many as needed.
