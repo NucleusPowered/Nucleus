@@ -66,6 +66,7 @@ public class SellAllCommand extends AbstractCommand<Player> {
     public CommandResult executeCommand(final Player src, CommandContext args) throws Exception {
         boolean accepted = args.hasAny("a");
         CatalogType ct = getCatalogTypeFromHandOrArgs(src, this.itemKey, args);
+        String name = Util.getTranslatableIfPresentOnCatalogType(ct);
         String id = ct.getId();
 
         QueryOperation<?> query;
@@ -90,7 +91,7 @@ public class SellAllCommand extends AbstractCommand<Player> {
         final int amt = itemsToSell.stream().mapToInt(ItemStack::getQuantity).sum();
         if (amt <= 0) {
             throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.itemsellall.none",
-                    Text.of(query)));
+                    Text.of(ct.getName())));
         }
 
         final double overallCost = sellPrice * amt;
@@ -99,17 +100,17 @@ public class SellAllCommand extends AbstractCommand<Player> {
             if (this.econHelper.depositInPlayer(src, overallCost, false)) {
                 slots.forEach(Inventory::clear);
                 src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.itemsell.summary",
-                        Text.of(amt), Text.of(query), Text.of(this.econHelper.getCurrencySymbol(overallCost))));
+                        Text.of(amt), Text.of(name), Text.of(this.econHelper.getCurrencySymbol(overallCost))));
                 return CommandResult.success();
             }
 
-            throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.itemsell.error", Text.of(query)));
+            throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.itemsell.error", Text.of(ct.getName())));
         }
 
         src.sendMessage(
                 Nucleus.getNucleus().getMessageProvider()
                 .getTextMessageWithTextFormat("command.itemsellall.summary",
-                    Text.of(amt), Text.of(query), Text.of(this.econHelper.getCurrencySymbol(overallCost)), Text.of(id))
+                    Text.of(amt), Text.of(name), Text.of(this.econHelper.getCurrencySymbol(overallCost)), Text.of(id))
                 .toBuilder().onClick(TextActions.runCommand("/nucleus:itemsellall -a " + id)).build()
         );
 
