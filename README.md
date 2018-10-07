@@ -66,9 +66,6 @@ You can also use [JitPack](https://jitpack.io/#NucleusPowered/Nucleus) as a repo
 The compiled Nucleus plugin includes the following libraries (with their licences in parentheses):
 
 * QuickStart Module Loader (MIT)
-* MaxMind GeoIP2 API (Apache 2)
-* MaxMind DB (Apache 2)
-* Jackson (Apache 2)
 
 See [THIRDPARTY.md](THIRDPARTY.md) for more details.
 

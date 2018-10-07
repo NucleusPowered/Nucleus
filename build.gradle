@@ -93,7 +93,6 @@ group 'io.github.nucleuspowered'
 
 ext.spongeapi = apiVersion
 def qsmlDep = "uk.co.drnaylor:quickstart-moduleloader:0.11.0"
-def geoIpDep = 'com.maxmind.geoip2:geoip2:2.10.0'
 def neutrinoDep = 'io.github.nucleuspowered:neutrino:1.1.3'
 
 defaultTasks 'licenseFormat build'
@@ -126,9 +125,6 @@ dependencies {
     compile "org.spongepowered:spongeapi:" + project.ext.spongeapi
     compile qsmlDep
     compile neutrinoDep
-
-    // For Geo IP
-    compile geoIpDep
 
     testCompile "junit:junit:4.12"
     testCompile "org.mockito:mockito-all:1.10.19"
@@ -185,22 +181,12 @@ shadowJar {
     dependencies {
         include(project(":nucleus-api"))
         include(dependency(qsmlDep))
-        include(dependency(geoIpDep))
         include(dependency(neutrinoDep))
-        include(dependency("com.maxmind.db:maxmind-db"))
-        include(dependency("com.fasterxml.jackson.core:jackson-core"))
-        include(dependency("com.fasterxml.jackson.core:jackson-databind"))
-        include(dependency("com.fasterxml.jackson.core:jackson-annotations"))
     }
-
-    relocate 'com.maxmind.geoip2', 'io.github.nucleuspowered.relocate.com.maxmind.geoip2'
-    relocate 'com.maxmind.db', 'io.github.nucleuspowered.relocate.com.maxmind.db'
-    relocate 'com.fasterxml.jackson', 'io.github.nucleuspowered.relocate.com.fasterxml.jackson'
 
     if (!project.hasProperty('norelocate')) {
         relocate 'uk.co.drnaylor', 'io.github.nucleuspowered.relocate.uk.co.drnaylor'
         relocate 'io.github.nucleuspowered.neutrino', 'io.github.nucleuspowered.relocate.nucleus.neutrino'
-        relocate 'io.github.lukehutch', 'io.github.nucleuspowered.relocate.io.github.lukehutch'
     }
 
     exclude "io/github/nucleuspowered/nucleus/api/NucleusAPIMod.class"
