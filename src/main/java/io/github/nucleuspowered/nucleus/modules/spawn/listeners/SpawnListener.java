@@ -13,6 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.GlobalSpawnConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfig;
@@ -37,7 +38,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SpawnListener implements Reloadable, ListenerBase {
+import javax.annotation.Nullable;
+
+public class SpawnListener implements Reloadable, ListenerBase, MessageProviderTrait {
 
     private SpawnConfig spawnConfig;
 
@@ -63,21 +66,21 @@ public class SpawnListener implements Reloadable, ListenerBase {
                 // Bit of an odd line, but what what is going on here is checking for first spawn, and if it exists, then
                 // setting the location the player safely. If this cannot be done in either case, send them to world spawn.
                 if (ofs.isPresent()) {
-                    NucleusTeleportHandler.StandardTeleportMode
-                            mode = this.spawnConfig.isSafeTeleport() ? NucleusTeleportHandler.StandardTeleportMode.SAFE_TELEPORT : NucleusTeleportHandler.StandardTeleportMode.WALL_CHECK;
-                    Optional<Location<World>> location = Nucleus.getNucleus().getTeleportHandler().getSafeLocation(null, ofs.get().getLocation(), mode);
+                    @Nullable Location<World> location;
+                    if (this.spawnConfig.isSafeTeleport()) {
+                        location = Sponge.getTeleportHelper().getSafeLocation(ofs.get().getLocation()).orElse(null);
+                    } else {
+                        location = ofs.get().getLocation();
+                    }
 
-                    if (location.isPresent()) {
-                        loginEvent.setToTransform(new Transform<>(location.get().getExtent(), process(location.get().getPosition()), ofs.get().getRotation()));
+                    if (location != null) {
+                        loginEvent.setToTransform(new Transform<>(location.getExtent(), process(location.getPosition()), ofs.get().getRotation()));
                         return;
                     }
 
-                    WorldProperties w = Sponge.getServer().getDefaultWorld().get();
-                    loginEvent.setToTransform(
-                            new Transform<>(Sponge.getServer().getWorld(w.getUniqueId()).get(), w.getSpawnPosition().toDouble().add(0.5, 0, 0.5)));
-
-                    // We don't want to boot them elsewhere.
-                    return;
+                    Nucleus.getNucleus().getLogger().warn(
+                            getMessageString("spawn.firstspawn.failed",
+                                    loginEvent.getProfile().getName().orElse(getMessageString("standard.unknown"))));
                 }
             }
         } catch (Exception e) {
