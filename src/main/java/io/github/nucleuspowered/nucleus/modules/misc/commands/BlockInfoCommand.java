@@ -10,6 +10,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import org.spongepowered.api.Sponge;
@@ -29,6 +30,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.util.blockray.BlockRay;
 import org.spongepowered.api.util.blockray.BlockRayHit;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import java.util.ArrayList;
@@ -46,8 +48,11 @@ public class BlockInfoCommand extends AbstractCommand<Player> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.flags().permissionFlag(this.permissions.getPermissionWithSuffix("extended"), "e", "-extended")
-                .buildWith(GenericArguments.none())};
+        return new CommandElement[] {
+            GenericArguments.flags()
+                    .permissionFlag(this.permissions.getPermissionWithSuffix("extended"), "e", "-extended")
+                    .buildWith(NucleusParameters.OPTIONAL_LOCATION)
+        };
     }
 
     @Override
@@ -59,15 +64,25 @@ public class BlockInfoCommand extends AbstractCommand<Player> {
 
     @Override
     public CommandResult executeCommand(Player player, CommandContext args) {
-        BlockRay<World> bl = BlockRay.from(player).distanceLimit(10).stopFilter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
-        Optional<BlockRayHit<World>> ob = bl.end();
+        Location<World> loc = null;
+        if (args.hasAny(NucleusParameters.Keys.LOCATION)) {
+            // get the location
+            loc = args.<Location<World>>getOne(NucleusParameters.Keys.LOCATION)
+                    .filter(x -> x.getBlockType() != BlockTypes.AIR).orElse(null);
+        } else {
+            BlockRay<World> bl = BlockRay.from(player).distanceLimit(10).stopFilter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1)).build();
+            Optional<BlockRayHit<World>> ob = bl.end();
 
-        // If the last block is not air...
-        if (ob.isPresent() && ob.get().getLocation().getBlockType() != BlockTypes.AIR) {
-            BlockRayHit<World> brh = ob.get();
+            // If the last block is not air...
+            if (ob.isPresent() && ob.get().getLocation().getBlockType() != BlockTypes.AIR) {
+                BlockRayHit<World> brh = ob.get();
+                loc = brh.getLocation();
+            }
+        }
 
+        if (loc != null) {
             // get the information.
-            BlockState b = brh.getLocation().getBlock();
+            BlockState b = loc.getBlock();
             BlockType it = b.getType();
 
             List<Text> lt = new ArrayList<>();
@@ -92,8 +107,10 @@ public class BlockInfoCommand extends AbstractCommand<Player> {
             }
 
             Sponge.getServiceManager().provideUnchecked(PaginationService.class).builder().contents(lt).padding(Text.of(TextColors.GREEN, "-"))
-                    .title(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.blockinfo.list.header", String.valueOf(brh.getBlockX()),
-                            String.valueOf(brh.getBlockY()), String.valueOf(brh.getBlockZ())))
+                    .title(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.blockinfo.list.header",
+                            String.valueOf(loc.getBlockX()),
+                            String.valueOf(loc.getBlockY()),
+                            String.valueOf(loc.getBlockZ())))
                     .sendTo(player);
 
             return CommandResult.success();

@@ -136,4 +136,8 @@ public class NucleusParameters {
     public static final CommandElement OPTIONAL_WEAK_DURATION = GenericArguments.optionalWeak(DURATION);
 
     public static final CommandElement POSITION = GenericArguments.onlyOne(GenericArguments.vector3d(Text.of(XYZ)));
+
+    public static final CommandElement LOCATION = GenericArguments.onlyOne(GenericArguments.location(Text.of(Keys.LOCATION)));
+
+    public static final CommandElement OPTIONAL_LOCATION = GenericArguments.optional(LOCATION);
 }
