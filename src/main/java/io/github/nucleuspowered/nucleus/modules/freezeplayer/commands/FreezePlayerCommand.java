@@ -5,11 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.freezeplayer.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.modules.freezeplayer.datamodules.FreezePlayerUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.freezeplayer.FreezePlayerKeys;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -22,6 +25,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @Permissions(supportsOthers = true)
 @RegisterCommand({"freezeplayer", "freeze"})
 @NonnullByDefault
+@RunAsync
 public class FreezePlayerCommand extends AbstractCommand<CommandSource> {
 
     @Override
@@ -36,11 +40,15 @@ public class FreezePlayerCommand extends AbstractCommand<CommandSource> {
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws Exception {
         User pl = this.getUserFromArgs(User.class, src, NucleusParameters.Keys.PLAYER, args);
-        FreezePlayerUserDataModule nu = Nucleus.getNucleus().getUserDataManager().getUnchecked(pl).get(FreezePlayerUserDataModule.class);
-        nu.setFrozen(args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElseGet(() -> !nu.isFrozen()));
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat(
-            nu.isFrozen() ? "command.freezeplayer.success.frozen" : "command.freezeplayer.success.unfrozen",
-                Nucleus.getNucleus().getNameUtil().getSerialisedName(pl)));
+        IUserDataObject x = getOrCreateUserOnThread(pl.getUniqueId());
+        try (IKeyedDataObject.Value<Boolean> v = x.getAndSet(FreezePlayerKeys.FREEZE_PLAYER)) {
+            boolean res = v.getValue().orElse(false);
+            v.setValue(args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElse(!res));
+            getMessageFor(src,
+                    res ? "command.freezeplayer.success.frozen" : "command.freezeplayer.success.unfrozen",
+                    Nucleus.getNucleus().getNameUtil().getName(pl));
+
+        }
         return CommandResult.success();
     }
 }

@@ -8,15 +8,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 import org.spongepowered.api.item.ItemType;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class PowertoolUserDataModule extends DataModule<ModularUserService> {
+public class PowertoolUserDataModule implements IUserDataModule {
 
     @DataKey("powertools")
     private Map<String, List<String>> powertools = Maps.newHashMap();

@@ -19,6 +19,8 @@ import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NucleusTextT
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.Vector3dTypeSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.wrappers.NucleusItemStackSnapshot;
 import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
+import io.github.nucleuspowered.nucleus.storage.DataObjectTranslator;
+import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 
@@ -31,8 +33,11 @@ public class ConfigurateHelper {
 
     private ConfigurateHelper() {}
 
+    private static final TypeToken<AbstractConfigurateBackedDataObject> ABSTRACT_DATA_OBJECT_TYPE_TOKEN = TypeToken.of(
+            AbstractConfigurateBackedDataObject.class);
+
     private static TypeSerializerCollection typeSerializerCollection = null;
-    private final static NeutrinoObjectMapperFactory objectMapperFactory;
+    private static final NeutrinoObjectMapperFactory objectMapperFactory;
     private static final Pattern commentPattern = Pattern.compile("^(loc:)?(?<key>([a-zA-Z0-9_-]+\\.?)+)$");
 
     static {
@@ -85,6 +90,8 @@ public class ConfigurateHelper {
         typeSerializerCollection.registerType(new TypeToken<short[]>(){}, new ShortArrayTypeSerialiser());
         typeSerializerCollection.registerType(new TypeToken<int[]>(){}, new IntArrayTypeSerialiser());
         typeSerializerCollection.registerType(TypeToken.of(Instant.class), new InstantTypeSerialiser());
+
+        typeSerializerCollection.registerPredicate(x -> x.isSubtypeOf(ABSTRACT_DATA_OBJECT_TYPE_TOKEN), DataObjectTranslator.INSTANCE);
 
         return typeSerializerCollection;
     }

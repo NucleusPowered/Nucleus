@@ -9,13 +9,12 @@ import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Note;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.util.List;
 
-public class NoteUserDataModule extends DataModule<ModularUserService> {
+public class NoteUserDataModule implements IUserDataModule {
 
     @DataKey("notes")
     private List<NoteData> notes = Lists.newArrayList();

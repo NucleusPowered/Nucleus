@@ -10,6 +10,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 
 public interface MessageProviderTrait {
 
@@ -86,4 +87,7 @@ public interface MessageProviderTrait {
         receiver.sendMessage(getMessageFor(receiver.getLocale(), key, replacements));
     }
 
+    default void sendMessageTo(Supplier<CommandSource> receiver, String key, String... replacements) {
+        sendMessageTo(receiver.get(), key, replacements);
+    }
 }

@@ -9,7 +9,8 @@ import com.google.common.collect.Sets;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMessageTokenService;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.UniqueUserCountTransientModule;
+import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
+import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.source.ConsoleSource;
@@ -25,7 +26,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public final class Tokens implements NucleusMessageTokenService.TokenParser {
+public final class Tokens implements NucleusMessageTokenService.TokenParser, MessageProviderTrait {
 
     public static final Tokens INSTANCE = new Tokens();
     private final Map<String, Translator> translatorMap = Maps.newHashMap();
@@ -45,11 +46,13 @@ public final class Tokens implements NucleusMessageTokenService.TokenParser {
         this.translatorMap.put("maxplayers", (p, v, m) -> Optional.of(Text.of(Sponge.getServer().getMaxPlayers())));
         this.translatorMap.put("onlineplayers", (p, v, m) -> Optional.of(Text.of(Sponge.getServer().getOnlinePlayers().size())));
         this.translatorMap.put("currentworld", (p, v, m) -> Optional.of(Text.of(getWorld(getFromVariableIfExists(p, v, m)).getName())));
-        this.translatorMap.put("time", (p, v, m) -> Optional.of(Text.of(String.valueOf(Util
-                .getTimeFromTicks(getWorld(getFromVariableIfExists(p, v, m)).getProperties().getWorldTime())))));
+        this.translatorMap.put("time", (p, v, m) -> Optional.of(Text.of(Util
+                .getTimeFromTicks(getWorld(getFromVariableIfExists(p, v, m)).getProperties().getWorldTime()))));
 
-        this.translatorMap.put("uniquevisitor", (p, v, m) -> Optional.of(Text.of(Nucleus.getNucleus()
-                .getGeneralService().getTransient(UniqueUserCountTransientModule.class).getUniqueUserCount())));
+        this.translatorMap.put("uniquevisitor", (p, v, m) -> {
+            long count = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(UniqueUserService.class).getUniqueUserCount();
+            return Optional.of(Text.of(count));
+        });
 
         this.translatorMap.put("ipaddress", (p, v, m) -> Optional.of(Text.of(p instanceof RemoteSource ?
             ((RemoteSource)p).getConnection().getAddress().getAddress().toString() :

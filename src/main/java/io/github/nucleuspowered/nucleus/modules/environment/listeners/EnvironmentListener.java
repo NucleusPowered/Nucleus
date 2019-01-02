@@ -6,7 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.environment.listeners;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
-import io.github.nucleuspowered.nucleus.modules.environment.datamodule.EnvironmentWorldDataModule;
+import io.github.nucleuspowered.nucleus.modules.environment.EnvironmentKeys;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.world.ChangeWorldWeatherEvent;
 
@@ -14,7 +14,10 @@ public class EnvironmentListener implements ListenerBase {
 
     @Listener
     public void onWeatherChange(ChangeWorldWeatherEvent event) {
-        Nucleus.getNucleus().getWorldDataManager().getWorld(event.getTargetWorld()).ifPresent(x ->
-            event.setCancelled(x.get(EnvironmentWorldDataModule.class).isLockWeather()));
+        event.setCancelled(Nucleus.getNucleus().getStorageManager()
+                .getWorldService()
+                .getOnThread(event.getTargetWorld().getUniqueId())
+                .map(x -> x.getOrDefault(EnvironmentKeys.LOCKED_WEATHER))
+                .orElse(false));
     }
 }

@@ -8,7 +8,6 @@ import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.ImmutableMap;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
@@ -21,10 +20,11 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.SpeedCommand;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.services.SeenHandler;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportPositionCommand;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.util.TriFunction;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -88,8 +88,8 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
     private static final String GAMEMODE_PERMISSION = EXTENDED_PERMISSION + ".gamemode";
 
     // keeps order!
-    private final ImmutableMap<String, TriFunction<CommandSource, User, CoreUserDataModule, Text>> entries
-            = ImmutableMap.<String, TriFunction<CommandSource, User, CoreUserDataModule, Text>>builder()
+    private final ImmutableMap<String, TriFunction<CommandSource, User, UserDataObject, Text>> entries
+            = ImmutableMap.<String, TriFunction<CommandSource, User, UserDataObject, Text>>builder()
                     .put(UUID_PERMISSION, this::getUUID)
                     .put(IP_PERMISSION, this::getIP)
                     .put(FIRST_PLAYED_PERMISSION, this::getFirstPlayed)
@@ -104,17 +104,17 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
                     .build();
 
     @Nullable
-    private Text getUUID(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getUUID(CommandSource source, User user, UserDataObject userDataModule) {
         return getMessageFor(source, "command.seen.uuid", user.getUniqueId());
     }
 
     @Nullable
-    private Text getIP(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getIP(CommandSource source, User user, UserDataObject userDataModule) {
         @Nullable Tuple<Text, String> res = user.getPlayer()
                     .map(pl -> Tuple.of(
                             getMessageFor(source, "command.seen.ipaddress", pl.getConnection().getAddress().getAddress().toString()),
                             pl.getConnection().getAddress().getAddress().toString()))
-                    .orElseGet(() -> userDataModule.getLastIp().map(x ->
+                    .orElseGet(() -> userDataModule.get(CoreKeys.IP_ADDRESS).map(x ->
                             Tuple.of(
                                     getMessageFor(source, "command.seen.lastipaddress", x),
                                     x
@@ -133,10 +133,10 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
     }
 
     @Nullable
-    private Text getFirstPlayed(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getFirstPlayed(CommandSource source, User user, UserDataObject userDataModule) {
         Optional<Instant> i = user.get(Keys.FIRST_DATE_PLAYED);
         if (!i.isPresent()) {
-            i = userDataModule.getFirstJoin();
+            i = userDataModule.get(CoreKeys.FIRST_JOIN);
         }
 
         return i.map(x -> getMessageFor(source, "command.seen.firstplayed",
@@ -146,7 +146,7 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
     }
 
     @Nullable
-    private Text getLastPlayed(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getLastPlayed(CommandSource source, User user, UserDataObject userDataModule) {
         if (user.isOnline()) {
             return null;
         }
@@ -158,7 +158,7 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
     }
 
     @Nullable
-    private Text getLocation(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getLocation(CommandSource source, User user, UserDataObject userDataModule) {
         if (user.isOnline()) {
             return getLocationString("command.seen.currentlocation", user.getPlayer().get().getLocation(), source);
         }
@@ -169,36 +169,36 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
         }
 
         // TODO: Remove - this is a fallback
-        return userDataModule.getLogoutLocation()
+        return userDataModule.get(CoreKeys.LAST_LOCATION).map(x -> x.getLocationIfExists().orElse(null))
                 .map(worldLocation -> getLocationString("command.seen.lastlocation", worldLocation, source)).orElse(null);
     }
 
     @Nullable
-    private Text getWalkingSpeed(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getWalkingSpeed(CommandSource source, User user, UserDataObject userDataModule) {
         return user.get(Keys.WALKING_SPEED)
                 .map(x -> getMessageFor(source, "command.seen.speed.walk", NUMBER_FORMATTER.format(x * SpeedCommand.multiplier)))
                 .orElse(null);
     }
 
     @Nullable
-    private Text getFlyingSpeed(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getFlyingSpeed(CommandSource source, User user, UserDataObject userDataModule) {
         return user.get(Keys.FLYING_SPEED)
                 .map(x -> getMessageFor(source, "command.seen.speed.fly", NUMBER_FORMATTER.format(x * SpeedCommand.multiplier)))
                 .orElse(null);
     }
 
     @Nullable
-    private Text getCanFly(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getCanFly(CommandSource source, User user, UserDataObject userDataModule) {
         return getMessageFor(source, "command.seen.canfly", getYesNo(user.get(Keys.CAN_FLY).orElse(false)));
     }
 
     @Nullable
-    private Text getIsFlying(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getIsFlying(CommandSource source, User user, UserDataObject userDataModule) {
         return getMessageFor(source, "command.seen.isflying", getYesNo(user.get(Keys.IS_FLYING).orElse(false)));
     }
 
     @Nullable
-    private Text getGameMode(CommandSource source, User user, CoreUserDataModule userDataModule) {
+    private Text getGameMode(CommandSource source, User user, UserDataObject userDataModule) {
         return user.get(Keys.GAME_MODE).map(x -> getMessageFor(source, "command.seen.gamemode", x.getName())).orElse(null);
     }
 
@@ -233,8 +233,7 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
         // Get the player in case the User is displaying the wrong name.
         user = user.getPlayer().map(x -> (User) x).orElse(user);
 
-        ModularUserService iqsu = Nucleus.getNucleus().getUserDataManager().getUnchecked(user);
-        CoreUserDataModule coreUserDataModule = iqsu.get(CoreUserDataModule.class);
+        UserDataObject iqsu = getOrCreateUserOnThread(user.getUniqueId());
 
         List<Text> messages = new ArrayList<>();
         final MessageProvider messageProvider = Nucleus.getNucleus().getMessageProvider();
@@ -242,11 +241,11 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
         // Everyone gets the last online time.
         if (user.isOnline()) {
             messages.add(messageProvider.getTextMessageWithFormat("command.seen.iscurrently.online", user.getName()));
-            coreUserDataModule.getLastLogin().ifPresent(x -> messages.add(
+            iqsu.get(CoreKeys.LAST_LOGIN).ifPresent(x -> messages.add(
                     messageProvider.getTextMessageWithFormat("command.seen.loggedon", Util.getTimeToNow(x))));
         } else {
             messages.add(messageProvider.getTextMessageWithFormat("command.seen.iscurrently.offline", user.getName()));
-            coreUserDataModule.getLastLogout().ifPresent(x -> messages.add(
+            iqsu.get(CoreKeys.LAST_LOGOUT).ifPresent(x -> messages.add(
                     messageProvider.getTextMessageWithFormat("command.seen.loggedoff", Util.getTimeToNow(x))));
         }
 
@@ -254,9 +253,9 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
                 Nucleus.getNucleus().getNameUtil().getName(user))));
 
         messages.add(Util.SPACE);
-        for (Map.Entry<String, TriFunction<CommandSource, User, CoreUserDataModule, Text>> entry : this.entries.entrySet()) {
+        for (Map.Entry<String, TriFunction<CommandSource, User, UserDataObject, Text>> entry : this.entries.entrySet()) {
             if (src.hasPermission(entry.getKey())) {
-                @Nullable Text m = entry.getValue().accept(src, user, coreUserDataModule);
+                @Nullable Text m = entry.getValue().accept(src, user, iqsu);
                 if (m != null) {
                     messages.add(m);
                 }

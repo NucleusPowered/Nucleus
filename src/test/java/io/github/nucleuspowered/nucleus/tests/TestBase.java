@@ -29,6 +29,7 @@ import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
+import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -320,6 +321,10 @@ public abstract class TestBase {
 
         @Override public boolean isPrintingSavesAndLoads() {
             return false;
+        }
+
+        @Override public INucleusStorageManager getStorageManager() {
+            return null;
         }
     }
 }

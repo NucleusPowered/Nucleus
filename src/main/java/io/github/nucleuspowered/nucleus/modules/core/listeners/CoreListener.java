@@ -8,18 +8,22 @@ import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.events.NucleusFirstJoinEvent;
 import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.ServiceChangeListener;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.UniqueUserCountTransientModule;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusOnLoginEvent;
 import io.github.nucleuspowered.nucleus.modules.core.events.OnFirstLoginEvent;
+import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -43,13 +47,16 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public class CoreListener implements Reloadable, ListenerBase {
+public class CoreListener implements Reloadable, ListenerBase, InternalServiceManagerTrait, IDataManagerTrait {
 
+    private final Set<UUID> firstPlayers = new HashSet<>();
     @Nullable private NucleusTextTemplate getKickOnStopMessage = null;
     @Nullable private final URL url;
     private boolean warnOnWildcard = true;
@@ -71,31 +78,30 @@ public class CoreListener implements Reloadable, ListenerBase {
     public void onPlayerLoginLast(final ClientConnectionEvent.Login event, @Getter("getProfile") GameProfile profile,
         @Getter("getTargetUser") User user) {
 
-        Nucleus.getNucleus().getUserDataManager().get(profile.getUniqueId()).ifPresent(qsu -> {
-            if (event.getFromTransform().equals(event.getToTransform())) {
-                CoreUserDataModule c = qsu.get(CoreUserDataModule.class);
-                // Check this
-                NucleusOnLoginEvent onLoginEvent =
-                        CauseStackHelper.createFrameWithCausesWithReturn(cause ->
-                                new NucleusOnLoginEvent(cause, user, qsu, event.getFromTransform()), profile);
+        IUserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
 
-                Sponge.getEventManager().post(onLoginEvent);
-                if (onLoginEvent.getTo().isPresent()) {
-                    event.setToTransform(onLoginEvent.getTo().get());
-                    c.removeLocationOnLogin();
-                    return;
-                }
+        if (event.getFromTransform().equals(event.getToTransform())) {
+            // Check this
+            NucleusOnLoginEvent onLoginEvent =
+                    CauseStackHelper.createFrameWithCausesWithReturn(cause ->
+                            new NucleusOnLoginEvent(cause, user, udo, event.getFromTransform()), profile);
 
-                // If we have a location to send them to in the config, send them there now!
-                Optional<Location<World>> olw = c.getLocationOnLogin();
-                olw.ifPresent(worldLocation -> {
-                    event.setToTransform(event.getFromTransform().setLocation(worldLocation));
-                    c.removeLocationOnLogin();
-                });
+            Sponge.getEventManager().post(onLoginEvent);
+            if (onLoginEvent.getTo().isPresent()) {
+                event.setToTransform(onLoginEvent.getTo().get());
+                udo.remove(CoreKeys.LOCATION_ON_LOGIN);
+                return;
             }
 
-            Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(qsu);
-        });
+            // If we have a location to send them to in the config, send them there now!
+            try (final IKeyedDataObject.Value<LocationNode> l = udo.getAndSet(CoreKeys.LOCATION_ON_LOGIN)) {
+                l.getValue().ifPresent(x ->
+                        x.getLocationIfExists().ifPresent(y -> event.setToTransform(event.getFromTransform().setLocation(y))));
+                l.setValue(null);
+            }
+        }
+
+        Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(user.getUniqueId(), udo);
     }
 
     /* (non-Javadoc)
@@ -104,17 +110,15 @@ public class CoreListener implements Reloadable, ListenerBase {
     @Listener(order = Order.FIRST)
     public void onPlayerJoinFirst(final ClientConnectionEvent.Join event, @Getter("getTargetEntity") final Player player) {
         try {
-            ModularUserService qsu = Nucleus.getNucleus().getUserDataManager().getUnchecked(player);
-            CoreUserDataModule c = qsu.get(CoreUserDataModule.class);
-            c.setLastLogin(Instant.now());
-
+            IUserDataObject qsu = getOrCreateUserOnThread(player.getUniqueId());
+            qsu.set(CoreKeys.LAST_LOGIN, Instant.now());
             if (Nucleus.getNucleus().isServer()) {
-                c.setLastIp(player.getConnection().getAddress().getAddress());
+                qsu.set(CoreKeys.IP_ADDRESS, player.getConnection().getAddress().getAddress().toString());
             }
 
             // We'll do this bit shortly - after the login events have resolved.
             final String name = player.getName();
-            Task.builder().execute(() -> c.setLastKnownName(name)).delayTicks(20L).submit(Nucleus.getNucleus());
+            Task.builder().execute(() -> qsu.set(CoreKeys.LAST_KNOWN_NAME, name)).delayTicks(20L).submit(Nucleus.getNucleus());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -135,7 +139,7 @@ public class CoreListener implements Reloadable, ListenerBase {
             Sponge.getEventManager().post(firstJoinEvent);
             event.setChannel(firstJoinEvent.getChannel().get());
             event.setMessageCancelled(firstJoinEvent.isMessageCancelled());
-            c.setFirstJoin(c.getLastLogin().orElseGet(Instant::now)); // the player events have completed, no more first join.
+            getOrCreateUser(player.getUniqueId()).thenAccept(x -> x.set(CoreKeys.FIRST_JOIN, x.get(CoreKeys.LAST_LOGIN).orElseGet(Instant::now)));
         }
 
         // Warn about wildcard.
@@ -176,19 +180,18 @@ public class CoreListener implements Reloadable, ListenerBase {
             return;
         }
 
-        Nucleus.getNucleus().getUserDataManager().get(player).ifPresent(x -> onPlayerQuit(x, player));
+        getUser(player.getUniqueId()).thenAccept(x -> x.ifPresent(y -> onPlayerQuit(player, y)));
+
     }
 
-    private void onPlayerQuit(ModularUserService x, Player player) {
+    private void onPlayerQuit(Player player, IUserDataObject udo) {
         final Location<World> location = player.getLocation();
         final InetAddress address = player.getConnection().getAddress().getAddress();
 
         try {
-            CoreUserDataModule coreUserDataModule = x.get(CoreUserDataModule.class);
-            coreUserDataModule.setLastIp(address);
-            coreUserDataModule.setLastLogout(location);
-            x.save();
-            Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(x);
+            udo.set(CoreKeys.IP_ADDRESS, address.toString());
+            udo.set(CoreKeys.LAST_LOCATION, new LocationNode(location));
+            Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(player.getUniqueId(), udo);
         } catch (Exception e) {
             Nucleus.getNucleus().printStackTraceIfDebugMode(e);
         }
@@ -203,7 +206,8 @@ public class CoreListener implements Reloadable, ListenerBase {
 
     @Listener
     public void onServerAboutToStop(final GameStoppingServerEvent event) {
-        Nucleus.getNucleus().getUserDataManager().getOnlineUsers().forEach(x -> x.getPlayer().ifPresent(y -> onPlayerQuit(x, y)));
+        Sponge.getServer().getOnlinePlayers()
+                .forEach(x -> getUser(x.getUniqueId()).join().ifPresent(y -> onPlayerQuit(x, y)));
 
         if (this.getKickOnStopMessage != null) {
             for (Player p : Sponge.getServer().getOnlinePlayers()) {

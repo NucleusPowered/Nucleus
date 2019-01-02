@@ -9,7 +9,8 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import io.github.nucleuspowered.nucleus.modules.home.datamodules.HomeUserDataModule;
+import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.ArgumentParseException;
 import org.spongepowered.api.command.args.CommandArgs;
@@ -20,9 +21,9 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -31,7 +32,7 @@ import javax.annotation.Nullable;
  * Returns a {@link NamedLocation}
  */
 @NonnullByDefault
-public class HomeArgument extends CommandElement {
+public class HomeArgument extends CommandElement implements InternalServiceManagerTrait {
 
     private final Nucleus plugin;
 
@@ -52,8 +53,7 @@ public class HomeArgument extends CommandElement {
 
     Home getHome(User user, String home, CommandArgs args) throws ArgumentParseException {
         try {
-            Optional<Home> owl = Nucleus.getNucleus().getUserDataManager().getUnchecked(user)
-                    .get(HomeUserDataModule.class).getHome(home);
+            Optional<Home> owl = getServiceUnchecked(HomeHandler.class).getHome(user.getUniqueId(), home);
             if (owl.isPresent()) {
                 return owl.get();
             }
@@ -83,9 +83,9 @@ public class HomeArgument extends CommandElement {
     }
 
     protected List<String> complete(User src, String homeName) {
-        Set<String> s;
+        Collection<String> s;
         try {
-            s = Nucleus.getNucleus().getUserDataManager().getUnchecked(src).get(HomeUserDataModule.class).getHomes().keySet();
+            s = getServiceUnchecked(HomeHandler.class).getHomeNames(src.getUniqueId());
         } catch (Exception e) {
             return Lists.newArrayList();
         }

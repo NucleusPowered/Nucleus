@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
-import io.github.nucleuspowered.nucleus.modules.ignore.datamodules.IgnoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.ignore.services.IgnoreService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -31,12 +31,12 @@ import java.util.stream.Collectors;
 @NonnullByDefault
 public class IgnoreListCommand extends AbstractCommand.SimpleTargetOtherUser implements MessageProviderTrait {
 
-    @Override protected CommandResult executeWithPlayer(CommandSource source, User target, CommandContext args, boolean isSelf) {
-        List<Text> ignoredList = Nucleus.getNucleus()
-                .getUserDataManager()
-                .getUnchecked(target)
-                .get(IgnoreUserDataModule.class)
-                .getIgnoreList()
+    private final IgnoreService ignoreService = getServiceUnchecked(IgnoreService.class);
+
+    @Override
+    protected CommandResult executeWithPlayer(CommandSource source, User target, CommandContext args, boolean isSelf) {
+        List<Text> ignoredList = this.ignoreService
+                .getAllIgnored(target.getUniqueId())
                 .stream()
                 .map(x -> Nucleus.getNucleus().getNameUtil().getName(x).orElseGet(() ->
                         getMessage("command.ignorelist.unknown", x.toString())

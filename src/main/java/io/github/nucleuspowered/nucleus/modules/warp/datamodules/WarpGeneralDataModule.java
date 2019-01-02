@@ -12,10 +12,10 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.WarpCategory;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpCategoryDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpNode;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.LocationDataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
 import io.github.nucleuspowered.nucleus.internal.LocationData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IGeneralDataModule;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.LocationDataModule;
+import io.github.nucleuspowered.storage.dataobjects.modules.DataKey;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-public class WarpGeneralDataModule extends LocationDataModule<ModularGeneralService> {
+// TODO: POJO
+public class WarpGeneralDataModule extends LocationDataModule implements IGeneralDataModule {
 
     private final BiFunction<String, WarpNode, Warp> getWarpLocation = (s, l) ->
             new WarpData(s, l.getWorld(), l.getPosition(), l.getRotation(), l.getCost(), l.getCategory().orElse(null), l.getDescription());

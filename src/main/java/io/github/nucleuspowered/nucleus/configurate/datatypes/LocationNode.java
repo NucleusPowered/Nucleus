@@ -80,18 +80,19 @@ public class LocationNode {
 
     /**
      * Gets a {@link Location} from the node.
+     */
+    public Optional<Location<World>> getLocationIfExists() {
+        return Sponge.getServer().getWorld(this.world).map(r -> new Location<>(r, this.x, this.y, this.z));
+    }
+
+    /**
+     * Gets a {@link Location} from the node.
      *
      * @return The Location
      * @throws NoSuchWorldException The world does not exist.
      */
     public Location<World> getLocation() throws NoSuchWorldException {
-        Optional<World> ow = Sponge.getServer().getWorld(this.world);
-
-        if (ow.isPresent()) {
-            return new Location<>(ow.get(), this.x, this.y, this.z);
-        }
-
-        throw new NoSuchWorldException();
+        return getLocationIfExists().orElseThrow(NoSuchWorldException::new);
     }
 
     public Vector3d getRotation() {

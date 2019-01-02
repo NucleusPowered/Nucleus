@@ -14,12 +14,13 @@ import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusOnLoginEvent;
-import io.github.nucleuspowered.nucleus.modules.fly.datamodules.FlyUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.JailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.services.JailHandler;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.PermissionMessageChannel;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
@@ -63,7 +64,7 @@ public class JailListener implements Reloadable, ListenerBase {
 
     // fires after spawn login event
     @Listener
-    public void onPlayerLogin(final NucleusOnLoginEvent event, @Getter("getTargetUser") User user, @Getter("getUserService") ModularUserService qs) {
+    public void onPlayerLogin(final NucleusOnLoginEvent event, @Getter("getTargetUser") User user, @Getter("getUserService") IUserDataObject qs) {
         JailUserDataModule userDataModule = qs.get(JailUserDataModule.class);
         if (!userDataModule.getJailData().isPresent()) {
             return;
@@ -90,7 +91,7 @@ public class JailListener implements Reloadable, ListenerBase {
                 jd.setPreviousLocation(event.getFrom().getLocation());
             }
             userDataModule.setJailData(jd);
-            qs.get(FlyUserDataModule.class).setFlying(false);
+            qs.set(FlyKeys.FLY_TOGGLE, false);
         }
     }
 

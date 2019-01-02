@@ -8,8 +8,7 @@ import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchWorldException;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IGeneralDataModule;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -18,7 +17,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class SpawnGeneralDataModule extends DataModule<ModularGeneralService> {
+public class SpawnGeneralDataModule implements IGeneralDataModule {
 
     @DataKey("firstspawn")
     @Nullable

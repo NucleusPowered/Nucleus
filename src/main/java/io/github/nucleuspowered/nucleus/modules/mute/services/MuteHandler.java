@@ -7,19 +7,18 @@ package io.github.nucleuspowered.nucleus.modules.mute.services;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.MuteInfo;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMuteService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.modules.mute.data.MuteData;
 import io.github.nucleuspowered.nucleus.modules.mute.datamodules.MuteUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.mute.events.MuteEvent;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -42,19 +41,13 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 @APIService(NucleusMuteService.class)
-public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteService, MessageProviderTrait, ServiceBase {
-
-    private final UserDataManager ucl;
+public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteService, MessageProviderTrait, IDataManagerTrait, ServiceBase {
 
     private final Map<UUID, Boolean> muteContextCache = Maps.newHashMap();
     private final Context mutedContext = new Context(NucleusMuteService.MUTED_CONTEXT, "true");
 
     private boolean globalMuteEnabled = false;
     private final List<UUID> voicedUsers = Lists.newArrayList();
-
-    public MuteHandler() {
-        this.ucl = Nucleus.getNucleus().getUserDataManager();
-    }
 
     public void onMute(Player user) {
         this.getPlayerMuteData(user).ifPresent(x -> onMute(x, user));
@@ -79,7 +72,7 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
 
     // Internal
     public Optional<MuteData> getPlayerMuteData(User user) {
-        Optional<MuteData> nu = this.ucl.get(user, false).map(x -> x.get(MuteUserDataModule.class).getMuteData().orElse(null));
+        Optional<MuteData> nu = getUser(user.getUniqueId()).join().map(x -> x.get(MuteUserDataModule.class).getMuteData().orElse(null));
         this.muteContextCache.put(user.getUniqueId(), nu.isPresent());
         return nu;
     }
@@ -97,20 +90,24 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
         Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(data);
 
-        Optional<ModularUserService> nu = this.ucl.get(user);
+        Optional<UserDataObject> nu = getUser(user.getUniqueId()).join();
         if (!nu.isPresent()) {
             return false;
         }
 
         Instant time = Instant.now();
-        ModularUserService u = nu.get();
+        UserDataObject u = nu.get();
         final Duration d = data.getRemainingTime().orElse(null);
         if (user.isOnline() && data.getTimeFromNextLogin().isPresent() && !data.getEndTimestamp().isPresent()) {
             data.setEndtimestamp(time.plus(data.getTimeFromNextLogin().get()));
         }
 
-        u.get(MuteUserDataModule.class).setMuteData(data);
-        this.muteContextCache.put(u.getUniqueId(), true);
+        MuteUserDataModule m = u.get(MuteUserDataModule.class);
+        m.setMuteData(data);
+        u.set(m);
+
+        saveUser(user.getUniqueId(), u);
+        this.muteContextCache.put(user.getUniqueId(), true);
         Sponge.getEventManager().post(new MuteEvent.Muted(
                 cause,
                 user,
@@ -129,9 +126,13 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
 
     public boolean unmutePlayer(User user, Cause cause, boolean expired) {
         if (isMuted(user)) {
-            Optional<ModularUserService> o = this.ucl.get(user);
+            Optional<UserDataObject> o = getUser(user.getUniqueId()).join();
             if (o.isPresent()) {
-                o.get().get(MuteUserDataModule.class).removeMuteData();
+                UserDataObject udo = o.get();
+                MuteUserDataModule m = udo.get(MuteUserDataModule.class);
+                m.removeMuteData();
+                udo.set(m);
+                saveUser(user.getUniqueId(), udo);
                 this.muteContextCache.put(user.getUniqueId(), false);
                 Sponge.getEventManager().post(new MuteEvent.Unmuted(
                         cause,

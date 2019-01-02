@@ -5,15 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.mute.datamodules;
 
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.modules.mute.data.MuteData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class MuteUserDataModule extends DataModule<ModularUserService> {
+public class MuteUserDataModule implements IUserDataModule {
 
     @DataKey("muteData")
     @Nullable

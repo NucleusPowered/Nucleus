@@ -5,15 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.jail.datamodules;
 
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class JailUserDataModule extends DataModule.ReferenceService<ModularUserService> {
+public class JailUserDataModule implements IUserDataModule {
 
     @DataKey("jailData")
     @Nullable
@@ -21,10 +20,6 @@ public class JailUserDataModule extends DataModule.ReferenceService<ModularUserS
 
     @DataKey("jailOnNextLogin")
     private boolean jailOnNextLogin = false;
-
-    public JailUserDataModule(ModularUserService modularDataService) {
-        super(modularDataService);
-    }
 
     public Optional<JailData> getJailData() {
         return Optional.ofNullable(this.jailData);

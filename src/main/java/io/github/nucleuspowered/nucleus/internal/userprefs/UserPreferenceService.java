@@ -7,30 +7,16 @@ package io.github.nucleuspowered.nucleus.internal.userprefs;
 import com.google.common.collect.ImmutableList;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusUserPreferenceService;
-import io.github.nucleuspowered.nucleus.argumentparsers.TargetHasPermissionArgument;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.PreferencesUserModule;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.ArgumentParseException;
-import org.spongepowered.api.command.args.CommandArgs;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.args.CommandElement;
-import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.args.*;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.Text;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserPreferenceService implements NucleusUserPreferenceService {
 
@@ -64,7 +50,7 @@ public class UserPreferenceService implements NucleusUserPreferenceService {
                 });
     }
 
-    public void register(io.github.nucleuspowered.nucleus.internal.userprefs.PreferenceKey<?> key) {
+    public void register(PreferenceKeyImpl<?> key) {
         if (this.registered.containsKey(key.getID())) {
             throw new IllegalArgumentException("ID already registered");
         }
@@ -74,10 +60,21 @@ public class UserPreferenceService implements NucleusUserPreferenceService {
     }
 
     public <T> void set(UUID uuid, NucleusUserPreferenceService.PreferenceKey<T> key, @Nullable T value) {
-        Nucleus.getNucleus().getUserDataManager().get(uuid, true)
-                .orElseThrow(IllegalStateException::new)
-                .get(PreferencesUserModule.class)
-                .set(key.getID(), value);
+        PreferenceKeyImpl pki;
+        if (Objects.requireNonNull(key) instanceof PreferenceKeyImpl) {
+            pki = (PreferenceKeyImpl) key;
+        } else {
+            throw new IllegalArgumentException("Cannot have custom preference keys");
+        }
+
+        set(uuid, pki, value);
+    }
+
+    public <T> void set(UUID uuid, PreferenceKeyImpl<T> key, @Nullable T value) {
+        Nucleus.getNucleus().getStorageManager()
+                .getUserService()
+                .getOrNew(uuid)
+                .thenAccept(x -> x.set(key, value));
     }
 
     public Map<NucleusUserPreferenceService.PreferenceKey<?>, Object> get(User user) {
@@ -96,19 +93,22 @@ public class UserPreferenceService implements NucleusUserPreferenceService {
             throw new IllegalArgumentException("Key is not registered.");
         }
 
+        if (!(key instanceof PreferenceKeyImpl)) {
+            throw new IllegalArgumentException("Custom preference keys are not supported.");
+        }
+
+        PreferenceKeyImpl<T> prefKey = (PreferenceKeyImpl<T>) key;
         Optional<T> ot = Optional.empty();
         try {
-            ot = Nucleus.getNucleus().getUserDataManager().get(uuid)
-                    .map(x -> (T) x.get(PreferencesUserModule.class).get(key.getID()));
+            ot = Nucleus.getNucleus().getStorageManager()
+                    .getUserService()
+                    .getOnThread(uuid)
+                    .map(x -> x.getOrDefault(prefKey));
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
 
-        if (ot.isPresent()) {
-            return ot;
-        }
-
-        return key.getDefaultValue();
+        return ot;
     }
 
     public <T> T getUnwrapped(UUID uuid, NucleusUserPreferenceService.PreferenceKey<T> key) {

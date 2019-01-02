@@ -33,6 +33,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RedirectMod
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.SetCooldownManually;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
@@ -104,7 +105,7 @@ import javax.annotation.Nullable;
 @NonnullByDefault
 @Store(Constants.COMMAND)
 public abstract class AbstractCommand<T extends CommandSource> implements CommandCallable, InternalServiceManagerTrait, PermissionTrait,
-        MessageProviderTrait {
+        MessageProviderTrait, IDataManagerTrait {
 
     private static final InputTokenizer tokeniser = InputTokenizer.quotedStrings(false);
     private static final List<ICommandInterceptor> commandInterceptors = Lists.newArrayList();

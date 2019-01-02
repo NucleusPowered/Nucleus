@@ -5,7 +5,6 @@
 package io.github.nucleuspowered.nucleus.modules.ignore.commands;
 
 import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
@@ -15,7 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.ignore.datamodules.IgnoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.ignore.services.IgnoreService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -33,6 +32,8 @@ import java.util.Map;
 @EssentialsEquivalent("ignore")
 @NonnullByDefault
 public class IgnoreCommand extends AbstractCommand<Player> {
+
+    private final IgnoreService ignoreService = getServiceUnchecked(IgnoreService.class);
 
     @Override
     protected Map<String, PermissionInformation> permissionSuffixesToRegister() {
@@ -52,31 +53,30 @@ public class IgnoreCommand extends AbstractCommand<Player> {
     @Override
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) {
         // Get the target
-        User target = args.<User>getOne(NucleusParameters.Keys.USER).get();
+        User target = args.requireOne(NucleusParameters.Keys.USER);
 
         if (target.equals(src)) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.ignore.self"));
+            sendMessageTo(src, "command.ignore.self");
             return CommandResult.empty();
         }
 
-        IgnoreUserDataModule inu = Nucleus.getNucleus().getUserDataManager().getUnchecked(src).get(IgnoreUserDataModule.class);
-
         if (this.permissions.testSuffix(target, "exempt.chat")) {
             // Make sure they are removed.
-            inu.removeFromIgnoreList(target.getUniqueId());
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.ignore.exempt", target.getName()));
+            this.ignoreService.unignore(src.getUniqueId(), target.getUniqueId());
+            sendMessageTo(src, "command.ignore.exempt", target.getName());
             return CommandResult.empty();
         }
 
         // Ok, we can ignore or unignore them.
-        boolean ignore = args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElse(!inu.getIgnoreList().contains(target.getUniqueId()));
+        boolean ignore = args.<Boolean>getOne(NucleusParameters.Keys.BOOL)
+                .orElseGet(() -> !this.ignoreService.isIgnored(src.getUniqueId(), target.getUniqueId()));
 
         if (ignore) {
-            inu.addToIgnoreList(target.getUniqueId());
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.ignore.added", target.getName()));
+            this.ignoreService.ignore(src.getUniqueId(), target.getUniqueId());
+            sendMessageTo(src, "command.ignore.added", target.getName());
         } else {
-            inu.removeFromIgnoreList(target.getUniqueId());
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.ignore.remove", target.getName()));
+            this.ignoreService.unignore(src.getUniqueId(), target.getUniqueId());
+            sendMessageTo(src, "command.ignore.remove", target.getName());
         }
 
         return CommandResult.success();

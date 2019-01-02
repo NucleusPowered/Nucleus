@@ -4,49 +4,59 @@
  */
 package io.github.nucleuspowered.nucleus.modules.back.services;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusBackService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
-import io.github.nucleuspowered.nucleus.modules.back.datamodules.BackUserTransientModule;
+import io.github.nucleuspowered.nucleus.internal.pojo.UUIDTransform;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.World;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @APIService(NucleusBackService.class)
 public class BackHandler implements NucleusBackService, ServiceBase {
 
-    private final UserDataManager loader = Nucleus.getNucleus().getUserDataManager();
+    private final Map<UUID, UUIDTransform> lastLocation = new HashMap<>();
+    private final Set<UUID> preventLogLastLocation = new HashSet<>();
 
     @Override
     public Optional<Transform<World>> getLastLocation(User user) {
-        Optional<ModularUserService> oi = this.loader.getUser(user);
-        return oi.flatMap(modularUserService -> modularUserService.getTransient(BackUserTransientModule.class).getLastLocation());
+        UUIDTransform transform = this.lastLocation.get(user.getUniqueId());
+        if (transform != null) {
+            return transform.getTransform();
+        }
 
+        return Optional.empty();
     }
 
     @Override
     public void setLastLocation(User user, Transform<World> location) {
-        this.loader.getUser(user).ifPresent(x -> x.getTransient(BackUserTransientModule.class).setLastLocation(location));
+        this.lastLocation.put(user.getUniqueId(), new UUIDTransform(location));
     }
 
     @Override
     public void removeLastLocation(User user) {
-        this.loader.getUser(user).ifPresent(x -> x.getTransient(BackUserTransientModule.class).setLastLocation(null));
+        this.lastLocation.remove(user.getUniqueId());
     }
 
     @Override
     public boolean isLoggingLastLocation(User user) {
-        Optional<ModularUserService> oi = this.loader.getUser(user);
-        return oi.isPresent() && oi.get().getTransient(BackUserTransientModule.class).isLogLastLocation();
+        return !this.preventLogLastLocation.contains(user.getUniqueId());
     }
 
     @Override
     public void setLoggingLastLocation(User user, boolean log) {
-        this.loader.getUser(user).ifPresent(x -> x.getTransient(BackUserTransientModule.class).setLogLastLocation(log));
+        if (log) {
+            this.preventLogLastLocation.remove(user.getUniqueId());
+        } else {
+            this.preventLogLastLocation.add(user.getUniqueId());
+        }
     }
+
 }

@@ -4,9 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.teleport.commands;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.argumentparsers.IfConditionElseArgument;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
@@ -17,9 +16,10 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.config.TeleportConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -80,12 +80,17 @@ public class TeleportHereCommand extends AbstractCommand<Player> implements Relo
             this.permissions.checkSuffix(src, "offline", () -> ReturnMessageException.fromKey("command.tphere.noofflineperms"));
 
             // Update the offline player's next location
-            ModularUserService mus = Nucleus.getNucleus().getUserDataManager().get(target)
-                    .orElseThrow(() -> ReturnMessageException.fromKey("command.tphere.couldnotset", target.getName()));
-            mus.get(CoreUserDataModule.class).sendToLocationOnLogin(src.getLocation());
-            mus.save();
-
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tphere.offlinesuccess", target.getName()));
+            final LocationNode l = new LocationNode(src.getLocation());
+            getUser(target.getUniqueId())
+                    .thenAccept(x -> {
+                        if (x.isPresent()) {
+                            UserDataObject u = x.get();
+                            u.set(CoreKeys.LOCATION_ON_LOGIN, l);
+                            sendMessageTo(src, "command.tphere.offlinesuccess", target.getName());
+                        } else {
+                            sendMessageTo(src, "command.tphere.couldnotset", target.getName());
+                        }
+                    });
         }
 
         return CommandResult.success();

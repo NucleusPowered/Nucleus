@@ -5,21 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.kit.datamodules;
 
 import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.time.Instant;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+public class KitUserDataModule implements IUserDataModule {
 
-public class KitUserDataModule extends DataModule<ModularUserService> {
-
-    @DataKey("kitLastUsedTime")
     private Map<String, Long> kitLastUsedTime = Maps.newHashMap();
 
-    @Nullable
     public Instant getLastRedeemedTime(String name) {
         if (!this.kitLastUsedTime.containsKey(name.toLowerCase())) {
             return null;

@@ -14,11 +14,14 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.UniqueUserCountTransientModule;
+import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
@@ -27,6 +30,8 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
 import java.util.Collection;
+import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Scan
@@ -100,11 +105,19 @@ public class DebugCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = "refreshuniquevisitors", subcommandOf = DebugCommand.class)
     public static class RefreshUniqueVisitors extends AbstractCommand<CommandSource> {
 
-        @Override protected CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.nucleus.debug.refreshuniquevisitors.started",
-                String.valueOf(Nucleus.getNucleus().getGeneralService().getTransient(UniqueUserCountTransientModule.class).getUniqueUserCount())));
-            Nucleus.getNucleus().getGeneralService().getTransient(UniqueUserCountTransientModule.class).resetUniqueUserCount(l ->
-                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.nucleus.debug.refreshuniquevisitors.done", String.valueOf(l))));
+        @Override protected CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws CommandException {
+            UniqueUserService uus = getServiceUnchecked(UniqueUserService.class);
+            sendMessageTo(src, "command.nucleus.debug.refreshuniquevisitors.started", uus.getUniqueUserCount());
+
+            Supplier<CommandSource> scs;
+            if (src instanceof Player) {
+                UUID u = ((Player) src).getUniqueId();
+                scs = () -> Sponge.getServer().getPlayer(u).map(x -> (CommandSource) x).orElseGet(Sponge.getServer()::getConsole);
+            } else {
+                scs = Sponge.getServer()::getConsole;
+            }
+
+            uus.resetUniqueUserCount(l -> sendMessageTo(scs, "command.nucleus.debug.refreshuniquevisitors.done", String.valueOf(l)));
             return CommandResult.success();
         }
     }

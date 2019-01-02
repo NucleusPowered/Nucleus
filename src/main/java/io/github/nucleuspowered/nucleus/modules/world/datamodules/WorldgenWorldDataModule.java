@@ -5,10 +5,9 @@
 package io.github.nucleuspowered.nucleus.modules.world.datamodules;
 
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IWorldDataModule;
 
-public class WorldgenWorldDataModule extends DataModule<ModularWorldService> {
+public class WorldgenWorldDataModule implements IWorldDataModule {
 
     @DataKey("start-pregen")
     private boolean start = false;

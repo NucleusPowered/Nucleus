@@ -10,11 +10,10 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.chat.NucleusNoIgnoreChannel;
 import io.github.nucleuspowered.nucleus.api.events.NucleusMailEvent;
 import io.github.nucleuspowered.nucleus.api.events.NucleusMessageEvent;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.ignore.commands.IgnoreCommand;
-import io.github.nucleuspowered.nucleus.modules.ignore.datamodules.IgnoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.ignore.services.IgnoreService;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
@@ -30,7 +29,7 @@ import java.util.Optional;
 
 public class IgnoreListener implements ListenerBase {
 
-    private final UserDataManager loader = Nucleus.getNucleus().getUserDataManager();
+    private final IgnoreService service = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(IgnoreService.class);
     private CommandPermissionHandler ignoreHandler = Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(IgnoreCommand.class);
 
     @Listener(order = Order.LATE)
@@ -55,9 +54,7 @@ public class IgnoreListener implements ListenerBase {
     public void onMessage(NucleusMessageEvent event, @Root Player player) {
         if (event.getRecipient() instanceof User) {
             try {
-                event.setCancelled(this.loader.getUnchecked((User) event.getRecipient())
-                        .get(IgnoreUserDataModule.class)
-                        .getIgnoreList().contains(player.getUniqueId()));
+                event.setCancelled(this.service.isIgnored(((User) event.getRecipient()).getUniqueId(), player.getUniqueId()));
             } catch (Exception e) {
                 if (Nucleus.getNucleus().isDebugMode()) {
                     e.printStackTrace();
@@ -69,9 +66,7 @@ public class IgnoreListener implements ListenerBase {
     @Listener(order = Order.FIRST)
     public void onMail(NucleusMailEvent event, @Root Player player) {
         try {
-            event.setCancelled(this.loader.getUnchecked(event.getRecipient())
-                    .get(IgnoreUserDataModule.class)
-                    .getIgnoreList().contains(player.getUniqueId()));
+            event.setCancelled(this.service.isIgnored(event.getRecipient().getUniqueId(), player.getUniqueId()));
         } catch (Exception e) {
             if (Nucleus.getNucleus().isDebugMode()) {
                 e.printStackTrace();
@@ -105,8 +100,7 @@ public class IgnoreListener implements ListenerBase {
                 }
 
                 // Don't remove if they are in the list.
-                return !this.loader.get((Player) x).map(y ->
-                        y.get(IgnoreUserDataModule.class).getIgnoreList().contains(player.getUniqueId())).orElse(false);
+                return !this.service.isIgnored(((Player) x).getUniqueId(), player.getUniqueId());
             } catch (Exception e) {
                 if (Nucleus.getNucleus().isDebugMode()) {
                     e.printStackTrace();

@@ -69,7 +69,13 @@ public abstract class NucleusRegistryModule<T extends CatalogType>
 
     @Override
     public Optional<T> getById(String id) {
-        return Optional.ofNullable(this.entries.get(id.toLowerCase(Locale.ENGLISH)));
+        final String lowerId = id.toLowerCase(Locale.ENGLISH);
+        T instance = this.entries.get(lowerId);
+        if (instance == null && !lowerId.contains(":")) {
+            instance = this.entries.get("nucleus:" + lowerId);
+        }
+
+        return Optional.ofNullable(instance);
     }
 
     @Override

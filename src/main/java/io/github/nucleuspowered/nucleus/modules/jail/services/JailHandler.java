@@ -14,22 +14,25 @@ import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchLocationException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Inmate;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.data.EndTimestamp;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
-import io.github.nucleuspowered.nucleus.modules.fly.datamodules.FlyUserDataModule;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailGeneralDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.events.JailEvent;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
@@ -52,16 +55,14 @@ import java.util.UUID;
 
 @NonnullByDefault
 @APIService(NucleusJailService.class)
-public class JailHandler implements NucleusJailService, ContextCalculator<Subject>, ServiceBase {
-
-    private final ModularGeneralService store = Nucleus.getNucleus().getGeneralService();
+public class JailHandler implements NucleusJailService, ContextCalculator<Subject>, ServiceBase, IDataManagerTrait {
 
     // Used for the context calculator
     private final Map<UUID, Context> jailDataCache = Maps.newHashMap();
     private final static Context jailContext = new Context(NucleusJailService.JAILED_CONTEXT, "true");
 
     private JailGeneralDataModule getModule() {
-        return this.store.get(JailGeneralDataModule.class);
+        return getGeneral().get(JailGeneralDataModule.class);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
 
     public Optional<JailData> getPlayerJailDataInternal(User user) {
         try {
-            Optional<JailData> data = Nucleus.getNucleus().getUserDataManager().get(user, false)
+            Optional<JailData> data = getUser(user.getUniqueId()).join()
                     .map(y -> y.get(JailUserDataModule.class).getJailData().orElse(null));
             if (data.isPresent()) {
                 this.jailDataCache.put(user.getUniqueId(), new Context(NucleusJailService.JAIL_CONTEXT, data.get().getJailName()));
@@ -130,8 +131,8 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
     }
 
     public boolean jailPlayer(User user, JailData data) {
-        ModularUserService modularUserService = Nucleus.getNucleus().getUserDataManager().getUnchecked(user);
-        JailUserDataModule jailUserDataModule = modularUserService.get(JailUserDataModule.class);
+        IUserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
+        JailUserDataModule jailUserDataModule = udo.get(JailUserDataModule.class);
 
         if (jailUserDataModule.getJailData().isPresent()) {
             return false;
@@ -157,19 +158,25 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
                 Player player = user.getPlayer().get();
                 Nucleus.getNucleus().getTeleportHandler().teleportPlayer(player, owl.get().getLocation().get(), owl.get().getRotation(),
                     NucleusTeleportHandler.StandardTeleportMode.NO_CHECK, Sponge.getCauseStackManager().getCurrentCause(), true);
-                modularUserService.get(FlyUserDataModule.class).setFlying(false);
+                player.offer(Keys.IS_FLYING, false);
+                player.offer(Keys.CAN_FLY, false);
+                udo.set(FlyKeys.FLY_TOGGLE, false);
             });
         } else {
             jailUserDataModule.setJailOnNextLogin(true);
         }
 
         this.jailDataCache.put(user.getUniqueId(), new Context(NucleusJailService.JAIL_CONTEXT, data.getJailName()));
-            Sponge.getEventManager().post(new JailEvent.Jailed(
+        udo.set(jailUserDataModule);
+        saveUser(user.getUniqueId(), udo);
+
+        Sponge.getEventManager().post(new JailEvent.Jailed(
             user,
             CauseStackHelper.createCause(Util.getObjectFromUUID(data.getJailerInternal())),
             data.getJailName(),
             TextSerializers.FORMATTING_CODE.deserialize(data.getReason()),
             data.getRemainingTime().orElse(null)));
+
 
         return true;
     }
@@ -181,8 +188,8 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
     }
 
     public boolean unjailPlayer(User user, Cause cause) {
-        final ModularUserService modularUserService = Nucleus.getNucleus().getUserDataManager().getUnchecked(user);
-        final JailUserDataModule jailUserDataModule = modularUserService.get(JailUserDataModule.class);
+        UserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
+        final JailUserDataModule jailUserDataModule = udo.get(JailUserDataModule.class);
         Optional<JailData> ojd = jailUserDataModule.getJailData();
         if (!ojd.isPresent()) {
             return false;
@@ -200,11 +207,14 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
                 jailUserDataModule.removeJailData();
             });
         } else {
-            modularUserService.get(CoreUserDataModule.class).sendToLocationOnLogin(
-                    ow.orElseGet(() -> new Location<>(Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getUniqueId()).get(),
-                            Sponge.getServer().getDefaultWorld().get().getSpawnPosition())));
+            udo.set(CoreKeys.LOCATION_ON_LOGIN,
+                    new LocationNode(ow.orElseGet(() -> new Location<>(Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getUniqueId()).get(),
+                            Sponge.getServer().getDefaultWorld().get().getSpawnPosition()))));
             jailUserDataModule.removeJailData();
         }
+
+        udo.set(jailUserDataModule);
+        saveUser(user.getUniqueId(), udo);
 
         Sponge.getEventManager().post(new JailEvent.Unjailed(user, cause));
         return true;
@@ -263,7 +273,11 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         // if the jail doesn't exist, treat it as expired.
         if (!getPlayerJailDataInternal(player).map(EndTimestamp::expired).orElse(true)) {
             if (sendMessage) {
-                Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(FlyUserDataModule.class).setFlying(false);
+                IUserDataObject udo = getOrCreateUserOnThread(player.getUniqueId());
+                udo.set(FlyKeys.FLY_TOGGLE, false);
+                player.offer(Keys.CAN_FLY, false);
+                player.offer(Keys.IS_FLYING, false);
+                saveUser(player.getUniqueId(), udo);
                 player.getPlayer().ifPresent(this::onJail);
             }
 

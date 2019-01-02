@@ -9,8 +9,11 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.UserCacheDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.UserCacheVersionNode;
 import io.github.nucleuspowered.nucleus.dataservices.dataproviders.DataProvider;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
+import io.github.nucleuspowered.nucleus.storage.queryobjects.UserQueryObject;
+import io.github.nucleuspowered.storage.services.storage.IStorageService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.util.Identifiable;
@@ -20,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class UserCacheService extends AbstractService<UserCacheVersionNode> {
+public class UserCacheService extends AbstractService<UserCacheVersionNode> implements IDataManagerTrait {
 
     private static final int expectedVersion = new UserCacheVersionNode().getVersion();
     private boolean isWalking = false;
@@ -63,16 +66,18 @@ public class UserCacheService extends AbstractService<UserCacheVersionNode> {
     }
 
     public void updateCacheForOnlinePlayers() {
-        Nucleus.getNucleus().getUserDataManager().getOnlineUsers().forEach(u ->
-                this.data.getNode().computeIfAbsent(u.getUniqueId(), x -> new UserCacheDataNode()).set(u));
+        IUserQueryObject iuq = new UserQueryObject();
+        iuq.addAllKeys(Sponge.getServer().getOnlinePlayers().stream().map(Identifiable::getUniqueId).collect(Collectors.toList()));
+        Nucleus.getNucleus().getStorageManager().getUserService().getAll(iuq).thenAccept(result ->
+                result.forEach((uuid, obj) -> this.data.getNode().computeIfAbsent(uuid, x -> new UserCacheDataNode()).set(obj)));
     }
 
-    public void updateCacheForPlayer(ModularUserService u) {
-        this.data.getNode().computeIfAbsent(u.getUniqueId(), x -> new UserCacheDataNode()).set(u);
+    public void updateCacheForPlayer(UUID uuid, IUserDataObject u) {
+        this.data.getNode().computeIfAbsent(uuid, x -> new UserCacheDataNode()).set(u);
     }
 
     public void updateCacheForPlayer(UUID uuid) {
-        Nucleus.getNucleus().getUserDataManager().get(uuid).ifPresent(this::updateCacheForPlayer);
+        getUser(uuid).thenAccept(x -> x.ifPresent(u -> updateCacheForPlayer(uuid, u)));
     }
 
     public void startFilewalkIfNeeded() {
@@ -100,12 +105,12 @@ public class UserCacheService extends AbstractService<UserCacheVersionNode> {
                     .map(Identifiable::getUniqueId).collect(Collectors.toList());
 
             int count = 0;
-            UserDataManager manager = Nucleus.getNucleus().getUserDataManager();
+            IStorageService.Keyed<UUID, IUserQueryObject, IUserDataObject> manager = Nucleus.getNucleus().getStorageManager().getUserService();
             for (UUID user : knownUsers) {
-                if (manager.has(user)) {
-                    manager.get(user).ifPresent(x -> data.put(user, new UserCacheDataNode(x)));
+                if (manager.exists(user).join()) {
+                    manager.get(user).join().ifPresent(x -> data.put(user, new UserCacheDataNode(x)));
                     if (++count >= 10) {
-                        manager.removeOfflinePlayers();
+                        manager.clearCache();
                         count = 0;
                     }
                 }

@@ -5,8 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.serverlist.datamodules;
 
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IGeneralDataModule;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
@@ -15,7 +14,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class ServerListGeneralDataModule extends DataModule<ModularGeneralService> {
+public class ServerListGeneralDataModule implements IGeneralDataModule {
 
     @Nullable
     @DataKey("lineone")

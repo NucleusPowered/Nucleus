@@ -8,13 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.MailMessage;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.modules.mail.data.MailData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.util.List;
 
-public class MailUserDataModule extends DataModule<ModularUserService> {
+public class MailUserDataModule implements IUserDataModule {
 
     @DataKey("mail")
     private List<MailData> mailDataList = Lists.newArrayList();

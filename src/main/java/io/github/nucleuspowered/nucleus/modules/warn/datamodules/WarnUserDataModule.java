@@ -8,13 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Warning;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.modules.warn.data.WarnData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 
 import java.util.List;
 
-public class WarnUserDataModule extends DataModule<ModularUserService> {
+public class WarnUserDataModule implements IUserDataModule {
 
     @DataKey("warnings")
     private List<WarnData> warnings = Lists.newArrayList();

@@ -20,13 +20,13 @@ public class NucleusKeysProvider implements NucleusUserPreferenceService.Keys {
     public static final String VANISH_ON_LOGIN_KEY = "nucleus:vanish-on-login";
     public static final String VIEW_STAFF_CHAT_KEY = "nucleus:view-staff-chat";
 
-    @TargetID(VANISH_ON_LOGIN_KEY) @Nullable private PreferenceKey<Boolean> vanishOnLoginKey = null;
-    @TargetID(TELEPORT_TARGETABLE_KEY) @Nullable private PreferenceKey<Boolean> teleportTargetKey = null;
-    @TargetID(POWERTOOL_ENABLED_KEY) @Nullable private PreferenceKey<Boolean> powertoolEnabledKey = null;
-    @TargetID(SOCIAL_SPY_KEY) @Nullable private PreferenceKey<Boolean> socialSpyEnabled = null;
-    @TargetID(MESSAGE_TOGGLE_KEY) @Nullable private PreferenceKey<Boolean> messageToggle = null;
-    @TargetID(COMMAND_SPY_KEY) @Nullable private PreferenceKey<Boolean> commandSpyEnabled = null;
-    @TargetID(VIEW_STAFF_CHAT_KEY) @Nullable private PreferenceKey<Boolean> viewStaffChat = null;
+    @TargetID(VANISH_ON_LOGIN_KEY) @Nullable private PreferenceKeyImpl<Boolean> vanishOnLoginKey = null;
+    @TargetID(TELEPORT_TARGETABLE_KEY) @Nullable private PreferenceKeyImpl<Boolean> teleportTargetKey = null;
+    @TargetID(POWERTOOL_ENABLED_KEY) @Nullable private PreferenceKeyImpl<Boolean> powertoolEnabledKey = null;
+    @TargetID(SOCIAL_SPY_KEY) @Nullable private PreferenceKeyImpl<Boolean> socialSpyEnabled = null;
+    @TargetID(MESSAGE_TOGGLE_KEY) @Nullable private PreferenceKeyImpl<Boolean> messageToggle = null;
+    @TargetID(COMMAND_SPY_KEY) @Nullable private PreferenceKeyImpl<Boolean> commandSpyEnabled = null;
+    @TargetID(VIEW_STAFF_CHAT_KEY) @Nullable private PreferenceKeyImpl<Boolean> viewStaffChat = null;
 
     @Override public Optional<NucleusUserPreferenceService.PreferenceKey<Boolean>> vanishOnLogin() {
         return Optional.ofNullable(this.vanishOnLoginKey);

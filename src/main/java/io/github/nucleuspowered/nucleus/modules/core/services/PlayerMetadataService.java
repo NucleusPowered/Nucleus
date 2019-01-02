@@ -5,15 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.core.services;
 
 import com.flowpowered.math.vector.Vector3d;
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusPlayerMetadataService;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Location;
@@ -28,30 +28,30 @@ import javax.annotation.Nullable;
 
 @APIService(NucleusPlayerMetadataService.class)
 @NonnullByDefault
-public class PlayerMetadataService implements NucleusPlayerMetadataService, ServiceBase {
+public class PlayerMetadataService implements NucleusPlayerMetadataService, ServiceBase, IDataManagerTrait {
 
     @Override public Optional<Result> getUserData(UUID uuid) {
-        return Nucleus.getNucleus().getUserDataManager().get(uuid, false)
-            .map(ResultImpl::new);
+        return getUser(uuid).join().map(x -> new ResultImpl(uuid, x));
     }
 
     public class ResultImpl implements Result {
 
-        private final User user;
+        // private final User user;
 
+        private final UUID uuid;
         @Nullable private final Instant login;
         @Nullable private final Instant logout;
         @Nullable private final String lastIP;
         @Nullable private final LocationNode lastLocation;
 
-        private ResultImpl(ModularUserService userService) {
-            this.user = userService.getUser();
+        private ResultImpl(UUID uuid, UserDataObject udo) {
+            // this.user = userService.getUser();
 
-            CoreUserDataModule core = userService.get(CoreUserDataModule.class);
-            this.login = core.getLastLogin().orElse(null);
-            this.logout = core.getLastLogout().orElse(null);
-            this.lastIP = core.getLastIp().orElse(null);
-            this.lastLocation = core.getLogoutLocationSafe().orElse(null);
+            this.uuid = uuid;
+            this.login = udo.get(CoreKeys.LAST_LOGIN).orElse(null);
+            this.logout = udo.get(CoreKeys.LAST_LOGOUT).orElse(null);
+            this.lastIP = udo.get(CoreKeys.IP_ADDRESS).orElse(null);
+            this.lastLocation = udo.get(CoreKeys.LAST_LOCATION).orElse(null);
         }
 
         @Override public Optional<Instant> getLastLogin() {
@@ -67,7 +67,7 @@ public class PlayerMetadataService implements NucleusPlayerMetadataService, Serv
         }
 
         @Override public Optional<Tuple<WorldProperties, Vector3d>> getLastLocation() {
-            Optional<Player> pl = this.user.getPlayer();
+            Optional<Player> pl = Sponge.getServer().getPlayer(this.uuid);
             if (pl.isPresent()) {
                 Location<World> l = pl.get().getLocation();
                 return Optional.of(Tuple.of(

@@ -7,10 +7,9 @@ package io.github.nucleuspowered.nucleus.modules.nickname.datamodules;
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
 import io.github.nucleuspowered.nucleus.modules.nickname.services.NicknameService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IUserDataModule;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.data.key.Keys;
@@ -22,15 +21,11 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class NicknameUserDataModule extends DataModule.ReferenceService<ModularUserService> implements InternalServiceManagerTrait {
+public class NicknameUserDataModule implements IUserDataModule, InternalServiceManagerTrait {
 
     @DataKey("nickname-text")
     @Nullable
     private Text nickname = null;
-
-    public NicknameUserDataModule(ModularUserService modularDataService) {
-        super(modularDataService);
-    }
 
     public Optional<Text> getNicknameAsText() {
         return Optional.ofNullable(this.nickname);

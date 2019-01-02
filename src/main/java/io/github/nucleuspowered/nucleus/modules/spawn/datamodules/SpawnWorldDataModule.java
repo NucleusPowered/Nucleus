@@ -6,14 +6,13 @@ package io.github.nucleuspowered.nucleus.modules.spawn.datamodules;
 
 import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.dataservices.modular.DataKey;
-import io.github.nucleuspowered.nucleus.dataservices.modular.DataModule;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modules.IWorldDataModule;
 
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class SpawnWorldDataModule extends DataModule<ModularWorldService> {
+public class SpawnWorldDataModule implements IWorldDataModule {
 
     @Nullable
     @DataKey("spawn-rotation")

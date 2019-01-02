@@ -9,6 +9,7 @@ import io.github.nucleuspowered.nucleus.argumentparsers.AlternativeUsageArgument
 import io.github.nucleuspowered.nucleus.argumentparsers.IfConditionElseArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.NicknameArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.SelectorArgument;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -21,7 +22,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.config.TeleportConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
@@ -159,7 +160,7 @@ public class TeleportCommand extends AbstractCommand<CommandSource> implements R
 
         // Can we get a location?
         Supplier<ReturnMessageException> r = () -> ReturnMessageException.fromKey("command.teleport.nolastknown", to.getName());
-        Location<World> l = Nucleus.getNucleus().getUserDataManager().get(to.getUniqueId()).orElseThrow(r).get(CoreUserDataModule.class).getLogoutLocation()
+        Location<World> l = getUserOnThread(to.getUniqueId()).orElseThrow(r).get(CoreKeys.LAST_LOCATION).flatMap(LocationNode::getLocationIfExists)
                 .orElseThrow(r);
 
         MessageProvider provider = Nucleus.getNucleus().getMessageProvider();

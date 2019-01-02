@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.userprefs.PreferenceKey;
+import io.github.nucleuspowered.nucleus.internal.userprefs.PreferenceKeyImpl;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -66,7 +66,7 @@ public class NucleusUserPrefsCommand extends AbstractCommand.SimpleTargetOtherUs
 
     }
 
-    private <T> CommandResult set(CommandSource source, User target, boolean isSelf, PreferenceKey<T> key,
+    private <T> CommandResult set(CommandSource source, User target, boolean isSelf, PreferenceKeyImpl<T> key,
             @Nullable Object value) {
         UserPreferenceService service = getServiceUnchecked(UserPreferenceService.class);
         service.set(target.getUniqueId(), key, key.getValueClass().cast(value));
@@ -78,7 +78,7 @@ public class NucleusUserPrefsCommand extends AbstractCommand.SimpleTargetOtherUs
         return CommandResult.success();
     }
 
-    private <T> CommandResult get(CommandSource source, User target, PreferenceKey<T> key) {
+    private <T> CommandResult get(CommandSource source, User target, PreferenceKeyImpl<T> key) {
         UserPreferenceService service = getServiceUnchecked(UserPreferenceService.class);
         source.sendMessage(get(source, key, service.get(target.getUniqueId(), key).orElse(null)));
         return CommandResult.success();
@@ -111,8 +111,8 @@ public class NucleusUserPrefsCommand extends AbstractCommand.SimpleTargetOtherUs
         tb.append(result);
         if (key.getDescription() != null && !key.getDescription().isEmpty()) {
             tb.onHover(TextActions.showText(
-                    key instanceof PreferenceKey ?
-                    getMessageFor(source, ((PreferenceKey<?>) key).getDescriptionKey()) :
+                    key instanceof PreferenceKeyImpl ?
+                    getMessageFor(source, ((PreferenceKeyImpl<?>) key).getDescriptionKey()) :
                     Text.of(key.getDescription())));
         }
         return tb.build();

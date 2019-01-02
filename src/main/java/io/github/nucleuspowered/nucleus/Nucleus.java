@@ -10,9 +10,6 @@ import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
 import io.github.nucleuspowered.nucleus.dataservices.KitService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
@@ -26,6 +23,7 @@ import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
+import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.slf4j.Logger;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -63,10 +61,6 @@ public abstract class Nucleus {
 
     public abstract Path getDataPath();
 
-    public abstract UserDataManager getUserDataManager();
-
-    public abstract WorldDataManager getWorldDataManager();
-
     public abstract UserCacheService getUserCacheService();
 
     public abstract void saveSystemConfig() throws IOException;
@@ -98,8 +92,6 @@ public abstract class Nucleus {
     public abstract InternalServiceManager getInternalServiceManager();
 
     public abstract Optional<Instant> getGameStartedTime();
-
-    public abstract ModularGeneralService getGeneralService();
 
     public abstract ItemDataService getItemDataService();
 
@@ -148,4 +140,6 @@ public abstract class Nucleus {
     public abstract void addStartupMessage(Text message);
 
     public abstract boolean isPrintingSavesAndLoads();
+
+    public abstract INucleusStorageManager getStorageManager();
 }

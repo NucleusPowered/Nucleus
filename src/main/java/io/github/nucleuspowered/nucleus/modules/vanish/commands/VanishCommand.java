@@ -14,8 +14,9 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.vanish.datamodules.VanishUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.services.VanishService;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -27,7 +28,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
 import java.util.Map;
@@ -70,13 +70,24 @@ public class VanishCommand extends AbstractCommand<CommandSource> {
             throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.vanish.noperm", ou.getName()));
         }
 
-        VanishUserDataModule uss = Nucleus.getNucleus().getUserDataManager().getUnchecked(ou).get(VanishUserDataModule.class);
-        uss.setVanished(args.<Boolean>getOne(this.b).orElse(!uss.isVanished()));
+        boolean result;
+        try (IKeyedDataObject.Value<Boolean> value = Nucleus.getNucleus()
+                .getStorageManager()
+                .getUserService()
+                .getOrNewOnThread(ou.getUniqueId())
+                .getAndSet(VanishKeys.VANISH_STATUS)) {
+            result = args.<Boolean>getOne(this.b).orElse(!value.getValue().orElse(false));
+            value.setValue(result);
+        }
 
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.vanish.successuser",
-            ou.getName(),
-            uss.isVanished() ? Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.vanished") :
-                    Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.visible")));
+        sendMessageTo(
+                src,
+                "command.vanish.successuser",
+                ou.getName(),
+                result ?
+                        getMessageFor(src, "command.vanish.vanished") :
+                        getMessageFor(src, "command.vanish.visible")
+        );
 
         return CommandResult.success();
     }
@@ -94,15 +105,23 @@ public class VanishCommand extends AbstractCommand<CommandSource> {
             getServiceUnchecked(VanishService.class).unvanishPlayer(playerToVanish);
         }
 
-        playerToVanish.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.vanish.success",
-            toVanish ? Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.vanished") :
-                    Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.visible")));
+        sendMessageTo(
+                playerToVanish,
+                "command.vanish.success",
+                toVanish ?
+                        getMessageFor(playerToVanish, "command.vanish.vanished") :
+                        getMessageFor(playerToVanish, "command.vanish.visible")
+        );
 
         if (!(src instanceof Player) || !(((Player) src).getUniqueId().equals(playerToVanish.getUniqueId()))) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.vanish.successplayer",
-                TextSerializers.FORMATTING_CODE.serialize(Nucleus.getNucleus().getNameUtil().getName(playerToVanish)),
-                toVanish ? Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.vanished") :
-                        Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("command.vanish.visible")));
+            sendMessageTo(
+                    playerToVanish,
+                    "command.vanish.successplayer",
+                    Nucleus.getNucleus().getNameUtil().getName(playerToVanish),
+                    toVanish ?
+                            getMessageFor(playerToVanish, "command.vanish.vanished") :
+                            getMessageFor(playerToVanish, "command.vanish.visible")
+            );
         }
 
         return CommandResult.success();
