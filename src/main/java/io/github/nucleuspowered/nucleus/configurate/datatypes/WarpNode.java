@@ -11,9 +11,9 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Optional;
-
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.UUID;
 
 @ConfigSerializable
 public class WarpNode extends LocationNode {
@@ -22,13 +22,22 @@ public class WarpNode extends LocationNode {
     private double cost = -1;
 
     @Setting("category")
+    @Nullable
     private String category = null;
 
     @Setting("description")
+    @Nullable
     private Text description = null;
 
     public WarpNode() {
         super();
+    }
+
+    public WarpNode(UUID world, Vector3d length, Vector3d rotation, double cost, String category, Text description) {
+        super(world, length, rotation);
+        this.cost = cost;
+        this.category = category;
+        this.description = description;
     }
 
     public WarpNode(Location<World> location, Vector3d rotation) {

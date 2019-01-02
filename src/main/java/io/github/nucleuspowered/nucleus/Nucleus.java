@@ -7,12 +7,9 @@ package io.github.nucleuspowered.nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMessageTokenService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
@@ -25,7 +22,9 @@ import io.github.nucleuspowered.nucleus.internal.services.PermissionResolver;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
+import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
+import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.slf4j.Logger;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -63,10 +62,6 @@ public abstract class Nucleus {
 
     public abstract Path getDataPath();
 
-    public abstract UserDataManager getUserDataManager();
-
-    public abstract WorldDataManager getWorldDataManager();
-
     public abstract UserCacheService getUserCacheService();
 
     public abstract void saveSystemConfig() throws IOException;
@@ -99,8 +94,6 @@ public abstract class Nucleus {
 
     public abstract Optional<Instant> getGameStartedTime();
 
-    public abstract ModularGeneralService getGeneralService();
-
     public abstract ItemDataService getItemDataService();
 
     public abstract NameUtil getNameUtil();
@@ -129,7 +122,7 @@ public abstract class Nucleus {
 
     public abstract void printStackTraceIfDebugMode(Throwable throwable);
 
-    public abstract KitService getKitService();
+    public abstract KitDataService getKitDataService();
 
     public abstract NameBanService getNameBanService();
 
@@ -148,4 +141,8 @@ public abstract class Nucleus {
     public abstract void addStartupMessage(Text message);
 
     public abstract boolean isPrintingSavesAndLoads();
+
+    public abstract INucleusStorageManager getStorageManager();
+
+    public abstract UserPreferenceService getUserPreferenceService();
 }

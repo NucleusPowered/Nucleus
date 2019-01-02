@@ -5,15 +5,16 @@
 package io.github.nucleuspowered.nucleus.modules.environment.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.modules.environment.datamodule.EnvironmentWorldDataModule;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.environment.EnvironmentKeys;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -31,9 +32,7 @@ import java.util.Optional;
 @RegisterCommand({ "lockweather", "killweather" })
 @NoModifiers
 @NonnullByDefault
-public class LockWeatherCommand extends AbstractCommand<CommandSource> {
-
-    private final WorldDataManager loader = Nucleus.getNucleus().getWorldDataManager();
+public class LockWeatherCommand extends AbstractCommand<CommandSource> implements IDataManagerTrait {
 
     private final String worldKey = "world";
 
@@ -46,7 +45,7 @@ public class LockWeatherCommand extends AbstractCommand<CommandSource> {
     }
 
     @Override
-    public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) {
+    public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws ReturnMessageException {
         Optional<WorldProperties> world = getWorldProperties(src, this.worldKey, args);
         if (!world.isPresent()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.specifyworld"));
@@ -54,21 +53,17 @@ public class LockWeatherCommand extends AbstractCommand<CommandSource> {
         }
 
         WorldProperties wp = world.get();
-        Optional<ModularWorldService> ws = this.loader.getWorld(wp.getUniqueId());
-        if (!ws.isPresent()) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.noworld", wp.getWorldName()));
-            return CommandResult.empty();
-        }
-
-        EnvironmentWorldDataModule environmentWorldDataModule = ws.get().get(EnvironmentWorldDataModule.class);
-        boolean toggle = args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElse(!environmentWorldDataModule.isLockWeather());
-
-        environmentWorldDataModule.setLockWeather(toggle);
-        ws.get().set(environmentWorldDataModule);
-        if (toggle) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.lockweather.locked", wp.getWorldName()));
-        } else {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.lockweather.unlocked", wp.getWorldName()));
+        try (IKeyedDataObject.Value<Boolean> vb = getWorldOnThread(wp.getUniqueId())
+                .orElseThrow(() -> ReturnMessageException.fromKey("command.noworld", wp.getWorldName()))
+                .getAndSet(EnvironmentKeys.LOCKED_WEATHER)) {
+            boolean current = vb.getValue().orElse(false);
+            boolean toggle = args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElse(!current);
+            vb.setValue(toggle);
+            if (toggle) {
+                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.lockweather.locked", wp.getWorldName()));
+            } else {
+                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.lockweather.unlocked", wp.getWorldName()));
+            }
         }
 
         return CommandResult.success();

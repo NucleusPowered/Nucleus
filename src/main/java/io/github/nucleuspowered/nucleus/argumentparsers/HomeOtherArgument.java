@@ -65,9 +65,9 @@ public class HomeOtherArgument extends HomeArgument implements MessageProviderTr
     @Override
     @SuppressWarnings("unchecked")
     public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
-        Object saveState = null;
+        CommandArgs.Snapshot saveState = null;
         try {
-            saveState = args.getState();
+            saveState = args.getSnapshot();
 
             // Do we have two args?
             String arg1 = args.next();
@@ -83,7 +83,7 @@ public class HomeOtherArgument extends HomeArgument implements MessageProviderTr
                 User user = (User) (u.iterator().next());
                 return this.complete(user, arg2.get());
             } else {
-                args.setState(saveState);
+                args.applySnapshot(saveState);
                 return this.nickArg.complete(src, args, context);
             }
 
@@ -93,7 +93,7 @@ public class HomeOtherArgument extends HomeArgument implements MessageProviderTr
             }
         } finally {
             if (saveState != null) {
-                args.setState(saveState);
+                args.applySnapshot(saveState);
             }
         }
 

@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.freezeplayer.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -22,6 +23,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @Permissions(supportsOthers = true)
 @RegisterCommand({"freezeplayer", "freeze"})
 @NonnullByDefault
+@RunAsync
 public class FreezePlayerCommand extends AbstractCommand<CommandSource> {
 
     private final FreezePlayerService service =

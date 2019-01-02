@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.freezeplayer.services.FreezePlayerService;
+import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.action.InteractEvent;
@@ -21,12 +22,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
-public class FreezePlayerListener implements ListenerBase {
+public class FreezePlayerListener implements ListenerBase, InternalServiceManagerTrait {
 
     private final FreezePlayerService service = Nucleus.getNucleus()
             .getInternalServiceManager()
             .getServiceUnchecked(FreezePlayerService.class);
+
     private final Map<UUID, Instant> lastFreezeNotification = Maps.newHashMap();
+    private final FreezePlayerService freezeService = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(FreezePlayerService.class);
 
     @Listener
     public void onPlayerMovement(MoveEntityEvent event, @Root Player player) {
@@ -49,7 +52,7 @@ public class FreezePlayerListener implements ListenerBase {
     }
 
     private boolean checkForFrozen(Player player, String message) {
-        if (this.service.isFrozen(player)) {
+        if (this.freezeService.getFromUUID(player.getUniqueId())) {
             Instant now = Instant.now();
             if (this.lastFreezeNotification.getOrDefault(player.getUniqueId(), now).isBefore(now)) {
                 player.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat(message));

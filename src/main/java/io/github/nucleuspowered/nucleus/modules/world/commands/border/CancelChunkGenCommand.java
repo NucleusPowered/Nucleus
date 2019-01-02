@@ -5,13 +5,12 @@
 package io.github.nucleuspowered.nucleus.modules.world.commands.border;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.modules.world.datamodules.WorldgenWorldDataModule;
+import io.github.nucleuspowered.nucleus.modules.world.WorldKeys;
 import io.github.nucleuspowered.nucleus.modules.world.services.WorldHelper;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -39,9 +38,11 @@ public class CancelChunkGenCommand extends AbstractCommand<CommandSource> {
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws Exception {
         WorldProperties wp = getWorldFromUserOrArgs(src, NucleusParameters.Keys.WORLD, args);
-        ModularWorldService m = Nucleus.getNucleus().getWorldDataManager().getWorld(wp.getUniqueId()).get();
-        m.set(m.get(WorldgenWorldDataModule.class).setStart(false));
-        m.save();
+        Nucleus.getNucleus()
+                .getStorageManager()
+                .getWorldService()
+                .getOrNew(wp.getUniqueId())
+                .thenAccept(x -> x.set(WorldKeys.WORLD_PREGEN_START, false));
         if (this.worldHelper.cancelPregenRunningForWorld(wp.getUniqueId())) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.world.cancelgen.cancelled", wp.getWorldName()));
             return CommandResult.success();

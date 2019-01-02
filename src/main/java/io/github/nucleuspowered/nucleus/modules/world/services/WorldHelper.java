@@ -8,14 +8,14 @@ import com.flowpowered.math.GenericMath;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
+import io.github.nucleuspowered.nucleus.modules.world.WorldKeys;
 import io.github.nucleuspowered.nucleus.modules.world.WorldModule;
 import io.github.nucleuspowered.nucleus.modules.world.commands.border.GenerateChunksCommand;
 import io.github.nucleuspowered.nucleus.modules.world.config.WorldConfig;
 import io.github.nucleuspowered.nucleus.modules.world.config.WorldConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.world.datamodules.WorldgenWorldDataModule;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IWorldDataObject;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.spongepowered.api.event.world.ChunkPreGenerationEvent;
 import org.spongepowered.api.text.Text;
@@ -25,12 +25,11 @@ import org.spongepowered.api.world.ChunkPreGenerate;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
+import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
 
 public class WorldHelper implements Reloadable, ServiceBase {
 
@@ -83,13 +82,18 @@ public class WorldHelper implements Reloadable, ServiceBase {
             }
 
             if (onRestart) {
-                ModularWorldService service = Nucleus.getNucleus().getWorldDataManager().get(world.getUniqueId(), true).get();
-                WorldgenWorldDataModule module = service.get(WorldgenWorldDataModule.class);
-                module.setStart(true).setAggressive(aggressive).setSaveTime(saveTime)
-                        .setTickFreq(tickFrequency)
-                        .setTickPercent(tickPercent);
-                service.set(module);
-                service.save();
+                IWorldDataObject service = Nucleus.getNucleus()
+                        .getStorageManager()
+                        .getWorldService()
+                        .getOrNewOnThread(world.getUniqueId());
+
+                service.set(WorldKeys.WORLD_PREGEN_START, true);
+                service.set(WorldKeys.WORLD_PREGEN_AGGRESSIVE, aggressive);
+                service.set(WorldKeys.WORLD_PREGEN_SAVE_FREQUENCY, saveTime);
+                service.set(WorldKeys.WORLD_PREGEN_TICK_FREQUENCY, tickFrequency);
+                service.set(WorldKeys.WORLD_PREGEN_TICK_PERCENT, tickPercent);
+                Nucleus.getNucleus().getStorageManager()
+                        .getWorldService().save(world.getUniqueId(), service);
             }
 
             this.pregen.put(world.getUniqueId(), wbcp.start());
@@ -212,9 +216,11 @@ public class WorldHelper implements Reloadable, ServiceBase {
                         DurationFormatUtils.formatDuration(this.time, TIME_FORMAT, false),
                         DurationFormatUtils.formatDuration(cpg.getTotalTime().toMillis(), TIME_FORMAT, false)
                     ));
-                ModularWorldService m = Nucleus.getNucleus().getWorldDataManager().getWorld(event.getTargetWorld()).get();
-                m.set(m.get(WorldgenWorldDataModule.class).setStart(false));
-                m.save();
+                Nucleus.getNucleus()
+                        .getStorageManager()
+                        .getWorldService()
+                        .getOrNew(event.getTargetWorld().getUniqueId())
+                        .thenAccept(x -> x.set(WorldKeys.WORLD_PREGEN_START, false));
             }
         }
 

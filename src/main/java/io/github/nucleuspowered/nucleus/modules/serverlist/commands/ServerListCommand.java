@@ -17,7 +17,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfig;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.serverlist.datamodules.ServerListGeneralDataModule;
+import io.github.nucleuspowered.nucleus.modules.serverlist.services.ServerListService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -84,7 +84,7 @@ public class ServerListCommand extends AbstractCommand<CommandSource> implements
             src.sendMessage(messageProvider.getTextMessageWithFormat("command.serverlist.modify.false"));
         }
 
-        ServerListGeneralDataModule ss = Nucleus.getNucleus().getGeneralService().get(ServerListGeneralDataModule.class);
+        ServerListService ss = getServiceUnchecked(ServerListService.class);
         ss.getMessage().ifPresent(
                 t -> {
                     src.sendMessage(Util.SPACE);

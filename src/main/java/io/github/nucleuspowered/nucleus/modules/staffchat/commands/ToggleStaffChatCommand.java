@@ -4,40 +4,29 @@
  */
 package io.github.nucleuspowered.nucleus.modules.staffchat.commands;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
-import io.github.nucleuspowered.nucleus.modules.staffchat.StaffChatMessageChannel;
 import io.github.nucleuspowered.nucleus.modules.staffchat.StaffChatUserPrefKeys;
-import io.github.nucleuspowered.nucleus.modules.staffchat.datamodules.StaffChatTransientModule;
-import org.spongepowered.api.Sponge;
+import io.github.nucleuspowered.nucleus.modules.staffchat.services.StaffChatService;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.EventContextKeys;
-import org.spongepowered.api.text.channel.MessageChannel;
-import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
-
-import java.util.Optional;
 
 @Permissions(suggestedLevel = SuggestedLevel.MOD, mainOverride = "staffchat")
 @NoModifiers
 @RegisterCommand({"toggleviewstaffchat", "vsc", "togglevsc"})
 @NonnullByDefault
 public class ToggleStaffChatCommand extends AbstractCommand<Player> {
+
+    private final StaffChatService staffChatService = getServiceUnchecked(StaffChatService.class);
 
     @Override
     public CommandElement[] getArguments() {
@@ -54,12 +43,8 @@ public class ToggleStaffChatCommand extends AbstractCommand<Player> {
                     ups.getPreferenceFor(src, StaffChatUserPrefKeys.VIEW_STAFF_CHAT).orElse(true));
         ups.setPreferenceFor(src, StaffChatUserPrefKeys.VIEW_STAFF_CHAT, !result);
 
-        if (!result && src.getMessageChannel() == StaffChatMessageChannel.getInstance()) {
-            StaffChatTransientModule s = Nucleus.getNucleus().getUserDataManager().get(src)
-                    .map(y -> y.getTransient(StaffChatTransientModule.class))
-                    .orElseGet(StaffChatTransientModule::new);
-
-            src.setMessageChannel(s.getPreviousMessageChannel().orElse(MessageChannel.TO_ALL));
+        if (!result && this.staffChatService.isToggledChat(src)) {
+            this.staffChatService.toggle(src, false);
         }
 
         sendMessageTo(src, "command.staffchat.view." + (result ? "on" : "off"));

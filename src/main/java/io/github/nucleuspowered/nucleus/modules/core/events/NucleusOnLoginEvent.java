@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.core.events;
 
 import com.google.common.base.Preconditions;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
@@ -26,11 +26,11 @@ public class NucleusOnLoginEvent extends AbstractEvent implements TargetUserEven
 
     private final Cause cause;
     private final User user;
-    private final ModularUserService userService;
+    private final IUserDataObject userService;
     private final Transform<World> from;
     @Nullable private Transform<World> to = null;
 
-    public NucleusOnLoginEvent(Cause cause, User user, ModularUserService userService, Transform<World> from) {
+    public NucleusOnLoginEvent(Cause cause, User user, IUserDataObject userService, Transform<World> from) {
         Preconditions.checkNotNull(cause);
         Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(userService);
@@ -50,7 +50,7 @@ public class NucleusOnLoginEvent extends AbstractEvent implements TargetUserEven
         return this.user;
     }
 
-    public ModularUserService getUserService() {
+    public IUserDataObject getUserService() {
         return this.userService;
     }
 

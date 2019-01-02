@@ -7,19 +7,21 @@ package io.github.nucleuspowered.nucleus.modules.spawn.listeners;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.GlobalSpawnConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnGeneralDataModule;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnWorldDataModule;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
@@ -34,13 +36,12 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-public class SpawnListener implements Reloadable, ListenerBase, MessageProviderTrait {
+public class SpawnListener implements Reloadable, ListenerBase, MessageProviderTrait, IDataManagerTrait {
 
     private SpawnConfig spawnConfig;
 
@@ -56,12 +57,14 @@ public class SpawnListener implements Reloadable, ListenerBase, MessageProviderT
     @Listener
     public void onJoin(ClientConnectionEvent.Login loginEvent) {
         UUID pl = loginEvent.getProfile().getUniqueId();
-        boolean first = !Nucleus.getNucleus().getUserDataManager().getUnchecked(pl).get(CoreUserDataModule.class).getFirstJoin().isPresent();
+        boolean first = getOrCreateUserOnThread(pl).get(CoreKeys.FIRST_JOIN).isPresent();
+        IGeneralDataObject generalDataObject = Nucleus.getNucleus().getStorageManager().getGeneralService().getOrNew().join();
 
         try {
             if (first) {
                 // first spawn.
-                Optional<Transform<World>> ofs = Nucleus.getNucleus().getGeneralService().get(SpawnGeneralDataModule.class).getFirstSpawn();
+                Optional<Transform<World>> ofs = generalDataObject.get(SpawnKeys.FIRST_SPAWN_LOCATION)
+                        .flatMap(LocationNode::getTransformIfExists);
 
                 // Bit of an odd line, but what what is going on here is checking for first spawn, and if it exists, then
                 // setting the location the player safely. If this cannot be done in either case, send them to world spawn.
@@ -111,7 +114,11 @@ public class SpawnListener implements Reloadable, ListenerBase, MessageProviderT
                     this.spawnConfig.isSafeTeleport() ? NucleusTeleportHandler.StandardTeleportMode.SAFE_TELEPORT_ASCENDING : NucleusTeleportHandler.StandardTeleportMode.NO_CHECK);
             if (safe.isPresent()) {
                 try {
-                    Optional<Vector3d> ov = Nucleus.getNucleus().getWorldDataManager().getWorld(world.getUniqueId()).get().get(SpawnWorldDataModule.class).getSpawnRotation();
+                    Optional<Vector3d> ov = Nucleus.getNucleus()
+                            .getStorageManager()
+                            .getWorldService()
+                            .getOrNewOnThread(world.getUniqueId())
+                            .get(SpawnKeys.WORLD_SPAWN_ROTATION);
                     if (ov.isPresent()) {
                         loginEvent.setToTransform(new Transform<>(safe.get().getExtent(),
                                 process(safe.get().getPosition()),
@@ -133,9 +140,12 @@ public class SpawnListener implements Reloadable, ListenerBase, MessageProviderT
             // Are we heading TO a spawn?
             Transform<World> to = event.getToTransform();
             if (to.getLocation().getBlockPosition().equals(to.getExtent().getSpawnLocation().getBlockPosition())) {
-                Nucleus.getNucleus().getWorldDataManager()
-                        .getWorld(to.getExtent()).ifPresent(x -> x.get(SpawnWorldDataModule.class).getSpawnRotation()
-                        .ifPresent(y -> event.setToTransform(to.setRotation(y))));
+                Nucleus.getNucleus()
+                        .getStorageManager()
+                        .getWorldService()
+                        .getOrNewOnThread(to.getExtent().getUniqueId())
+                        .get(SpawnKeys.WORLD_SPAWN_ROTATION)
+                        .ifPresent(y -> event.setToTransform(to.setRotation(y)));
             }
         }
     }
@@ -162,8 +172,12 @@ public class SpawnListener implements Reloadable, ListenerBase, MessageProviderT
         Transform<World> to = new Transform<>(spawn);
 
         // Compare current transform to spawn - set rotation.
-        Nucleus.getNucleus().getWorldDataManager().getWorld(world).ifPresent(x -> x.get(SpawnWorldDataModule.class).getSpawnRotation()
-            .ifPresent(y -> event.setToTransform(to.setRotation(y))));
+        Nucleus.getNucleus()
+                .getStorageManager()
+                .getWorldService()
+                .getOrNewOnThread(world.getUniqueId())
+                .get(SpawnKeys.WORLD_SPAWN_ROTATION)
+                .ifPresent(y -> event.setToTransform(to.setRotation(y)));
     }
 
     @Override public void onReload() {

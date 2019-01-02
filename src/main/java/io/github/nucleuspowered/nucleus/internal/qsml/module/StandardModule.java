@@ -34,7 +34,7 @@ import io.github.nucleuspowered.nucleus.internal.services.CommandRemapperService
 import io.github.nucleuspowered.nucleus.internal.text.Tokens;
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
-import io.github.nucleuspowered.nucleus.internal.userprefs.PreferenceKey;
+import io.github.nucleuspowered.nucleus.internal.userprefs.PreferenceKeyImpl;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPrefKeys;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.misc.BasicSeenInformationProvider;
@@ -438,7 +438,7 @@ public abstract class StandardModule implements Module, InternalServiceManagerTr
                         .filter(x -> Modifier.isStatic(x.getModifiers()) && NucleusUserPreferenceService.PreferenceKey.class.isAssignableFrom(x.getType()))
                         .forEach(x -> {
                             try {
-                                PreferenceKey<?> key = (PreferenceKey<?>) x.get(null);
+                                PreferenceKeyImpl<?> key = (PreferenceKeyImpl<?>) x.get(null);
                                 ups.register(key);
                             } catch (IllegalAccessException e) {
                                 Nucleus.getNucleus().getLogger().error("Could not register " + x.getName() + " in the User Preference Service", e);

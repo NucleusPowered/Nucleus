@@ -6,10 +6,11 @@ package io.github.nucleuspowered.nucleus.configurate.datatypes;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-
-import java.util.Optional;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @ConfigSerializable
 public class WarpCategoryDataNode {
@@ -30,19 +31,25 @@ public class WarpCategoryDataNode {
     @Nullable
     private String description = null;
 
-    public Optional<String> getDisplayName() {
-        return Optional.ofNullable(this.displayName);
+    public Optional<Text> getDisplayName() {
+        if (this.displayName == null) {
+            return Optional.empty();
+        }
+        return Optional.of(TextSerializers.JSON.deserialize(this.displayName));
     }
 
-    public void setDisplayName(@Nullable String displayName) {
-        this.displayName = displayName;
+    public void setDisplayName(@Nullable Text displayName) {
+        this.displayName = displayName == null ? null : TextSerializers.JSON.serialize(displayName);
     }
 
-    public Optional<String> getDescription() {
-        return Optional.ofNullable(this.description);
+    public Optional<Text> getDescription() {
+        if (this.description == null) {
+            return Optional.empty();
+        }
+        return Optional.of(TextSerializers.JSON.deserialize(this.description));
     }
 
-    public void setDescription(@Nullable String description) {
-        this.description = description;
+    public void setDescription(@Nullable Text description) {
+        this.description = description == null ? null : TextSerializers.JSON.serialize(description);
     }
 }

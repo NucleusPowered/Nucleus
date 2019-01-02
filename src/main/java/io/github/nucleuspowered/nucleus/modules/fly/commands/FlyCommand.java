@@ -10,9 +10,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
-import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
-import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.fly.datamodules.FlyUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -21,21 +19,11 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@Permissions(supportsSelectors = true)
+@Permissions(supportsSelectors = true, supportsOthers = true)
 @RegisterCommand("fly")
 @EssentialsEquivalent("fly")
 @NonnullByDefault
 public class FlyCommand extends AbstractCommand.SimpleTargetOtherPlayer {
-
-    @Override
-    public Map<String, PermissionInformation> permissionSuffixesToRegister() {
-        Map<String, PermissionInformation> m = new HashMap<>();
-        m.put("others", new PermissionInformation(Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("permission.others", this.getAliases()[0]), SuggestedLevel.ADMIN));
-        return m;
-    }
 
     @Override public CommandElement[] additionalArguments() {
         return new CommandElement[] {
@@ -44,7 +32,6 @@ public class FlyCommand extends AbstractCommand.SimpleTargetOtherPlayer {
     }
 
     @Override protected CommandResult executeWithPlayer(CommandSource src, Player pl, CommandContext args, boolean isSelf) {
-        FlyUserDataModule uc = Nucleus.getNucleus().getUserDataManager().getUnchecked(pl).get(FlyUserDataModule.class);
         boolean fly = args.<Boolean>getOne(NucleusParameters.Keys.BOOL).orElse(!pl.get(Keys.CAN_FLY).orElse(false));
 
         if (!setFlying(pl, fly)) {
@@ -52,7 +39,7 @@ public class FlyCommand extends AbstractCommand.SimpleTargetOtherPlayer {
             return CommandResult.empty();
         }
 
-        uc.setFlying(fly);
+        getOrCreateUser(pl.getUniqueId()).thenAccept(x -> x.set(FlyKeys.FLY_TOGGLE, fly));
         if (pl != src) {
             src.sendMessages(
                     Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat(fly ? "command.fly.player.on" : "command.fly.player.off", pl.getName()));

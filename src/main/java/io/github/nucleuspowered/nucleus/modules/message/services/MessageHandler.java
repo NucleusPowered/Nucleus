@@ -10,7 +10,6 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.service.NucleusPrivateMessagingService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
@@ -40,24 +39,16 @@ import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 @APIService(NucleusPrivateMessagingService.class)
 public class MessageHandler implements NucleusPrivateMessagingService, Reloadable, PermissionTrait, ServiceBase {
 
     private final MessageConfigAdapter mca;
-    private final UserDataManager ucl;
     private final TextParsingUtils textParsingUtils;
     private MessageConfig messageConfig;
     private boolean useLevels = false;
@@ -80,7 +71,6 @@ public class MessageHandler implements NucleusPrivateMessagingService, Reloadabl
     public MessageHandler() throws Exception {
         Nucleus nucleus = Nucleus.getNucleus();
         this.textParsingUtils = nucleus.getTextParsingUtils();
-        this.ucl = nucleus.getUserDataManager();
         this.mca = nucleus.getModuleContainer().getConfigAdapterForModule(MessageModule.ID, MessageConfigAdapter.class);
         this.messagepermissions = nucleus.getPermissionRegistry().getPermissionsForNucleusCommand(MessageCommand.class);
         this.socialspypermissions = nucleus.getPermissionRegistry().getPermissionsForNucleusCommand(SocialSpyCommand.class);

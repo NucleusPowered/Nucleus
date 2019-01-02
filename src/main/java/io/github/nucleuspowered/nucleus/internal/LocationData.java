@@ -12,11 +12,10 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
+import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 public class LocationData implements NamedLocation {
 
@@ -36,6 +35,11 @@ public class LocationData implements NamedLocation {
 
     public String getName() {
         return this.warpName;
+    }
+
+    @Override
+    public UUID getWorldUUID() {
+        return this.worldUUID;
     }
 
     @Override public Optional<WorldProperties> getWorldProperties() {

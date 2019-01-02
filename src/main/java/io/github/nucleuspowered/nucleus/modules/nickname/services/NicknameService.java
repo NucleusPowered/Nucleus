@@ -4,30 +4,29 @@
  */
 package io.github.nucleuspowered.nucleus.modules.nickname.services;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import io.github.nucleuspowered.nucleus.NameUtil;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.exceptions.NicknameException;
 import io.github.nucleuspowered.nucleus.api.service.NucleusNicknameService;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
+import io.github.nucleuspowered.nucleus.modules.nickname.NicknameKeys;
 import io.github.nucleuspowered.nucleus.modules.nickname.NicknameModule;
 import io.github.nucleuspowered.nucleus.modules.nickname.commands.NicknameCommand;
 import io.github.nucleuspowered.nucleus.modules.nickname.config.NicknameConfig;
 import io.github.nucleuspowered.nucleus.modules.nickname.config.NicknameConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.nickname.datamodules.NicknameUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.nickname.events.ChangeNicknameEventPost;
 import io.github.nucleuspowered.nucleus.modules.nickname.events.ChangeNicknameEventPre;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
@@ -38,16 +37,11 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 @APIService(NucleusNicknameService.class)
 public class NicknameService implements NucleusNicknameService, Reloadable, PermissionTrait, ServiceBase {
@@ -60,6 +54,7 @@ public class NicknameService implements NucleusNicknameService, Reloadable, Perm
     private boolean registered = false;
     private final BiMap<UUID, String> cache = HashBiMap.create();
     private final BiMap<UUID, Text> textCache = HashBiMap.create();
+    private final TreeMap<String, UUID> reverseLowerCaseCache = new TreeMap<>();
 
     public void updateCache(UUID player, Text text) {
         this.cache.put(player, text.toPlain());
@@ -82,6 +77,32 @@ public class NicknameService implements NucleusNicknameService, Reloadable, Perm
 
     public Map<String, UUID> getAllCached() {
         return Maps.newHashMap(this.cache.inverse());
+    }
+
+    public Map<Player, Text> getFromSubstring(String search) {
+        final String prefix = search.toLowerCase();
+        Collection<UUID> uuidCollection;
+        if (prefix.length() > 0) {
+            char nextLetter = (char) (prefix.charAt(prefix.length() -1) + 1);
+            String end = prefix.substring(0, prefix.length()-1) + nextLetter;
+            uuidCollection = this.reverseLowerCaseCache.subMap(prefix, end).values();
+        } else {
+            uuidCollection = this.reverseLowerCaseCache.values();
+        }
+
+        ImmutableMap.Builder<Player, Text> mapToReturn = ImmutableMap.builder();
+        Sponge.getServer().getOnlinePlayers().stream()
+                .filter(x -> !this.cache.containsKey(x.getUniqueId()))
+                .filter(x -> x.getName().toLowerCase().startsWith(prefix))
+                .forEach(player -> mapToReturn.put(player, player.get(Keys.DISPLAY_NAME).orElseGet(
+                        () -> Text.of(player.getName(), "*"))));
+
+        for (UUID uuid : uuidCollection) {
+            Optional<Player> op = Sponge.getServer().getPlayer(uuid);
+            op.ifPresent(player -> mapToReturn.put(player, this.textCache.get(uuid)));
+        }
+
+        return mapToReturn.build();
     }
 
     public Map<String, UUID> startsWithGetMap(String text) {
@@ -137,7 +158,10 @@ public class NicknameService implements NucleusNicknameService, Reloadable, Perm
         if (user.isOnline()) {
             return Optional.ofNullable(this.textCache.get(user.getUniqueId()));
         }
-        return Nucleus.getNucleus().getUserDataManager().get(user).map(x -> x.get(NicknameUserDataModule.class).getNicknameAsText().orElse(null));
+        return Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOnThread(user.getUniqueId())
+                .flatMap(x -> x.get(NicknameKeys.USER_NICKNAME_JSON))
+                .map(TextSerializers.JSON::deserialize);
     }
 
     @Override
@@ -169,17 +193,15 @@ public class NicknameService implements NucleusNicknameService, Reloadable, Perm
             );
         }
 
-        ModularUserService mus = Nucleus.getNucleus().getUserDataManager().get(user)
+        IUserDataObject mus = Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOnThread(user.getUniqueId())
                 .orElseThrow(() -> new NicknameException(
                         Nucleus.getNucleus().getMessageProvider()
                                 .getTextMessageWithFormat("standard.error.nouser"),
                         NicknameException.Type.NO_USER
                 ));
 
-        NicknameUserDataModule n = mus.get(NicknameUserDataModule.class);
-        n.removeNickname();
-        mus.set(n);
-        mus.save();
+        mus.remove(NicknameKeys.USER_NICKNAME_JSON);
         removeFromCache(user.getUniqueId());
         Sponge.getEventManager().post(new ChangeNicknameEventPost(cause, currentNickname, null, user));
 
@@ -265,18 +287,14 @@ public class NicknameService implements NucleusNicknameService, Reloadable, Perm
             );
         }
 
-        ModularUserService mus = Nucleus.getNucleus().getUserDataManager().getUnchecked(pl);
-        NicknameUserDataModule nicknameUserDataModule = mus.get(NicknameUserDataModule.class);
-        nicknameUserDataModule.setNickname(nickname);
-        mus.set(nicknameUserDataModule);
-        mus.save();
-        Text set = nicknameUserDataModule.getNicknameAsText().get();
+        IUserDataObject userDataObject = Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(pl.getUniqueId());
+        userDataObject.set(NicknameKeys.USER_NICKNAME_JSON, TextSerializers.JSON.serialize(nickname));
         this.updateCache(pl.getUniqueId(), nickname);
 
         Sponge.getEventManager().post(new ChangeNicknameEventPost(cause, currentNickname, nickname, pl));
         pl.getPlayer().ifPresent(player -> player.sendMessage(Text.builder().append(
                 Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.nick.success.base")).append(Text.of(" - ",
-                TextColors.RESET, set)).build()));
+                TextColors.RESET, nickname)).build()));
 
     }
 

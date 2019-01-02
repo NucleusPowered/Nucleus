@@ -11,11 +11,19 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Represents a location that has a name attached to it.
  */
 public interface NamedLocation {
+
+    /**
+     * Gets the world {@link UUID} that this location targets
+     *
+     * @return The world UUID
+     */
+    UUID getWorldUUID();
 
     /**
      * Gets the {@link WorldProperties} that this location points to, if the world exists.

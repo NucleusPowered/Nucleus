@@ -12,7 +12,7 @@ import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.modules.serverlist.ServerListModule;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfig;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.serverlist.datamodules.ServerListGeneralDataModule;
+import io.github.nucleuspowered.nucleus.modules.serverlist.services.ServerListService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -27,8 +27,13 @@ import java.util.function.Function;
 
 public class WhitelistServerListListener implements Reloadable, ListenerBase.Conditional {
 
+    private final ServerListService service;
     private final Random random = new Random();
     private ServerListConfig config;
+
+    public WhitelistServerListListener() {
+        this.service = getServiceUnchecked(ServerListService.class);
+    }
 
     @Listener(order = Order.LATE)
     public void onServerListPing(ClientPingServerEvent event, @Getter("getResponse") ClientPingServerEvent.Response response) {
@@ -36,8 +41,7 @@ public class WhitelistServerListListener implements Reloadable, ListenerBase.Con
             return;
         }
 
-        Optional<Text> ott = Nucleus.getNucleus().getGeneralService().get(ServerListGeneralDataModule.class).getMessage();
-
+        Optional<Text> ott = this.service.getMessage();
         if (!ott.isPresent() &&  !this.config.getWhitelist().isEmpty()) {
             List<NucleusTextTemplateImpl> list = this.config.getWhitelist();
 

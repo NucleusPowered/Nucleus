@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus.modules.core.commands;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.argumentparsers.UUIDArgument;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
@@ -15,6 +14,9 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
+import io.github.nucleuspowered.storage.services.storage.IStorageService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -38,6 +40,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -120,12 +123,14 @@ public class ResetUserCommand extends AbstractCommand<CommandSource> {
 
             // Unload the player in a second, just to let events fire.
             Sponge.getScheduler().createAsyncExecutor(Nucleus.getNucleus()).schedule(() -> {
-                UserDataManager ucl = Nucleus.getNucleus().getUserDataManager();
+                IStorageService.Keyed<UUID, IUserQueryObject, IUserDataObject> userStorageService =
+                        Nucleus.getNucleus().getStorageManager().getUserService();
 
                 // Get the file to delete.
                 try {
                     // Remove them from the cache immediately.
-                    ucl.forceUnloadAndDelete(this.user.getUniqueId());
+                    userStorageService.clearCache();
+                    userStorageService.delete(this.user.getUniqueId());
                     if (this.all) {
                         String uuid = this.user.getUniqueId() + ".dat";
                         if (Sponge.getServiceManager().provideUnchecked(UserStorageService.class).delete(this.user)) {

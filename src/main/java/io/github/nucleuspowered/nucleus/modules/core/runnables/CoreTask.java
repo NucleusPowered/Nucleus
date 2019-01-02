@@ -37,7 +37,7 @@ public class CoreTask implements TaskBase, Reloadable {
     @Override
     public void accept(Task task) {
         Nucleus plugin = Nucleus.getNucleus();
-        plugin.getUserDataManager().removeOfflinePlayers();
+        plugin.getStorageManager().getUserService().clearCache();
 
         if (this.printSave || Nucleus.getNucleus().isDebugMode()) {
             plugin.getLogger().info(plugin.getMessageProvider().getMessageWithFormat("core.savetask.starting"));

@@ -4,43 +4,49 @@
  */
 package io.github.nucleuspowered.nucleus.modules.freezeplayer.services;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusFreezePlayerService;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
-import io.github.nucleuspowered.nucleus.modules.freezeplayer.datamodules.FreezePlayerUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.freezeplayer.FreezePlayerKeys;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 @APIService(NucleusFreezePlayerService.class)
 public class FreezePlayerService implements ServiceBase, NucleusFreezePlayerService {
 
-    private final Map<UUID, Boolean> cache = new HashMap<>();
+    private final LoadingCache<UUID, Boolean> cache = Caffeine.newBuilder().expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(uuid -> Nucleus.getNucleus().getStorageManager().getUserService().getOnThread(uuid)
+                    .flatMap(x -> x.get(FreezePlayerKeys.FREEZE_PLAYER)).orElse(false));
 
-    public void clear() {
-        this.cache.clear();
+    public boolean getFromUUID(@Nonnull UUID uuid) {
+        Boolean b = this.cache.get(uuid);
+        return b != null ? b : false;
     }
 
-    public void invalidate(UUID uuid) {
-        this.cache.remove(uuid);
+    public void invalidate(@Nonnull UUID uuid) {
+        this.cache.invalidate(uuid);
     }
 
     @Override
     public boolean isFrozen(UUID uuid) {
-        return this.cache.computeIfAbsent(uuid, key ->
-                Nucleus.getNucleus().getUserDataManager().getUnchecked(uuid)
-                    .get(FreezePlayerUserDataModule.class)
-                    .isFrozen());
+        return getFromUUID(uuid);
     }
 
     @Override
     public void setFrozen(UUID uuid, boolean freeze) {
-        FreezePlayerUserDataModule nu = Nucleus.getNucleus().getUserDataManager().getUnchecked(uuid)
-                .get(FreezePlayerUserDataModule.class);
-        nu.setFrozen(freeze);
-        this.cache.put(uuid, freeze);
+        IUserDataObject x = Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(uuid);
+        try (IKeyedDataObject.Value<Boolean> v = x.getAndSet(FreezePlayerKeys.FREEZE_PLAYER)) {
+            v.setValue(freeze);
+            this.cache.put(uuid, freeze);
+        }
     }
 
 }

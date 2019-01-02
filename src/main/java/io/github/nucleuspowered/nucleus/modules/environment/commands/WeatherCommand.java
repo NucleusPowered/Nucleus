@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.environment.commands;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.WeatherArgument;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
+import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -17,8 +17,8 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.environment.EnvironmentKeys;
 import io.github.nucleuspowered.nucleus.modules.environment.config.EnvironmentConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.environment.datamodule.EnvironmentWorldDataModule;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -26,6 +26,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.World;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Permissions
+@RunAsync
 @RegisterCommand("weather")
 @NonnullByDefault
 @EssentialsEquivalent({"thunder", "sun", "weather", "sky", "storm", "rain"})
@@ -75,8 +77,7 @@ public class WeatherCommand extends AbstractCommand<CommandSource> implements Re
             .orElseThrow(() -> ReturnMessageException.fromKey("args.worldproperties.notloaded", wp.getWorldName()));
 
         // Get whether we locked the weather.
-        ModularWorldService ew = Nucleus.getNucleus().getWorldDataManager().getWorld(w).get();
-        if (ew.get(EnvironmentWorldDataModule.class).isLockWeather()) {
+        if (getWorldOnThread(w.getUniqueId()).map(x -> x.get(EnvironmentKeys.LOCKED_WEATHER).orElse(false)).orElse(false)) {
             // Tell the user to unlock first.
             throw ReturnMessageException.fromKey("command.weather.locked", w.getName());
         }
@@ -94,11 +95,11 @@ public class WeatherCommand extends AbstractCommand<CommandSource> implements Re
 
         if (oi.isPresent()) {
             // YES! I should get a job at the weather service and show them how it's done!
-            w.setWeather(we, oi.get() * 20L);
+            Task.builder().execute(() -> w.setWeather(we, oi.get() * 20L)).submit(Nucleus.getNucleus());
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.weather.time", we.getName(), w.getName(), Util.getTimeStringFromSeconds(oi.get())));
         } else {
             // No, probably because I've already gotten a job at the weather service...
-            w.setWeather(we);
+            Task.builder().execute(() -> w.setWeather(we)).submit(Nucleus.getNucleus());
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.weather.set", we.getName(), w.getName()));
         }
 

@@ -4,12 +4,10 @@
  */
 package io.github.nucleuspowered.nucleus.modules.commandspy.commands;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
-import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
@@ -45,9 +43,8 @@ public class CommandSpyCommand extends AbstractCommand<Player> {
         boolean to = args.<Boolean>getOne(NucleusParameters.Keys.BOOL)
                 .orElseGet(() -> !ups.getUnwrapped(src.getUniqueId(), CommandSpyUserPrefKeys.COMMAND_SPY));
         ups.set(src.getUniqueId(), CommandSpyUserPrefKeys.COMMAND_SPY, to);
+        sendMessageTo(src, "command.commandspy.success", getMessageFor(src, to ? "standard.enabled" : "standard.disabled"));
 
-        MessageProvider mp = Nucleus.getNucleus().getMessageProvider();
-        src.sendMessage(mp.getTextMessageWithFormat("command.commandspy.success", mp.getMessageWithFormat(to ? "standard.enabled" : "standard.disabled")));
         return CommandResult.success();
     }
 }

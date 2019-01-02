@@ -14,8 +14,8 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.kit.KitKeys;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.KitFallbackBase;
-import io.github.nucleuspowered.nucleus.modules.kit.datamodules.KitUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.kit.services.KitHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -34,6 +34,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -59,14 +60,15 @@ public class KitListCommand extends KitFallbackBase<CommandSource> {
         PaginationService paginationService = Sponge.getServiceManager().provideUnchecked(PaginationService.class);
         ArrayList<Text> kitText = Lists.newArrayList();
 
-        final KitUserDataModule user =
-                src instanceof Player ? Nucleus.getNucleus().getUserDataManager()
-                        .getUnchecked(((Player)src).getUniqueId()).get(KitUserDataModule.class) : null;
+        Map<String, Instant> redeemed =
+            src instanceof Player ? Nucleus.getNucleus().getStorageManager().getUserService()
+                    .getOrNewOnThread(((Player) src).getUniqueId())
+                    .getNullable(KitKeys.REDEEMED_KITS) : null;
 
         final boolean showHidden = this.kitPermissionHandler.testSuffix(src, "showhidden");
         KIT_HANDLER.getKitNames(showHidden).stream()
                 .filter(kit -> hasPermission(src, KitHandler.getPermissionForKit(kit.toLowerCase())))
-                .forEach(kit -> kitText.add(createKit(src, user, kit, KIT_HANDLER.getKit(kit).get())));
+                .forEach(kit -> kitText.add(createKit(src, redeemed, kit, KIT_HANDLER.getKit(kit).get())));
 
         PaginationList.Builder paginationBuilder = paginationService.builder().contents(kitText)
                 .title(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.kit.list.kits")).padding(Text.of(TextColors.GREEN, "-"));
@@ -75,11 +77,11 @@ public class KitListCommand extends KitFallbackBase<CommandSource> {
         return CommandResult.success();
     }
 
-    private Text createKit(CommandSource source, @Nullable KitUserDataModule user, String kitName, Kit kitObj) {
+    private Text createKit(CommandSource source, @Nullable Map<String, Instant> user, String kitName, Kit kitObj) {
         Text.Builder tb = Text.builder(kitName);
 
         if (user != null) {
-            Instant lastRedeem = user.getLastRedeemedTime(kitName);
+            Instant lastRedeem = user.get(kitName.toLowerCase());
             if (lastRedeem != null) {
                 // If one time used...
                 if (kitObj.isOneTime() && !this.kitPermissionHandler.testSuffix(source, "exempt.onetime")) {

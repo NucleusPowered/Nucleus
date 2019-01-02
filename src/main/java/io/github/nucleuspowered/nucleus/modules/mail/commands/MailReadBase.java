@@ -22,12 +22,14 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
+import org.spongepowered.api.util.Identifiable;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MailReadBase implements InternalServiceManagerTrait {
@@ -40,7 +42,7 @@ public class MailReadBase implements InternalServiceManagerTrait {
     static final String filters = "filters";
 
     public CommandResult executeCommand(CommandSource src, final User target, Collection<NucleusMailService.MailFilter> lmf) {
-        List<MailData> lmd;
+        List<MailMessage> lmd;
         if (!lmf.isEmpty()) {
             lmd = this.handler.getMailInternal(target, lmf.toArray(new NucleusMailService.MailFilter[0]));
         } else {
@@ -80,9 +82,10 @@ public class MailReadBase implements InternalServiceManagerTrait {
         return Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat(isFiltered ? "mail.title.filter.other" : "mail.title.nofilter.other", user.getName());
     }
 
-    private Text createMessage(final MailData md, final User user) {
+    private Text createMessage(final MailMessage md, final User user) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.systemDefault());
-        String name = Nucleus.getNucleus().getNameUtil().getNameFromUUID(md.getUuid());
+        UUID uuid = getUuid(md);
+        String name = Nucleus.getNucleus().getNameUtil().getNameFromUUID(uuid);
         return Text.builder()
                 .append(Text.builder(name).color(TextColors.GREEN).style(TextStyles.UNDERLINE)
                         .onHover(TextActions.showText(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.mail.hover")))
@@ -90,11 +93,11 @@ public class MailReadBase implements InternalServiceManagerTrait {
                             src.sendMessage(Text.builder().append(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.mail.date"))
                                     .append(Text.of(" ", TextColors.WHITE, dtf.format(md.getDate()))).build());
                             Text.Builder tb = Text.builder().append(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.mail.sender"))
-                                    .append(Text.of(" ", TextColors.WHITE, Nucleus.getNucleus().getNameUtil().getNameFromUUID(md.getUuid())))
+                                    .append(Text.of(" ", TextColors.WHITE, Nucleus.getNucleus().getNameUtil().getNameFromUUID(uuid)))
                                     .append(Text.of(TextColors.YELLOW, " - "));
 
                             // If the sender is not the server, allow right of reply.
-                            if (!md.getUuid().equals(Util.consoleFakeUUID)) {
+                            if (!uuid.equals(Util.consoleFakeUUID)) {
                                 tb.append(Text.builder(Nucleus.getNucleus().getMessageProvider().getMessageWithFormat("standard.reply")).color(TextColors.GREEN)
                                         .onHover(TextActions.showText(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.mail.reply.label", name)))
                                         .onClick(TextActions.suggestCommand("/mail send " + name + " ")).build())
@@ -115,4 +118,13 @@ public class MailReadBase implements InternalServiceManagerTrait {
                         })).build())
                 .append(Text.of(": " + md.getMessage())).build();
     }
+
+    private UUID getUuid(MailMessage message) {
+        if (message instanceof MailData) {
+            return ((MailData) message).getUuid();
+        } else {
+            return message.getSender().map(Identifiable::getUniqueId).orElse(Util.consoleFakeUUID);
+        }
+    }
+
 }

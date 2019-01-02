@@ -11,6 +11,7 @@ import io.github.nucleuspowered.nucleus.configurate.settingprocessor.WorldMigrat
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -73,9 +74,20 @@ public class LocationNode {
         return this.world;
     }
 
+    public Optional<Transform<World>> getTransformIfExists() {
+        return getLocationIfExists().map(loc -> new Transform<>(loc.getExtent(), loc.getPosition(), getRotation()));
+    }
+
     public Tuple<WorldProperties, Vector3d> getLocationIfNotLoaded() throws NoSuchWorldException {
         return Sponge.getServer().getWorldProperties(this.world)
             .map(x -> Tuple.of(x, getPosition())).orElseThrow(NoSuchWorldException::new);
+    }
+
+    /**
+     * Gets a {@link Location} from the node.
+     */
+    public Optional<Location<World>> getLocationIfExists() {
+        return Sponge.getServer().getWorld(this.world).map(r -> new Location<>(r, this.x, this.y, this.z));
     }
 
     /**
@@ -85,13 +97,7 @@ public class LocationNode {
      * @throws NoSuchWorldException The world does not exist.
      */
     public Location<World> getLocation() throws NoSuchWorldException {
-        Optional<World> ow = Sponge.getServer().getWorld(this.world);
-
-        if (ow.isPresent()) {
-            return new Location<>(ow.get(), this.x, this.y, this.z);
-        }
-
-        throw new NoSuchWorldException();
+        return getLocationIfExists().orElseThrow(NoSuchWorldException::new);
     }
 
     public Vector3d getRotation() {

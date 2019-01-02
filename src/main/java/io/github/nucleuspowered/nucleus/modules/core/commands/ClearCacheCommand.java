@@ -5,7 +5,6 @@
 package io.github.nucleuspowered.nucleus.modules.core.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
@@ -28,8 +27,16 @@ public class ClearCacheCommand extends AbstractCommand<CommandSource> {
 
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws Exception {
-        Nucleus.getNucleus().getUserDataManager().invalidateOld();
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.nucleus.clearcache.success"));
+        Nucleus.getNucleus().getStorageManager().getUserService().clearCache().whenComplete(
+                (complete, exception) -> {
+                    if (exception != null) {
+                        sendMessageTo(src, "command.nucleus.clearcache.error");
+                        Nucleus.getNucleus().getLogger().error("Could not clear cache", exception);
+                    } else {
+                        sendMessageTo(src, "command.nucleus.clearcache.success");
+                    }
+                }
+        );
         return CommandResult.success();
     }
 }

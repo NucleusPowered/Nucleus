@@ -4,14 +4,14 @@
  */
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
+import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularWorldService;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnWorldDataModule;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
@@ -28,13 +28,13 @@ public class SetSpawnCommand extends AbstractCommand<Player> {
     @Override
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) {
         // Minecraft does not set the rotation of the player at the spawn point, so we'll do it for them!
-        ModularWorldService worldService = Nucleus.getNucleus().getWorldDataManager().getWorld(src.getWorld().getUniqueId()).get();
-        SpawnWorldDataModule m = worldService.get(SpawnWorldDataModule.class);
-        m.setSpawnRotation(src.getRotation());
-        worldService.set(m);
+        final Vector3d rotation = src.getRotation();
+        Nucleus.getNucleus().getStorageManager().getWorldService()
+                .getOrNew(src.getUniqueId())
+                .thenAccept(x -> x.set(SpawnKeys.WORLD_SPAWN_ROTATION, rotation));
 
         src.getWorld().getProperties().setSpawnPosition(src.getLocation().getBlockPosition());
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.setspawn.success", src.getWorld().getName()));
+        sendMessageTo(src, "command.setspawn.success", src.getWorld().getName());
         return CommandResult.success();
     }
 }

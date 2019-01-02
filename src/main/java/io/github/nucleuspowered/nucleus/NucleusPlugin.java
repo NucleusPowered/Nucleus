@@ -24,13 +24,10 @@ import io.github.nucleuspowered.nucleus.api.service.NucleusWarmupManagerService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.configurate.ConfigurateHelper;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
 import io.github.nucleuspowered.nucleus.dataservices.dataproviders.DataProviders;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
 import io.github.nucleuspowered.nucleus.internal.CatalogTypeFinalStaticProcessor;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
@@ -63,8 +60,10 @@ import io.github.nucleuspowered.nucleus.modules.core.CoreModule;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.UniqueUserCountTransientModule;
 import io.github.nucleuspowered.nucleus.modules.core.services.UUIDChangeService;
+import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
+import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
+import io.github.nucleuspowered.nucleus.storage.NucleusStorageManager;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
@@ -125,18 +124,16 @@ public class NucleusPlugin extends Nucleus {
     private static final String divider = "+------------------------------------------------------------+";
     private static final int length = divider.length() - 2;
 
+    private final INucleusStorageManager storageManager;
     private final PluginContainer pluginContainer;
     private Instant gameStartedTime = null;
     private boolean hasStarted = false;
     private Throwable isErrored = null;
     private CommandsConfig commandsConfig;
-    private ModularGeneralService generalService;
     private ItemDataService itemDataService;
     private UserCacheService userCacheService;
-    private UserDataManager userDataManager;
-    private WorldDataManager worldDataManager;
     private NameBanService nameBanService;
-    private KitService kitService;
+    private KitDataService kitDataService;
     private TextParsingUtils textParsingUtils;
     private NameUtil nameUtil;
     private PermissionResolver permissionResolver = PermissionResolverImpl.INSTANCE;
@@ -238,6 +235,7 @@ public class NucleusPlugin extends Nucleus {
 
         this.dataDir = sp;
         this.pluginContainer = container;
+        this.storageManager = new NucleusStorageManager();
     }
 
     @Listener(order = Order.FIRST)
@@ -303,12 +301,9 @@ public class NucleusPlugin extends Nucleus {
             this.commandsConfig = new CommandsConfig(Paths.get(this.configDir.toString(), "commands.conf"));
 
             DataProviders d = new DataProviders(this);
-            this.generalService = new ModularGeneralService(d.getGeneralDataProvider());
             this.itemDataService = new ItemDataService(d.getItemDataProvider());
             this.itemDataService.loadInternal();
-            this.userDataManager = new UserDataManager(d::getUserFileDataProviders, d::doesUserFileExist);
-            this.worldDataManager = new WorldDataManager(d::getWorldFileDataProvider, d::doesWorldFileExist);
-            this.kitService = new KitService(d.getKitsDataProvider());
+            this.kitDataService = new KitDataService(d.getKitsDataProvider());
             this.nameBanService = new NameBanService(d.getNameBanDataProvider());
             this.userCacheService = new UserCacheService(d.getUserCacheDataProvider());
             this.warmupManager = new WarmupManager();
@@ -410,6 +405,13 @@ public class NucleusPlugin extends Nucleus {
         }
     }
 
+    /**
+     * Initialises the storage manager
+     */
+    private void initStorageManager() {
+
+    }
+
     @Listener(order = Order.FIRST)
     public void onInit(GameInitializationEvent event) {
         if (this.isErrored != null) {
@@ -499,8 +501,9 @@ public class NucleusPlugin extends Nucleus {
 
     private void allChange() throws IOException {
         resetDataPath(true);
-        this.generalService.changeFile();
-        this.kitService.changeFile();
+        initStorageManager();
+
+        this.kitDataService.changeFile();
         this.nameBanService.changeFile();
         this.userCacheService.changeFile();
 
@@ -515,7 +518,7 @@ public class NucleusPlugin extends Nucleus {
 
             // Load up the general data files now, mods should have registered items by now.
             try {
-                this.kitService.loadInternal();
+                this.kitDataService.loadInternal();
             } catch (Exception e) {
                 this.isErrored = e;
                 disable();
@@ -532,11 +535,11 @@ public class NucleusPlugin extends Nucleus {
     @Listener
     public void onGameStarted(GameStartedServerEvent event) {
         if (this.isErrored == null) {
-            this.generalService.getTransient(UniqueUserCountTransientModule.class).resetUniqueUserCount();
             try {
+                getInternalServiceManager().getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
                 getInternalServiceManager().getServiceUnchecked(UUIDChangeService.class).setStateAndReload();
                 getInternalServiceManager().getServiceUnchecked(CommandRemapperService.class).activate();
-                this.generalService.loadInternal(); // for migration purposes
+
                 // Save any additions.
                 this.moduleContainer.refreshSystemConfig();
                 fireReloadables();
@@ -606,12 +609,12 @@ public class NucleusPlugin extends Nucleus {
 
     @Override
     public void saveData() {
-        this.userDataManager.saveAll();
-        this.worldDataManager.saveAll();
+        this.storageManager.getUserService().ensureSaved();
+        this.storageManager.getWorldService().ensureSaved();
 
         if (Sponge.getGame().getState().ordinal() > GameState.SERVER_ABOUT_TO_START.ordinal()) {
             try {
-                this.generalService.save();
+                this.storageManager.getGeneralService().ensureSaved();
                 this.nameBanService.save();
                 this.userCacheService.save();
             } catch (Exception e) {
@@ -680,16 +683,6 @@ public class NucleusPlugin extends Nucleus {
         }
 
         return this.currentDataDir;
-    }
-
-    @Override
-    public UserDataManager getUserDataManager() {
-        return this.userDataManager;
-    }
-
-    @Override
-    public WorldDataManager getWorldDataManager() {
-        return this.worldDataManager;
     }
 
     @Override public UserCacheService getUserCacheService() {
@@ -854,17 +847,12 @@ public class NucleusPlugin extends Nucleus {
     }
 
     @Override
-    public ModularGeneralService getGeneralService() {
-        return this.generalService;
-    }
-
-    @Override
     public ItemDataService getItemDataService() {
         return this.itemDataService;
     }
 
-    @Override public KitService getKitService() {
-        return this.kitService;
+    @Override public KitDataService getKitDataService() {
+        return this.kitDataService;
     }
 
     @Override public NameBanService getNameBanService() { return this.nameBanService; }
@@ -981,6 +969,15 @@ public class NucleusPlugin extends Nucleus {
 
     @Override public boolean isPrintingSavesAndLoads() {
         return this.savesandloads;
+    }
+
+    @Override public INucleusStorageManager getStorageManager() {
+        return this.storageManager;
+    }
+
+    @Override
+    public UserPreferenceService getUserPreferenceService() {
+        return this.userPreferenceService;
     }
 
     private void disable() {

@@ -16,7 +16,7 @@ import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
-import io.github.nucleuspowered.nucleus.modules.powertool.datamodules.PowertoolUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.powertool.services.PowertoolService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 @NonnullByDefault
 public class PowertoolCommand extends AbstractCommand<Player> {
 
+    private final PowertoolService service = getServiceUnchecked(PowertoolService.class);
+
     @Override
     public CommandElement[] getArguments() {
         return new CommandElement[] {
@@ -54,13 +56,12 @@ public class PowertoolCommand extends AbstractCommand<Player> {
                 .orElseThrow(() -> ReturnMessageException.fromKey("command.powertool.noitem"));
 
         Optional<String> command = args.getOne(NucleusParameters.Keys.COMMAND);
-        PowertoolUserDataModule inu = Nucleus.getNucleus().getUserDataManager().getUnchecked(src).get(PowertoolUserDataModule.class);
-        return command.map(s -> setPowertool(src, inu, itemStack.getType(), s))
-                .orElseGet(() -> viewPowertool(src, inu, itemStack));
+        return command.map(s -> setPowertool(src, itemStack.getType(), s))
+                .orElseGet(() -> viewPowertool(src, itemStack));
     }
 
-    private CommandResult viewPowertool(Player src, PowertoolUserDataModule user, ItemStack item) {
-        Optional<List<String>> cmds = user.getPowertoolForItem(item.getType());
+    private CommandResult viewPowertool(Player src, ItemStack item) {
+        Optional<List<String>> cmds = this.service.getPowertoolForItem(src.getUniqueId(), item.getType());
         MessageProvider mp = Nucleus.getNucleus().getMessageProvider();
         if (cmds.isPresent() && !cmds.get().isEmpty()) {
             Util.getPaginationBuilder(src)
@@ -74,14 +75,14 @@ public class PowertoolCommand extends AbstractCommand<Player> {
         return CommandResult.success();
     }
 
-    private CommandResult setPowertool(Player src, PowertoolUserDataModule user, ItemType item, String command) {
+    private CommandResult setPowertool(Player src, ItemType item, String command) {
         // For consistency, if a command starts with "/", remove it, but just
         // once. WorldEdit commands can be input using "//"
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
 
-        user.setPowertool(item, Lists.newArrayList(command));
+        this.service.setPowertool(src.getUniqueId(), item, Lists.newArrayList(command));
         src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.powertool.set", item.getId(), command));
         return CommandResult.success();
     }

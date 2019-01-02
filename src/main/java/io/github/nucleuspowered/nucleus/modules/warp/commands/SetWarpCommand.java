@@ -12,7 +12,7 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpParameters;
 import io.github.nucleuspowered.nucleus.modules.warp.event.CreateWarpEvent;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 @NonnullByDefault
 public class SetWarpCommand extends AbstractCommand<Player> {
 
-    private final WarpHandler qs = getServiceUnchecked(WarpHandler.class);
+    private final WarpService qs = getServiceUnchecked(WarpService.class);
     private final Pattern warpRegex = Pattern.compile("^[A-Za-z][A-Za-z0-9]{0,25}$");
 
     @Override

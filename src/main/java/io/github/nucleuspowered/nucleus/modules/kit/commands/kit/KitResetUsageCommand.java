@@ -13,8 +13,9 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.kit.KitKeys;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.KitFallbackBase;
-import io.github.nucleuspowered.nucleus.modules.kit.datamodules.KitUserDataModule;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -22,6 +23,9 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+
+import java.time.Instant;
+import java.util.Map;
 
 @Permissions(prefix = "kit", suggestedLevel = SuggestedLevel.ADMIN)
 @RegisterCommand(value = {"resetusage", "reset"}, subcommandOf = KitCommand.class)
@@ -42,12 +46,13 @@ public class KitResetUsageCommand extends KitFallbackBase<CommandSource> {
     public CommandResult executeCommand(final CommandSource player, CommandContext args, Cause cause) throws Exception {
         Kit kitInfo = args.<Kit>getOne(KIT_PARAMETER_KEY).get();
         User u = args.<User>getOne(NucleusParameters.Keys.USER).get();
-        KitUserDataModule inu = Nucleus.getNucleus().getUserDataManager().getUnchecked(u).get(KitUserDataModule.class);
-
-        if (inu.getLastRedeemedTime(kitInfo.getName()) != null) {
+        IUserDataObject userDataObject = Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(u.getUniqueId());
+        Map<String, Instant> data = userDataObject.getNullable(KitKeys.REDEEMED_KITS);
+        if (data != null && data.containsKey(kitInfo.getName().toLowerCase())) {
             // Remove the key.
-            inu.removeKitLastUsedTime(kitInfo.getName().toLowerCase());
-
+            data.remove(kitInfo.getName().toLowerCase());
+            userDataObject.set(KitKeys.REDEEMED_KITS, data);
+            Nucleus.getNucleus().getStorageManager().getUserService().save(u.getUniqueId(), userDataObject);
             player.sendMessage(
                     Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.kit.resetuser.success", u.getName(), kitInfo.getName()));
             return CommandResult.success();

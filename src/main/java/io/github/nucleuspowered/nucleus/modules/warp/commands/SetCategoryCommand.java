@@ -14,27 +14,22 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpParameters;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.ArgumentParseException;
-import org.spongepowered.api.command.args.CommandArgs;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.args.CommandElement;
-import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.args.*;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 @RunAsync
 @NoModifiers
@@ -44,7 +39,7 @@ import javax.annotation.Nullable;
 public class SetCategoryCommand extends AbstractCommand<CommandSource> {
 
     private final String categoryKey = "category";
-    private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+    private final WarpService handler = getServiceUnchecked(WarpService.class);
 
     @Override public CommandElement[] getArguments() {
         return new CommandElement[] {
@@ -90,9 +85,7 @@ public class SetCategoryCommand extends AbstractCommand<CommandSource> {
             return CommandResult.success();
         }
 
-        WarpCategory c = this.handler.getWarpCategoryOrDefault(category.getFirst());
-        throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithTextFormat("command.warp.category.couldnotadd",
-                c.getDisplayName(), Text.of(warpName)));
+        throw ReturnMessageException.fromKey(src, "command.warp.category.couldnotadd", Text.of(category.getFirst()), Text.of(warpName));
     }
 
     private class SetCategoryWarpCategoryArgument extends CommandElement {

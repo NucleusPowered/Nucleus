@@ -17,7 +17,7 @@ import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.staffchat.StaffChatMessageChannel;
 import io.github.nucleuspowered.nucleus.modules.staffchat.StaffChatUserPrefKeys;
-import io.github.nucleuspowered.nucleus.modules.staffchat.datamodules.StaffChatTransientModule;
+import io.github.nucleuspowered.nucleus.modules.staffchat.services.StaffChatService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -38,6 +38,9 @@ import java.util.Optional;
 @RegisterCommand({"staffchat", "sc", "a"})
 @NonnullByDefault
 public class StaffChatCommand extends AbstractCommand<CommandSource> {
+
+    private final UserPreferenceService userPreferenceService = getServiceUnchecked(UserPreferenceService.class);
+    private final StaffChatService staffChatService = getServiceUnchecked(StaffChatService.class);
 
     @Override
     public CommandElement[] getArguments() {
@@ -63,7 +66,7 @@ public class StaffChatCommand extends AbstractCommand<CommandSource> {
                     pl.setMessageChannel(mc);
 
                     // If you send a message, you're viewing it again.
-                    getServiceUnchecked(UserPreferenceService.class).setPreferenceFor(pl, StaffChatUserPrefKeys.VIEW_STAFF_CHAT, true);
+                    this.userPreferenceService.setPreferenceFor(pl, StaffChatUserPrefKeys.VIEW_STAFF_CHAT, true);
                 } else {
                     StaffChatMessageChannel.getInstance()
                             .send(src, TextParsingUtils.addUrls(toSend.get()), ChatTypes.CHAT);
@@ -79,19 +82,8 @@ public class StaffChatCommand extends AbstractCommand<CommandSource> {
 
         Player player = (Player)src;
 
-        StaffChatTransientModule s = Nucleus.getNucleus().getUserDataManager().get(player).map(y -> y.getTransient(StaffChatTransientModule.class))
-                .orElseGet(StaffChatTransientModule::new);
-
-        boolean result = !(src.getMessageChannel() instanceof StaffChatMessageChannel);
-        if (result) {
-            s.setPreviousMessageChannel(player.getMessageChannel());
-            src.setMessageChannel(StaffChatMessageChannel.getInstance());
-
-            // If you switch, you're switching to the staff chat channel so you should want to listen to it.
-            getServiceUnchecked(UserPreferenceService.class).setPreferenceFor(player, StaffChatUserPrefKeys.VIEW_STAFF_CHAT, true);
-        } else {
-            src.setMessageChannel(s.getPreviousMessageChannel().orElse(MessageChannel.TO_ALL));
-        }
+        boolean result = this.staffChatService.isToggledChat(player);
+        this.staffChatService.toggle(player, !result);
 
         sendMessageTo(src, "command.staffchat." + (result ? "on" : "off"));
 

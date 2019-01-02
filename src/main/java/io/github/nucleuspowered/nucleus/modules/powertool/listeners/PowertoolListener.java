@@ -11,7 +11,7 @@ import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.powertool.PowertoolUserPreferenceKeys;
 import io.github.nucleuspowered.nucleus.modules.powertool.commands.PowertoolCommand;
-import io.github.nucleuspowered.nucleus.modules.powertool.datamodules.PowertoolUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.powertool.services.PowertoolService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
@@ -21,14 +21,21 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.filter.type.Exclude;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.item.ItemType;
 
 public class PowertoolListener implements ListenerBase, PermissionTrait {
 
+    private final PowertoolService service = getServiceUnchecked(PowertoolService.class);
     private final CommandPermissionHandler permissionRegistry =
             Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(PowertoolCommand.class);
     private final String basePermission = this.permissionRegistry.getBase();
     private final UserPreferenceService userPreferenceService = getServiceUnchecked(UserPreferenceService.class);
+
+    @Listener
+    public void onLogout(ClientConnectionEvent.Disconnect event) {
+        this.service.reset(event.getTargetEntity().getUniqueId());
+    }
 
     @Listener
     @Exclude(InteractBlockEvent.class)
@@ -40,18 +47,11 @@ public class PowertoolListener implements ListenerBase, PermissionTrait {
 
         // Get the item and the user.
         ItemType item = player.getItemInHand(HandTypes.MAIN_HAND).get().getType();
-        PowertoolUserDataModule user;
-        try {
-            user = Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(PowertoolUserDataModule.class);
-        } catch (Exception e) {
-            Nucleus.getNucleus().printStackTraceIfDebugMode(e);
-            return;
-        }
 
         // If the powertools are toggled on.
         if (this.userPreferenceService.get(player.getUniqueId(), PowertoolUserPreferenceKeys.POWERTOOL_ENABLED).orElse(true)) {
             // Execute all powertools if they exist.
-            user.getPowertoolForItem(item).ifPresent(x -> {
+            this.service.getPowertoolForItem(player.getUniqueId(), item).ifPresent(x -> {
                 // Cancel the interaction.
                 event.setCancelled(true);
 

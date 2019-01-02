@@ -18,7 +18,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfig;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -33,15 +33,9 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Lists all the warps that a subject can access.
@@ -52,7 +46,7 @@ import javax.annotation.Nullable;
 @RegisterCommand(value = {"list"}, subcommandOf = WarpCommand.class, rootAliasRegister = "warps")
 public class ListWarpCommand extends AbstractCommand<CommandSource> implements Reloadable {
 
-    private final WarpHandler service = getServiceUnchecked(WarpHandler.class);
+    private final WarpService service = getServiceUnchecked(WarpService.class);
     private boolean isDescriptionInList = true;
     private double defaultCost = 0;
     private String defaultName = "unknown";

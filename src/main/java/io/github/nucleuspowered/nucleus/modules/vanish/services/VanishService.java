@@ -8,9 +8,9 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
+import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.commands.VanishCommand;
 import io.github.nucleuspowered.nucleus.modules.vanish.config.VanishConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.vanish.datamodules.VanishUserDataModule;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -20,7 +20,7 @@ import org.spongepowered.api.text.Text;
 
 public class VanishService implements Reloadable, PermissionTrait, ServiceBase {
 
-    private final String canseePerm = Nucleus.getNucleus().getPermissionRegistry()
+    private static final String CAN_SEE_PERM = Nucleus.getNucleus().getPermissionRegistry()
             .getPermissionsForNucleusCommand(VanishCommand.class).getPermissionWithSuffix("see");
     private boolean isAlter = false;
 
@@ -32,7 +32,10 @@ public class VanishService implements Reloadable, PermissionTrait, ServiceBase {
     }
 
     public boolean isVanished(Player player) {
-        return Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(VanishUserDataModule.class).isVanished();
+        return Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOnThread(player.getUniqueId())
+                .flatMap(x -> x.get(VanishKeys.VANISH_STATUS))
+                .orElse(false);
     }
 
 
@@ -41,8 +44,9 @@ public class VanishService implements Reloadable, PermissionTrait, ServiceBase {
     }
 
     public void vanishPlayer(Player player, boolean delay) {
-        VanishUserDataModule service = Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(VanishUserDataModule.class);
-        service.setVanished(true);
+        Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOrNewOnThread(player.getUniqueId())
+                .set(VanishKeys.VANISH_STATUS, true);
 
         if (delay) {
             Task.builder().execute(() -> vanishPlayerInternal(player)).delayTicks(0).name("Nucleus Vanish runnable").submit(Nucleus.getNucleus());
@@ -52,22 +56,30 @@ public class VanishService implements Reloadable, PermissionTrait, ServiceBase {
     }
 
     private void vanishPlayerInternal(Player player) {
-        VanishUserDataModule service = Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(VanishUserDataModule.class);
-        if (service.isVanished()) {
+        vanishPlayerInternal(player,
+                Nucleus.getNucleus().getStorageManager().getUserService()
+                        .getOrNewOnThread(player.getUniqueId())
+                        .get(VanishKeys.VANISH_STATUS)
+                        .orElse(false));
+    }
+
+    private void vanishPlayerInternal(Player player, boolean vanish) {
+        if (vanish) {
             player.offer(Keys.VANISH, true);
             player.offer(Keys.VANISH_IGNORES_COLLISION, true);
             player.offer(Keys.VANISH_PREVENTS_TARGETING, true);
 
             if (this.isAlter) {
-                Sponge.getServer().getOnlinePlayers().stream().filter(x -> !player.equals(x) || !hasPermission(x, this.canseePerm))
+                Sponge.getServer().getOnlinePlayers().stream().filter(x -> !player.equals(x) || !hasPermission(x, this.CAN_SEE_PERM))
                         .forEach(x -> x.getTabList().removeEntry(player.getUniqueId()));
             }
         }
     }
 
     public void unvanishPlayer(Player player) {
-        VanishUserDataModule service = Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(VanishUserDataModule.class);
-        service.setVanished(false);
+        Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOrNew(player.getUniqueId())
+                .thenAccept(x -> x.set(VanishKeys.VANISH_STATUS, false));
         player.offer(Keys.VANISH, false);
         player.offer(Keys.VANISH_IGNORES_COLLISION, false);
         player.offer(Keys.VANISH_PREVENTS_TARGETING, false);

@@ -4,10 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.nickname.listeners;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
-import io.github.nucleuspowered.nucleus.modules.nickname.datamodules.NicknameUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.nickname.services.NicknameService;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -23,14 +21,13 @@ public class NicknameListener implements ListenerBase, InternalServiceManagerTra
 
     @Listener(order = Order.FIRST)
     public void onPlayerJoin(ClientConnectionEvent.Join event, @Root Player player) {
-        Nucleus.getNucleus().getUserDataManager().get(player).ifPresent(x -> {
-            Optional<Text> d = x.get(NicknameUserDataModule.class).getNicknameAsText();
-            d.ifPresent(text -> getServiceUnchecked(NicknameService.class).updateCache(player.getUniqueId(), text));
-
-            player.offer(
-                    Keys.DISPLAY_NAME,
-                    d.orElseGet(() -> Text.of(player.getName())));
+        Optional<Text> nickname = getServiceUnchecked(NicknameService.class).getNickname(player);
+        nickname.ifPresent(text -> {
+            getServiceUnchecked(NicknameService.class).updateCache(player.getUniqueId(), text);
         });
+        player.offer(
+                Keys.DISPLAY_NAME,
+                nickname.orElseGet(() -> Text.of(player.getName())));
     }
 
     @Listener(order = Order.LAST)

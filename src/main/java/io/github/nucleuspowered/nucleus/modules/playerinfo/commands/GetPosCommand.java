@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.playerinfo.commands;
 
 import com.flowpowered.math.vector.Vector3i;
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -13,7 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.core.datamodules.CoreUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -60,9 +61,9 @@ public class GetPosCommand extends AbstractCommand<CommandSource> {
         if (user.isOnline()) {
             location = user.getPlayer().get().getLocation();
         } else {
-            location = Nucleus.getNucleus().getUserDataManager().get(user)
-                    .orElseThrow(() -> ReturnMessageException.fromKey("command.getpos.location.nolocation", user.getName()))
-                    .get(CoreUserDataModule.class).getLogoutLocation()
+            location = getUser(user.getUniqueId())
+                    .join()
+                    .flatMap(x -> x.get(CoreKeys.LAST_LOCATION).flatMap(LocationNode::getLocationIfExists))
                     .orElseThrow(() -> ReturnMessageException.fromKey("command.getpos.location.nolocation", user.getName()));
         }
 

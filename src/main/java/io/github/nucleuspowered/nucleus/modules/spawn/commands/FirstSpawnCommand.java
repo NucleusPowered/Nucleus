@@ -5,13 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnGeneralDataModule;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.entity.Transform;
@@ -32,7 +33,10 @@ public class FirstSpawnCommand extends AbstractCommand<Player> implements Reload
     @Override
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) {
 
-        Optional<Transform<World>> olwr = Nucleus.getNucleus().getGeneralService().get(SpawnGeneralDataModule.class).getFirstSpawn();
+        Optional<Transform<World>> olwr = Nucleus.getNucleus().getStorageManager().getGeneralService()
+                .getOrNewOnThread()
+                .get(SpawnKeys.FIRST_SPAWN_LOCATION)
+                .flatMap(LocationNode::getTransformIfExists);
         if (!olwr.isPresent()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.firstspawn.notset"));
             return CommandResult.empty();
