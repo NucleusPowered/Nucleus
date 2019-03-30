@@ -5,13 +5,12 @@
 package io.github.nucleuspowered.nucleus.modules.nickname.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.nickname.datamodules.NicknameUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.nickname.services.NicknameService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -25,10 +24,9 @@ import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @SuppressWarnings("ALL")
 @RegisterCommand({"realname"})
@@ -50,32 +48,20 @@ public class RealnameCommand extends AbstractCommand<CommandSource> {
         String argname = args.<String>getOne(playerKey).get();
         String name = argname.toLowerCase();
 
-        // First, get all online players.
-        Collection<Player> players = Sponge.getServer().getOnlinePlayers();
+        NicknameService service = getServiceUnchecked(NicknameService.class);
+        Map<Player, Text> names = service.getFromSubstring(argname.toLowerCase());
+        names.forEach((player, text) -> {
 
-        List<Text> realNames = players.stream().map(x -> {
-            // I can't get display name to work!
-            Optional<ModularUserService> ous = Nucleus.getNucleus().getUserDataManager().get(x);
-            if (ous.isPresent()) {
-                Optional<Text> ot = ous.get().get(NicknameUserDataModule.class).getNicknameAsText();
-                if (ot.isPresent()) {
-                    return new NameTuple(ot.get().toPlain().toLowerCase(), x);
-                }
-            }
+        });
 
-            Optional<Text> displayName = x.getDisplayNameData().displayName().getDirect();
-            if (displayName.isPresent()) {
-                return new NameTuple(displayName.get().toPlain().toLowerCase(), x);
-            }
-
-            return new NameTuple(x.getName().toLowerCase(), x);
-        }).filter(x -> x.nickname.startsWith(name.toLowerCase()))
-                .map(x -> Text.builder().append(Nucleus.getNucleus().getNameUtil().getName(x.player)).append(Text.of(TextColors.GRAY, " -> ")).append(Text.of(x.player.getName())).toText())
-                .collect(Collectors.toList());
-
-        if (realNames.isEmpty()) {
+        if (names.isEmpty()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.realname.nonames", argname));
         } else {
+            List<Text> realNames = new ArrayList<>();
+            for (Map.Entry<Player, Text> entry : names.entrySet()) {
+                realNames.add(Text.of(entry.getKey().getName(), TextColors.GRAY, " -> ", TextColors.WHITE, entry.getValue()));
+            }
+
             PaginationList.Builder plb = Sponge.getServiceManager().provideUnchecked(PaginationService.class).builder()
                     .contents(realNames)
                     .padding(Text.of(TextColors.GREEN, "-"))
