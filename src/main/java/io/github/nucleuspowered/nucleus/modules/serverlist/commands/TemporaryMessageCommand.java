@@ -14,6 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.modules.serverlist.datamodules.ServerListGeneralDataModule;
+import io.github.nucleuspowered.nucleus.modules.serverlist.services.ServerListService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -21,6 +22,7 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
 import java.time.Instant;
@@ -47,12 +49,12 @@ public class TemporaryMessageCommand extends AbstractCommand<CommandSource> {
 
     @Override protected CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws Exception {
         // Get the temporary message item.
-        ServerListGeneralDataModule mod = Nucleus.getNucleus().getGeneralService().get(ServerListGeneralDataModule.class);
+        ServerListService mod = getServiceUnchecked(ServerListService.class);
 
         if (args.hasAny("r")) {
             if (mod.getMessage().isPresent()) {
                 // Remove
-                mod.remove();
+                mod.clearMessage();
 
                 // Send message.
                 src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.serverlist.message.removed"));
@@ -74,9 +76,9 @@ public class TemporaryMessageCommand extends AbstractCommand<CommandSource> {
             }
 
             if (linetwo) {
-                mod.setLineTwo(null);
+                mod.updateLineTwo(null);
             } else {
-                mod.setLineOne(null);
+                mod.updateLineOne(null);
             }
 
             Optional<Text> newMessage = mod.getMessage();
@@ -100,11 +102,10 @@ public class TemporaryMessageCommand extends AbstractCommand<CommandSource> {
                 .orElseGet(() -> Instant.now().plusSeconds(3600)));
 
         // Set the expiry.
-        mod.setExpiry(endTime);
         if (linetwo) {
-            mod.setLineTwo(nMessage);
+            mod.setMessage(null, nMessage, endTime);
         } else {
-            mod.setLineOne(nMessage);
+            mod.setMessage(nMessage, null, endTime);
         }
 
         Optional<Text> newMessage = mod.getMessage();

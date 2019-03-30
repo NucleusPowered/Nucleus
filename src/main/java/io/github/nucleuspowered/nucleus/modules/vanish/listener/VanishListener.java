@@ -8,11 +8,11 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
+import io.github.nucleuspowered.nucleus.modules.vanish.VanishKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.VanishUserPrefKeys;
 import io.github.nucleuspowered.nucleus.modules.vanish.commands.VanishCommand;
 import io.github.nucleuspowered.nucleus.modules.vanish.config.VanishConfig;
 import io.github.nucleuspowered.nucleus.modules.vanish.config.VanishConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.vanish.datamodules.VanishUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.vanish.services.VanishService;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -60,7 +60,8 @@ public class VanishListener implements Reloadable, ListenerBase {
     @Listener
     public void onQuit(ClientConnectionEvent.Disconnect event, @Getter("getTargetEntity") Player player) {
         if (player.get(Keys.VANISH).orElse(false)) {
-            Nucleus.getNucleus().getUserDataManager().getUnchecked(player).get(VanishUserDataModule.class).setVanished(true);
+            Nucleus.getNucleus().getStorageManager().getUserService().get(player.getUniqueId())
+                    .thenAccept(x -> x.ifPresent(t -> t.set(VanishKeys.VANISH_STATUS, false)));
             if (this.vanishConfig.isSuppressMessagesOnVanish()) {
                 event.setMessageCancelled(true);
             }

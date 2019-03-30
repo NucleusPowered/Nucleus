@@ -4,17 +4,15 @@
  */
 package io.github.nucleuspowered.storage.services.transients;
 
-import io.github.nucleuspowered.storage.dataobjects.modules.ITransientDataModule;
-
 import java.util.Optional;
 
-public interface ITransientService<TM extends ITransientDataModule> {
+public interface ITransientService<TM> {
 
     <T extends TM> T tryCreate(Class<T> module) throws Exception;
 
     void removeAll();
 
-    interface Single<TM extends ITransientDataModule> extends ITransientService<TM> {
+    interface Single<TM> extends ITransientService<TM> {
 
         <T extends TM> Optional<T> get(Class<T> module);
 
@@ -35,7 +33,7 @@ public interface ITransientService<TM extends ITransientDataModule> {
 
     }
 
-    interface Keyed<K, TM extends ITransientDataModule> extends ITransientService<TM> {
+    interface Keyed<K, TM> extends ITransientService<TM> {
 
         <T extends TM> Optional<T> get(K key, Class<T> module);
 

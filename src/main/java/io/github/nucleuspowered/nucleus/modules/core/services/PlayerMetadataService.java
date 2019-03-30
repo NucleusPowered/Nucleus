@@ -11,6 +11,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -44,7 +45,7 @@ public class PlayerMetadataService implements NucleusPlayerMetadataService, Serv
         @Nullable private final String lastIP;
         @Nullable private final LocationNode lastLocation;
 
-        private ResultImpl(UUID uuid, UserDataObject udo) {
+        private ResultImpl(UUID uuid, IUserDataObject udo) {
             // this.user = userService.getUser();
 
             this.uuid = uuid;

@@ -12,7 +12,7 @@ import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.modules.serverlist.ServerListModule;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfig;
 import io.github.nucleuspowered.nucleus.modules.serverlist.config.ServerListConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.serverlist.datamodules.ServerListGeneralDataModule;
+import io.github.nucleuspowered.nucleus.modules.serverlist.services.ServerListService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
@@ -31,8 +31,13 @@ import java.util.stream.Collectors;
 
 public class ServerListListener implements Reloadable, ListenerBase.Conditional {
 
+    private final ServerListService service;
     private final Random random = new Random();
     private ServerListConfig config;
+
+    public ServerListListener() {
+        this.service = getServiceUnchecked(ServerListService.class);
+    }
 
     @Listener
     public void onServerListPing(ClientPingServerEvent event, @Getter("getResponse") ClientPingServerEvent.Response response) {
@@ -47,7 +52,7 @@ public class ServerListListener implements Reloadable, ListenerBase.Conditional 
 
         if (this.config.isModifyServerList()) {
             List<NucleusTextTemplateImpl> list = null;
-            Optional<Text> ott = Nucleus.getNucleus().getGeneralService().get(ServerListGeneralDataModule.class).getMessage();
+            Optional<Text> ott = this.service.getMessage();
 
             if (ott.isPresent()) {
                 response.setDescription(ott.get());

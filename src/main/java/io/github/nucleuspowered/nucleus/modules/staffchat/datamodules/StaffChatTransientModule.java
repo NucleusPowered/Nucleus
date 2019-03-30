@@ -4,14 +4,13 @@
  */
 package io.github.nucleuspowered.nucleus.modules.staffchat.datamodules;
 
-import io.github.nucleuspowered.storage.dataobjects.modules.ITransientDataModule;
 import org.spongepowered.api.text.channel.MessageChannel;
 
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-public class StaffChatTransientModule implements ITransientDataModule {
+public class StaffChatTransientModule {
 
     @Nullable private MessageChannel previousMessageChannel;
 

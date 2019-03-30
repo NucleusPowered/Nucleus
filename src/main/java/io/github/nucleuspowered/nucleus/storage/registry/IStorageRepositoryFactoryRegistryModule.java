@@ -35,7 +35,7 @@ public class IStorageRepositoryFactoryRegistryModule extends NucleusRegistryModu
     }
 
     @Override
-    public void registerDefaults() {
+    public void registerModuleDefaults() {
         this.registerAdditionalCatalog(FlatFileStorageRepositoryFactory.INSTANCE);
     }
 }

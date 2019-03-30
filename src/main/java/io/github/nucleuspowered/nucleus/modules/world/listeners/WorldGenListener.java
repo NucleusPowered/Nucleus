@@ -66,6 +66,6 @@ public class WorldGenListener implements ListenerBase {
                             }
                         }
                     }
-                });
+                }).submit(Nucleus.getNucleus());
     }
 }

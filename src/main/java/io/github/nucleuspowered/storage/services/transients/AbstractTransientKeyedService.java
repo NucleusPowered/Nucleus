@@ -4,13 +4,11 @@
  */
 package io.github.nucleuspowered.storage.services.transients;
 
-import io.github.nucleuspowered.storage.dataobjects.modules.ITransientDataModule;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public abstract class AbstractTransientKeyedService<K, TM extends ITransientDataModule> implements ITransientService.Keyed<K, TM> {
+public abstract class AbstractTransientKeyedService<K, TM> implements ITransientService.Keyed<K, TM> {
 
     private final Map<K, Value> cache = new HashMap<>();
 
