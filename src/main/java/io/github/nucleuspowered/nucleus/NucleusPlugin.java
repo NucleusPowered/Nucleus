@@ -983,6 +983,11 @@ public class NucleusPlugin extends Nucleus {
         return this.storageManager;
     }
 
+    @Override
+    public UserPreferenceService getUserPreferenceService() {
+        return this.userPreferenceService;
+    }
+
     private void disable() {
         // Disable everything, just in case. Thanks to pie-flavor: https://forums.spongepowered.org/t/disable-plugin-disable-itself/15831/8
         Sponge.getEventManager().unregisterPluginListeners(this);

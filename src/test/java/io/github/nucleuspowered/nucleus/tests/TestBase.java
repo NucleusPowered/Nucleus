@@ -12,9 +12,6 @@ import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
 import io.github.nucleuspowered.nucleus.dataservices.KitService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.WorldDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularGeneralService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
@@ -28,6 +25,7 @@ import io.github.nucleuspowered.nucleus.internal.services.PermissionResolver;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
+import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
 import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.junit.BeforeClass;
@@ -148,16 +146,6 @@ public abstract class TestBase {
             return null;
         }
 
-        @Override
-        public UserDataManager getUserDataManager() {
-            return null;
-        }
-
-        @Override
-        public WorldDataManager getWorldDataManager() {
-            return null;
-        }
-
         @Override public UserCacheService getUserCacheService() {
             return null;
         }
@@ -215,11 +203,6 @@ public abstract class TestBase {
 
         @Override public Optional<Instant> getGameStartedTime() {
             return Optional.empty();
-        }
-
-        @Override
-        public ModularGeneralService getGeneralService() {
-            return null;
         }
 
         @Override
@@ -324,6 +307,11 @@ public abstract class TestBase {
         }
 
         @Override public INucleusStorageManager getStorageManager() {
+            return null;
+        }
+
+        @Override
+        public UserPreferenceService getUserPreferenceService() {
             return null;
         }
     }

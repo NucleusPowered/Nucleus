@@ -9,7 +9,6 @@ import io.github.nucleuspowered.nucleus.NameUtil;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.Util;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.interfaces.CancellableTask;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
@@ -37,6 +36,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextStyles;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,8 +45,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 public class TeleportHandler implements MessageProviderTrait, InternalServiceManagerTrait, PermissionTrait, ServiceBase, Reloadable {
 
@@ -398,11 +396,14 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
                 return false;
             }
 
-            ModularUserService toPlayer = Nucleus.getNucleus().getUserDataManager().get(this.to).get();
-            UserPreferenceService ups = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(UserPreferenceService.class);
-            if (!this.bypassToggle && !ups.get(toPlayer.getUniqueId(), TeleportUserPrefKeys.TELEPORT_TARGETABLE).orElse(true)
-                    && !canBypassTpToggle(source)) {
-                sendMessageTo(source, "teleport.fail.targettoggle", toPlayer.getUser().getName());
+            UserPreferenceService ups = Nucleus.getNucleus().getInternalServiceManager()
+                    .getServiceUnchecked(UserPreferenceService.class);
+            boolean target = ups.get(this.to, TeleportUserPrefKeys.TELEPORT_TARGETABLE).orElse(true);
+            NameUtil util = Nucleus.getNucleus().getNameUtil();
+
+            if (!this.bypassToggle && !target && !canBypassTpToggle(source)) {
+                sendMessageTo(source, "teleport.fail.targettoggle",
+                        util.getName(this.to).orElseGet(() -> getMessageFor(source, "standard.unknown")));
                 return false;
             }
 

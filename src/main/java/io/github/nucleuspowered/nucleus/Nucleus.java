@@ -22,6 +22,7 @@ import io.github.nucleuspowered.nucleus.internal.services.PermissionResolver;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
 import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
+import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
 import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.slf4j.Logger;
@@ -142,4 +143,6 @@ public abstract class Nucleus {
     public abstract boolean isPrintingSavesAndLoads();
 
     public abstract INucleusStorageManager getStorageManager();
+
+    public abstract UserPreferenceService getUserPreferenceService();
 }
