@@ -11,10 +11,11 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.powertool.PowertoolUserPreferenceKeys;
-import io.github.nucleuspowered.nucleus.modules.powertool.datamodules.PowertoolUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.powertool.services.PowertoolService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -31,6 +32,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Permissions(mainOverride = "powertool")
@@ -40,23 +42,23 @@ import java.util.stream.Collectors;
 @NonnullByDefault
 public class ListPowertoolCommand extends AbstractCommand<Player> {
 
-    @Override
-    public CommandResult executeCommand(Player src, CommandContext args, Cause cause) {
-        PowertoolUserDataModule inu = Nucleus.getNucleus().getUserDataManager().getUnchecked(src).get(PowertoolUserDataModule.class);
+    private final PowertoolService service = getServiceUnchecked(PowertoolService.class);
 
+    @Override
+    public CommandResult executeCommand(Player src, CommandContext args, Cause cause) throws ReturnMessageException {
         boolean toggle = getServiceUnchecked(UserPreferenceService.class)
                 .getUnwrapped(src.getUniqueId(), PowertoolUserPreferenceKeys.POWERTOOL_ENABLED);
 
-        Map<String, List<String>> powertools = inu.getPowertools();
+        Map<String, List<String>> powertools = this.service.getPowertools(src.getUniqueId());
 
         if (powertools.isEmpty()) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.powertool.list.none"));
-            return CommandResult.success();
+            throw ReturnMessageException.fromKey(src, "command.powertool.list.none");
         }
 
         // Generate powertools.
-        List<Text> mesl = powertools.entrySet().stream().sorted((a, b) -> a.getKey().compareToIgnoreCase(b.getKey()))
-                .map(k -> from(inu, src, k.getKey(), k.getValue())).collect(Collectors.toList());
+        List<Text> mesl = powertools.entrySet().stream().sorted((a, b) -> a.getKey()
+                .compareToIgnoreCase(b.getKey()))
+                .map(k -> from(src, k.getKey(), k.getValue())).collect(Collectors.toList());
 
         // Paginate the tools.
         Util.getPaginationBuilder(src).title(Nucleus.getNucleus().getMessageProvider()
@@ -66,9 +68,10 @@ public class ListPowertoolCommand extends AbstractCommand<Player> {
         return CommandResult.success();
     }
 
-    private Text from(final PowertoolUserDataModule inu, Player src, String powertool, List<String> commands) {
+    private Text from(Player src, String powertool, List<String> commands) {
         Optional<ItemType> oit = Sponge.getRegistry().getType(ItemType.class, powertool);
 
+        UUID uuid = src.getUniqueId();
         MessageProvider mp = Nucleus.getNucleus().getMessageProvider();
 
         // Create the click actions.
@@ -78,7 +81,7 @@ public class ListPowertoolCommand extends AbstractCommand<Player> {
                 .contents(commands.stream().map(x -> Text.of(TextColors.YELLOW, x)).collect(Collectors.toList())).sendTo(src));
 
         ClickAction deleteAction = TextActions.executeCallback(pl -> {
-            inu.clearPowertool(powertool);
+            this.service.clearPowertool(uuid, powertool);
             pl.sendMessage(mp.getTextMessageWithFormat("command.powertool.removed", powertool));
         });
 

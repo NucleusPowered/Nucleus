@@ -7,6 +7,7 @@ package io.github.nucleuspowered.nucleus.internal;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
+import org.spongepowered.api.item.ItemType;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,4 +33,6 @@ public final class TypeTokens {
     public static final TypeToken<List<UUID>> UUID_LIST = new TypeToken<List<UUID>>() {};
 
     public static final TypeToken<Vector3d> VECTOR_3D = TypeToken.of(Vector3d.class);
+
+    public static final TypeToken<ItemType> ITEM_TYPE = TypeToken.of(ItemType.class);
 }

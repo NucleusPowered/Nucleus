@@ -8,6 +8,7 @@ import com.google.common.reflect.TypeToken;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a data point in an {@link AbstractKeyBasedDataObject}
@@ -25,8 +26,13 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
         return new DataKeyImpl<>(key, type, target, def);
     }
 
-    static <T, O extends IKeyedDataObject<?>> DataKey<List<T>, O> ofList(TypeToken<T> type, Class<O> target, String... key) {
+    static <T, O extends IKeyedDataObject<?>> DataKey.ListKey<T, O> ofList(TypeToken<T> type, Class<O> target, String... key) {
         return new ListDataKey<>(key, type, target);
+    }
+
+    static <K, V, O extends IKeyedDataObject<?>> DataKey.MapListKey<K, V, O> ofMapList(
+            TypeToken<K> keyType, TypeToken<V> listValueType, Class<O> target, String... key) {
+        return new MappedListDataKey<>(key, keyType, listValueType, target);
     }
 
     /**
@@ -57,4 +63,9 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
      */
     @Nullable R getDefault();
 
+    interface ListKey<R, O extends IKeyedDataObject<?>> extends DataKey<List<R>, O> { }
+
+    interface MapKey<K, V, O extends IKeyedDataObject<?>> extends DataKey<Map<K, V>, O> { }
+
+    interface MapListKey<K, V, O extends IKeyedDataObject<?>> extends DataKey<Map<K, List<V>>, O> { }
 }

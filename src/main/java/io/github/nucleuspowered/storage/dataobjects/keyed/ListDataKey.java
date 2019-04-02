@@ -11,7 +11,8 @@ import java.util.List;
  * @param <R> The inner type of the {@link List}.
  * @param <O> The {@link IKeyedDataObject} this will apply to.
  */
-public class ListDataKey<R, O extends IKeyedDataObject<?>> extends DataKeyImpl<List<R>, O> {
+public class ListDataKey<R, O extends IKeyedDataObject<?>> extends DataKeyImpl<List<R>, O>
+        implements DataKey.ListKey<R, O>{
 
     private final TypeToken<R> innerType;
 
