@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.internal;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 
@@ -29,4 +30,6 @@ public final class TypeTokens {
     public static final TypeToken<Map<String, LocationNode>> LOCATIONS = new TypeToken<Map<String, LocationNode>>() {};
 
     public static final TypeToken<List<UUID>> UUID_LIST = new TypeToken<List<UUID>>() {};
+
+    public static final TypeToken<Vector3d> VECTOR_3D = TypeToken.of(Vector3d.class);
 }

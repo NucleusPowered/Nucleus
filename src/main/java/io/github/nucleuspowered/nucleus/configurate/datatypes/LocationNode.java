@@ -11,6 +11,7 @@ import io.github.nucleuspowered.nucleus.configurate.settingprocessor.WorldMigrat
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -71,6 +72,10 @@ public class LocationNode {
 
     public UUID getWorld() {
         return this.world;
+    }
+
+    public Optional<Transform<World>> getTransformIfExists() {
+        return getLocationIfExists().map(loc -> new Transform<>(loc.getExtent(), loc.getPosition(), getRotation()));
     }
 
     public Tuple<WorldProperties, Vector3d> getLocationIfNotLoaded() throws NoSuchWorldException {

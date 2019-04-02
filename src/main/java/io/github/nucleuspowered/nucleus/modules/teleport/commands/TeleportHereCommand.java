@@ -19,7 +19,7 @@ import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.config.TeleportConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
-import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -84,7 +84,7 @@ public class TeleportHereCommand extends AbstractCommand<Player> implements Relo
             getUser(target.getUniqueId())
                     .thenAccept(x -> {
                         if (x.isPresent()) {
-                            UserDataObject u = x.get();
+                            IUserDataObject u = x.get();
                             u.set(CoreKeys.LOCATION_ON_LOGIN, l);
                             sendMessageTo(src, "command.tphere.offlinesuccess", target.getName());
                         } else {

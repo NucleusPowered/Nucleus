@@ -10,7 +10,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnGeneralDataModule;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -29,7 +29,9 @@ public class RemoveFirstSpawnCommand extends AbstractCommand<CommandSource> {
 
     @Override
     public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) {
-        Nucleus.getNucleus().getGeneralService().get(SpawnGeneralDataModule.class).removeFirstSpawn();
+        Nucleus.getNucleus().getStorageManager().getGeneralService()
+                .getOrNewOnThread()
+                .remove(SpawnKeys.FIRST_SPAWN_LOCATION);
         src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.setfirstspawn.remove"));
         return CommandResult.success();
     }

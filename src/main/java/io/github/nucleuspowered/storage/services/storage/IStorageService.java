@@ -11,11 +11,10 @@ import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.queryobjects.IQueryObject;
 import io.github.nucleuspowered.storage.util.KeyedObject;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nonnull;
 
 /**
  * The entry point into the storage system. All storage checks are not dependent on the main thread,
@@ -74,12 +73,36 @@ public interface IStorageService<D extends IDataObject> {
         CompletableFuture<Optional<D>> get();
 
         /**
+         * Gets the data on thread.
+         *
+         * @return The data, if it exists.
+         */
+        Optional<D> getOnThread();
+
+        /**
          * Gets the data, or a new {@link D}.
          *
          * @return The {@link D}
          */
         default CompletableFuture<D> getOrNew() {
-            return get().thenApply(d -> d.orElseGet(() -> getDataAccess().createNew()));
+            return get().thenApply(d -> d.orElseGet(() -> {
+                D result = getDataAccess().createNew();
+                save(result);
+                return result;
+            }));
+        }
+
+        /**
+         * Gets the data on thread, or creates a new {@link D}.
+         *
+         * @return The data.
+         */
+        default D getOrNewOnThread() {
+            return getOnThread().orElseGet(() -> {
+                D result = getDataAccess().createNew();
+                save(result);
+                return result;
+            });
         }
 
         /**
@@ -150,7 +173,11 @@ public interface IStorageService<D extends IDataObject> {
          * @return The {@link D}
          */
         default CompletableFuture<D> getOrNew(@Nonnull K key) {
-            return get(key).thenApply(d -> d.orElseGet(() -> getDataAccess().createNew()));
+            return get(key).thenApply(d -> d.orElseGet(() -> {
+                D result = getDataAccess().createNew();
+                save(key, result);
+                return result;
+            }));
         }
 
         /**
@@ -160,7 +187,11 @@ public interface IStorageService<D extends IDataObject> {
          * @return The object, if it exists
          */
         default D getOrNewOnThread(@Nonnull K key) {
-            return getOnThread(key).orElseGet(() -> getDataAccess().createNew());
+            return getOnThread(key).orElseGet(() -> {
+                D result = getDataAccess().createNew();
+                save(key, result);
+                return result;
+            });
         }
 
         /**
