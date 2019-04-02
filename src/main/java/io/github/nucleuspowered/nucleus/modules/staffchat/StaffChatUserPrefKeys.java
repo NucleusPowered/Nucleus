@@ -19,4 +19,5 @@ public class StaffChatUserPrefKeys implements UserPrefKeys {
             Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(StaffChatCommand.class).getBase(),
             "userpref.viewstaffchat"
     );
+
 }
