@@ -8,7 +8,7 @@ import com.google.common.reflect.TypeToken;
 
 import javax.annotation.Nullable;
 
-public class DataKeyImpl<R, O extends IKeyedDataObject> implements DataKey<R, O> {
+public class DataKeyImpl<R, O extends IKeyedDataObject<?>> implements DataKey<R, O> {
 
     private final String[] key;
     private final TypeToken<R> type;

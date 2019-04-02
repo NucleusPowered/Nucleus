@@ -7,6 +7,7 @@ package io.github.nucleuspowered.storage.dataobjects.keyed;
 import com.google.common.reflect.TypeToken;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Represents a data point in an {@link AbstractKeyBasedDataObject}
@@ -14,14 +15,18 @@ import javax.annotation.Nullable;
  * @param <R> The type of object this translates to.
  * @param <O> The type of {@link IKeyedDataObject} that this can operate on
  */
-public interface DataKey<R, O extends IKeyedDataObject> {
+public interface DataKey<R, O extends IKeyedDataObject<?>> {
 
-    static <T, O extends IKeyedDataObject> DataKey<T, O> of(TypeToken<T> type, Class<O> target, String... key) {
+    static <T, O extends IKeyedDataObject<?>> DataKey<T, O> of(TypeToken<T> type, Class<O> target, String... key) {
         return new DataKeyImpl<>(key, type, target,  null);
     }
 
-    static <T, O extends IKeyedDataObject> DataKey<T, O> of(T def, TypeToken<T> type, Class<O> target, String... key) {
+    static <T, O extends IKeyedDataObject<?>> DataKey<T, O> of(T def, TypeToken<T> type, Class<O> target, String... key) {
         return new DataKeyImpl<>(key, type, target, def);
+    }
+
+    static <T, O extends IKeyedDataObject<?>> DataKey<List<T>, O> ofList(TypeToken<T> type, Class<O> target, String... key) {
+        return new ListDataKey<>(key, type, target);
     }
 
     /**
