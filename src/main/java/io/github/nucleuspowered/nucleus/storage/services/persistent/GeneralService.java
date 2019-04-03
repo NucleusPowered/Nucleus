@@ -9,11 +9,10 @@ import io.github.nucleuspowered.storage.dataaccess.IDataAccess;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.services.ServicesUtil;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
 
 public class GeneralService implements IGeneralDataService {
 
@@ -52,11 +51,26 @@ public class GeneralService implements IGeneralDataService {
             return CompletableFuture.completedFuture(Optional.of(this.cached));
         }
 
-        return ServicesUtil.run(() -> {
-            Optional<IGeneralDataObject> gdo = getStorageRepository().get().map(getDataAccess()::fromJsonObject);
-            gdo.ifPresent(x -> this.cached = x);
-            return gdo;
-        });
+        return ServicesUtil.run(this::getFromRepo);
+    }
+
+    @Override
+    public Optional<IGeneralDataObject> getOnThread() {
+        if (this.cached != null) {
+            return Optional.of(this.cached);
+        }
+
+        try {
+            return getFromRepo();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Optional<IGeneralDataObject> getFromRepo() throws Exception {
+        Optional<IGeneralDataObject> gdo = getStorageRepository().get().map(getDataAccess()::fromJsonObject);
+        gdo.ifPresent(x -> this.cached = x);
+        return gdo;
     }
 
     @Override
