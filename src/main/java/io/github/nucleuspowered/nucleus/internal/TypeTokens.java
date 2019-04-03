@@ -7,6 +7,7 @@ package io.github.nucleuspowered.nucleus.internal;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
+import io.github.nucleuspowered.nucleus.modules.mute.data.MuteData;
 import org.spongepowered.api.item.ItemType;
 
 import java.time.Instant;
@@ -35,4 +36,6 @@ public final class TypeTokens {
     public static final TypeToken<Vector3d> VECTOR_3D = TypeToken.of(Vector3d.class);
 
     public static final TypeToken<ItemType> ITEM_TYPE = TypeToken.of(ItemType.class);
+
+    public static final TypeToken<MuteData> MUTE_DATA = TypeToken.of(MuteData.class);
 }

@@ -15,10 +15,10 @@ import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
+import io.github.nucleuspowered.nucleus.modules.mute.MuteKeys;
 import io.github.nucleuspowered.nucleus.modules.mute.data.MuteData;
-import io.github.nucleuspowered.nucleus.modules.mute.datamodules.MuteUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.mute.events.MuteEvent;
-import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -30,15 +30,10 @@ import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Identifiable;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
+import java.util.*;
 
 @APIService(NucleusMuteService.class)
 public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteService, MessageProviderTrait, IDataManagerTrait, ServiceBase {
@@ -72,7 +67,7 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
 
     // Internal
     public Optional<MuteData> getPlayerMuteData(User user) {
-        Optional<MuteData> nu = getUser(user.getUniqueId()).join().map(x -> x.get(MuteUserDataModule.class).getMuteData().orElse(null));
+        Optional<MuteData> nu = getOrCreateUserOnThread(user.getUniqueId()).get(MuteKeys.MUTE_DATA);
         this.muteContextCache.put(user.getUniqueId(), nu.isPresent());
         return nu;
     }
@@ -90,22 +85,19 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
         Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(data);
 
-        Optional<UserDataObject> nu = getUser(user.getUniqueId()).join();
+        Optional<IUserDataObject> nu = getUserOnThread(user.getUniqueId());
         if (!nu.isPresent()) {
             return false;
         }
 
         Instant time = Instant.now();
-        UserDataObject u = nu.get();
+        IUserDataObject u = nu.get();
         final Duration d = data.getRemainingTime().orElse(null);
         if (user.isOnline() && data.getTimeFromNextLogin().isPresent() && !data.getEndTimestamp().isPresent()) {
             data.setEndtimestamp(time.plus(data.getTimeFromNextLogin().get()));
         }
 
-        MuteUserDataModule m = u.get(MuteUserDataModule.class);
-        m.setMuteData(data);
-        u.set(m);
-
+        u.set(MuteKeys.MUTE_DATA, data);
         saveUser(user.getUniqueId(), u);
         this.muteContextCache.put(user.getUniqueId(), true);
         Sponge.getEventManager().post(new MuteEvent.Muted(
@@ -126,12 +118,10 @@ public class MuteHandler implements ContextCalculator<Subject>, NucleusMuteServi
 
     public boolean unmutePlayer(User user, Cause cause, boolean expired) {
         if (isMuted(user)) {
-            Optional<UserDataObject> o = getUser(user.getUniqueId()).join();
+            Optional<IUserDataObject> o = getUserOnThread(user.getUniqueId());
             if (o.isPresent()) {
-                UserDataObject udo = o.get();
-                MuteUserDataModule m = udo.get(MuteUserDataModule.class);
-                m.removeMuteData();
-                udo.set(m);
+                IUserDataObject udo = o.get();
+                udo.remove(MuteKeys.MUTE_DATA);
                 saveUser(user.getUniqueId(), udo);
                 this.muteContextCache.put(user.getUniqueId(), false);
                 Sponge.getEventManager().post(new MuteEvent.Unmuted(
