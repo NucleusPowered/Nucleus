@@ -11,12 +11,12 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Note;
 import io.github.nucleuspowered.nucleus.api.service.NucleusNoteService;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
+import io.github.nucleuspowered.nucleus.modules.note.NoteKeys;
 import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
-import io.github.nucleuspowered.nucleus.modules.note.datamodules.NoteUserDataModule;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.User;
 
@@ -27,12 +27,10 @@ import java.util.Optional;
 @APIService(NucleusNoteService.class)
 public class NoteHandler implements NucleusNoteService, ServiceBase {
 
-    private final Nucleus nucleus = Nucleus.getNucleus();
-    private final UserDataManager userDataManager = this.nucleus.getUserDataManager();
-
     public List<NoteData> getNotesInternal(User user) {
-        Optional<ModularUserService> userService = this.userDataManager.get(user);
-        return userService.map(modularUserService -> modularUserService.get(NoteUserDataModule.class).getNotes()).orElseGet(Lists::newArrayList);
+        Optional<IUserDataObject> userDataObject =
+                Nucleus.getNucleus().getStorageManager().getUserService().getOnThread(user.getUniqueId());
+        return userDataObject.flatMap(udo -> udo.get(NoteKeys.NOTE_DATA)).orElseGet(ImmutableList::of);
     }
 
     @Override public ImmutableList<Note> getNotes(User user) {
@@ -47,21 +45,32 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
         Preconditions.checkNotNull(user);
         Preconditions.checkNotNull(note);
 
-        Optional<ModularUserService> optUserService = this.userDataManager.get(user);
-        if (!optUserService.isPresent()) {
-            return false;
+        IUserDataObject udo = Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(user.getUniqueId());
+        try (IKeyedDataObject.Value<List<NoteData>> v = udo.getAndSet(NoteKeys.NOTE_DATA)) {
+            List<NoteData> data = v.getValue().orElseGet(Lists::newArrayList);
+            data.add(note);
+            v.setValue(data);
         }
 
-        optUserService.get().get(NoteUserDataModule.class).addNote(note);
+        Nucleus.getNucleus().getStorageManager().getUserService().save(user.getUniqueId(), udo);
         return true;
     }
 
     @Override
     public boolean removeNote(User user, Note note) {
-        Optional<ModularUserService> userService = this.userDataManager.get(user);
-        if (userService.isPresent()) {
-            userService.get().get(NoteUserDataModule.class).removeNote(note);
-            return true;
+        Optional<IUserDataObject> udo = Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOnThread(user.getUniqueId());
+        if (udo.isPresent()) {
+            boolean res;
+            try (IKeyedDataObject.Value<List<NoteData>> v = udo.get().getAndSet(NoteKeys.NOTE_DATA)) {
+                List<NoteData> data = v.getValue().orElseGet(Lists::newArrayList);
+                res = data.removeIf(x -> x.getNoterInternal().equals(note.getNoter().orElse(Util.consoleFakeUUID))
+                        && x.getNote().equals(note.getNote()));
+                v.setValue(data);
+            }
+
+            Nucleus.getNucleus().getStorageManager().getUserService().save(user.getUniqueId(), udo.get());
+            return res;
         }
 
         return false;
@@ -69,9 +78,11 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
 
     @Override
     public boolean clearNotes(User user) {
-        Optional<ModularUserService> userService = this.userDataManager.get(user);
-        if (userService.isPresent()) {
-            userService.get().get(NoteUserDataModule.class).clearNotes();
+        Optional<IUserDataObject> udo = Nucleus.getNucleus().getStorageManager().getUserService()
+                .getOnThread(user.getUniqueId());
+        if (udo.isPresent()) {
+            udo.get().remove(NoteKeys.NOTE_DATA);
+            Nucleus.getNucleus().getStorageManager().getUserService().save(user.getUniqueId(), udo.get());
             return true;
         }
 

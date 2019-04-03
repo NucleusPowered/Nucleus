@@ -7,14 +7,13 @@ package io.github.nucleuspowered.nucleus.configurate.datatypes;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
-import io.github.nucleuspowered.nucleus.modules.mute.datamodules.MuteUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.mute.MuteKeys;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
-import java.util.Optional;
-
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @ConfigSerializable
 public class UserCacheDataNode {
@@ -41,7 +40,7 @@ public class UserCacheDataNode {
     public void set(IUserDataObject x) {
         this.ipAddress = x.get(CoreKeys.IP_ADDRESS).map(y -> y.replace("/", "")).orElse(null);
         this.jail = x.get(JailUserDataModule.class).getJailData().map(JailData::getJailName).orElse(null);
-        this.isMuted = x.get(MuteUserDataModule.class).getMuteData().isPresent();
+        this.isMuted = x.get(MuteKeys.MUTE_DATA).isPresent();
     }
 
     public Optional<String> getIpAddress() {

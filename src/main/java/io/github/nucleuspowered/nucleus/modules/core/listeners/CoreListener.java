@@ -43,6 +43,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,8 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 public class CoreListener implements Reloadable, ListenerBase, InternalServiceManagerTrait, IDataManagerTrait {
 
@@ -127,10 +126,9 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
     @Listener
     public void onPlayerJoinLast(final ClientConnectionEvent.Join event, @Getter("getTargetEntity") final Player player) {
         // created before
-        ModularUserService qsu = Nucleus.getNucleus().getUserDataManager().getUnchecked(player);
-        CoreUserDataModule c = qsu.get(CoreUserDataModule.class);
-        if (!c.getFirstJoin().isPresent()) {
-            Nucleus.getNucleus().getGeneralService().getTransient(UniqueUserCountTransientModule.class).resetUniqueUserCount();
+        if (!Nucleus.getNucleus().getStorageManager().getUserService().getOnThread(player.getUniqueId())
+                .map(x -> x.get(CoreKeys.FIRST_JOIN)).isPresent()) {
+            getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
 
             NucleusFirstJoinEvent firstJoinEvent = new OnFirstLoginEvent(
                 event.getCause(), player, event.getOriginalChannel(), event.getChannel().orElse(null), event.getOriginalMessage(),

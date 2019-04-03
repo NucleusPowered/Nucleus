@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.core;
 
+import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.TypeTokens;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
@@ -14,7 +15,10 @@ import java.time.Instant;
 
 public class CoreKeys {
 
-    public static DataKey<Integer, IKeyedDataObject> VERSION = DataKey.of(TypeTokens.INTEGER, IKeyedDataObject.class, "version");
+    @SuppressWarnings("unchecked")
+    private static final Class<IKeyedDataObject<?>> keyedDataObjectClass = (Class<IKeyedDataObject<?>>) new TypeToken<IKeyedDataObject<?>>() {}.getRawType();
+
+    public static DataKey<Integer, IKeyedDataObject<?>> VERSION = DataKey.of(TypeTokens.INTEGER, keyedDataObjectClass, "version");
 
     public static DataKey<String, IUserDataObject> LAST_KNOWN_NAME = DataKey.of(TypeTokens.STRING, IUserDataObject.class, "lastKnownName");
 
