@@ -14,7 +14,8 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.spawn.datamodules.SpawnWorldDataModule;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
+import io.github.nucleuspowered.nucleus.modules.spawn.SpawnModule;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -74,8 +75,12 @@ public class TeleportWorldCommand extends AbstractCommand<CommandSource> {
         }
 
         // Rotate.
-        Nucleus.getNucleus().getWorldDataManager().getWorld(worldProperties.getUniqueId())
-                .ifPresent(x -> x.get(SpawnWorldDataModule.class).getSpawnRotation().ifPresent(y -> new Transform<World>(world, pos, y)));
+        if (Nucleus.getNucleus().isModuleLoaded(SpawnModule.ID)) {
+            Nucleus.getNucleus().getStorageManager().getWorldService()
+                    .getOnThread(worldProperties.getUniqueId())
+                    .flatMap(x -> x.get(SpawnKeys.WORLD_SPAWN_ROTATION))
+                    .ifPresent(y -> new Transform<World>(world, pos, y));
+        }
         if (src instanceof Player && ((Player) src).getUniqueId().equals(player.getUniqueId())) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.world.teleport.success", worldProperties.getWorldName()));
         } else {

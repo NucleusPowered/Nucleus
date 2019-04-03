@@ -24,6 +24,7 @@ import io.github.nucleuspowered.nucleus.modules.teleport.TeleportUserPrefKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportAcceptCommand;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportDenyCommand;
 import io.github.nucleuspowered.nucleus.modules.teleport.config.TeleportConfigAdapter;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -396,6 +397,11 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
                 return false;
             }
 
+            IUserDataObject userDataObject = Nucleus.getNucleus()
+                    .getStorageManager()
+                    .getUserService()
+                    .getOrNewOnThread(this.from);
+
             UserPreferenceService ups = Nucleus.getNucleus().getInternalServiceManager()
                     .getServiceUnchecked(UserPreferenceService.class);
             boolean target = ups.get(this.to, TeleportUserPrefKeys.TELEPORT_TARGETABLE).orElse(true);
@@ -407,31 +413,32 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
                 return false;
             }
 
-            ModularUserService fromPlayer = Nucleus.getNucleus().getUserDataManager().get(this.from).get();
+            NameUtil nameUtil = Nucleus.getNucleus().getNameUtil();
+            Optional<Player> fromPlayer = Sponge.getServer().getPlayer(this.from);
+            Optional<Player> toPlayer = Sponge.getServer().getPlayer(this.to);
+            if (!fromPlayer.isPresent()) {
+                sendMessageTo(source, "teleport.fail.offlinenamed", nameUtil.getName(this.from));
+                return false;
+            } else if (!toPlayer.isPresent()) {
+                sendMessageTo(source, "teleport.fail.offlinenamed", nameUtil.getName(this.to));
+                return false;
+            }
+
             if (Nucleus.getNucleus().isModuleLoaded(JailModule.ID) &&
                     fromPlayer.get(JailUserDataModule.class).getJailData().isPresent()) {
                 // Don't teleport a jailed subject.
                 if (!this.silentSource) {
-                    sendMessageTo(source,"teleport.fail.jailed", fromPlayer.getUser().getName());
+                    sendMessageTo(source,"teleport.fail.jailed", nameUtil.getName(this.from));
                 }
 
-                return false;
-            }
-
-            if (!fromPlayer.getPlayer().isPresent()) {
-                // failed
-                sendMessageTo(source, "teleport.fail.offlinenamed", fromPlayer.getUser().getName());
-                return false;
-            } else if (!toPlayer.getPlayer().isPresent()) {
-                sendMessageTo(source, "teleport.fail.offlinenamed", toPlayer.getUser().getName());
                 return false;
             }
 
             TeleportTask tt;
             if (this.cost > 0 && this.charge != null) {
                 tt = new TeleportTask(source,
-                        fromPlayer.getPlayer().get(),
-                        toPlayer.getPlayer().get(),
+                        fromPlayer.get(),
+                        toPlayer.get(),
                         Util.getUserFromUUID(this.charge).get(),
                         this.cost,
                         this.safe,
@@ -441,8 +448,8 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
                 );
             } else {
                 tt = new TeleportTask(source,
-                        fromPlayer.getPlayer().get(),
-                        toPlayer.getPlayer().get(),
+                        fromPlayer.get(),
+                        toPlayer.get(),
                         null,
                         0,
                         this.safe,
@@ -453,7 +460,7 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
             }
 
             if (this.warmupTime > 0) {
-                sendMessageTo(fromPlayer.getPlayer().get(), "teleport.warmup", this.warmupTime);
+                sendMessageTo(fromPlayer.get(), "teleport.warmup", this.warmupTime);
                 Nucleus.getNucleus().getWarmupManager().addWarmup(
                         this.from, Sponge.getScheduler().createTaskBuilder().delay(this.warmupTime, TimeUnit.SECONDS)
                         .execute(tt).name("NucleusPlugin - Teleport Waiter").submit(Nucleus.getNucleus()));
