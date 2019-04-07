@@ -14,12 +14,9 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchLocationException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Inmate;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
-import io.github.nucleuspowered.nucleus.api.nucleusdata.WarpCategory;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpCategoryDataNode;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpNode;
+import io.github.nucleuspowered.nucleus.internal.LocationData;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.data.EndTimestamp;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
@@ -30,14 +27,9 @@ import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.JailKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
-import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.events.JailEvent;
-import io.github.nucleuspowered.nucleus.modules.warp.WarpKeys;
-import io.github.nucleuspowered.nucleus.modules.warp.data.WarpCategoryData;
-import io.github.nucleuspowered.nucleus.modules.warp.data.WarpData;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
@@ -63,111 +55,75 @@ import java.util.*;
 @APIService(NucleusJailService.class)
 public class JailHandler implements NucleusJailService, ContextCalculator<Subject>, ServiceBase, IDataManagerTrait {
 
-    @Nullable private Map<String, LocationNode> warpCache = null;
-
-    public Map<String, LocationNode> getWarpCache() {
-        if (this.warpCache == null) {
-            updateCache();
-        }
-
-        return this.warpCache;
-    }
-
-    public void updateCache() {
-        this.warpCache = new HashMap<>();
-        IGeneralDataObject dataObject = Nucleus.getNucleus()
-                .getStorageManager()
-                .getGeneralService()
-                .getOrNewOnThread();
-
-        dataObject.get(JailKeys.JAILS)
-                .orElseGet(ImmutableMap::of)
-                .forEach((key, value) -> this.warpCache.put(
-                        key.toLowerCase(),
-                        new WarpData(
-                                value.getCategory().orElse(null),
-                                value.getCost(),
-                                value.getDescription(),
-                                value.getWorld(),
-                                value.getPosition(),
-                                value.getRotation(),
-                                key
-                        )
-                ));
-
-        dataObject.get(WarpKeys.WARP_CATEGORIES)
-                .orElseGet(ImmutableMap::of)
-                .forEach((key, value) -> this.warpCategoryCache.put(
-                        key.toLowerCase(),
-                        new WarpCategoryData(key,
-                                value.getDisplayName().orElse(null),
-                                value.getDescription().orElse(null))
-                ));
-    }
-
-    public void saveFromCache() {
-        if (this.warpCache == null || this.warpCategoryCache == null) {
-            return; // not loaded
-        }
-
-        Map<String, WarpNode> warpNodeMap = new HashMap<>();
-        for (Warp warp : this.warpCache.values()) {
-            warpNodeMap.put(
-                    warp.getName(),
-                    new WarpNode(
-                            warp.getWorldUUID(),
-                            warp.getPosition(),
-                            warp.getRotation(),
-                            warp.getCost().orElse(-1d),
-                            warp.getCategory().orElse(null),
-                            warp.getDescription().orElse(null)
-                    )
-            );
-        }
-
-        Map<String, WarpCategoryDataNode> categoryMap = new HashMap<>();
-        for (WarpCategory warpCategory : this.warpCategoryCache.values()) {
-            categoryMap.put(
-                    warpCategory.getId().toLowerCase(),
-                    new WarpCategoryDataNode(
-                            TextSerializers.JSON.serialize(warpCategory.getDisplayName()),
-                            warpCategory.getDescription().map(TextSerializers.JSON::serialize).orElse(null)
-                    ));
-        }
-
-        IGeneralDataObject dataObject = Nucleus.getNucleus()
-                .getStorageManager()
-                .getGeneralService()
-                .getOrNewOnThread();
-        dataObject.set(WarpKeys.WARP_NODES, warpNodeMap);
-        dataObject.set(WarpKeys.WARP_CATEGORIES, categoryMap);
-        Nucleus.getNucleus().getStorageManager().getGeneralService().save(dataObject);
-    }
-
+    @Nullable private Map<String, NamedLocation> jailLocations = null;
 
     // Used for the context calculator
     private final Map<UUID, Context> jailDataCache = Maps.newHashMap();
     private final static Context jailContext = new Context(NucleusJailService.JAILED_CONTEXT, "true");
 
+
+    public Map<String, NamedLocation> getJailLocations() {
+        if (this.jailLocations == null) {
+            updateCache();
+        }
+
+        return this.jailLocations;
+    }
+
+    public void updateCache() {
+        this.jailLocations = new HashMap<>();
+        IGeneralDataObject dataObject = Nucleus.getNucleus()
+                .getStorageManager()
+                .getGeneralService()
+                .getOrNewOnThread();
+
+        Map<String, NamedLocation> jails = dataObject.get(JailKeys.JAILS).orElseGet(HashMap::new);
+        jails.forEach((k, v) -> this.jailLocations.put(k.toLowerCase(), v));
+    }
+
+    public void saveFromCache() {
+        if (this.jailLocations == null) {
+            return; // not loaded
+        }
+
+        IGeneralDataObject dataObject = Nucleus.getNucleus()
+                .getStorageManager()
+                .getGeneralService()
+                .getOrNewOnThread();
+        dataObject.set(JailKeys.JAILS, new HashMap<>(this.jailLocations));
+        Nucleus.getNucleus().getStorageManager().getGeneralService().save(dataObject);
+    }
+
     @Override
     public Optional<NamedLocation> getJail(String warpName) {
-        return getGeneral().get(JailKeys.JAILS)
-                .map(x -> x.get(warpName)).getJailLocation(warpName);
+        return Optional.ofNullable(getJailLocations().get(warpName.toLowerCase()));
     }
 
     @Override
     public boolean removeJail(String warpName) {
-        return getModule().removeJail(warpName);
+        return getJailLocations().remove(warpName.toLowerCase()) != null;
     }
 
     @Override
     public boolean setJail(String warpName, Location<World> location, Vector3d rotation) {
-        return getModule().addJail(warpName, location, rotation);
+        Map<String, NamedLocation> locationMap = getJailLocations();
+        if (locationMap.containsKey(warpName.toLowerCase())) {
+            return false;
+        }
+
+        locationMap.put(warpName.toLowerCase(), new LocationData(
+                warpName,
+                location.getExtent().getUniqueId(),
+                location.getPosition(),
+                rotation
+        ));
+        saveFromCache();
+        return true;
     }
 
     @Override
     public Map<String, NamedLocation> getJails() {
-        return getModule().getJails();
+        return ImmutableMap.copyOf(getJailLocations());
     }
 
     public boolean isPlayerJailedCached(User user) {
@@ -204,6 +160,16 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         }
     }
 
+    public boolean shouldJailOnNextLogin(User user) {
+        return getOrCreateUserOnThread(user.getUniqueId()).get(JailKeys.JAIL_ON_NEXT_LOGIN).orElse(false);
+    }
+
+    public void setJailOnNextLogin(User user, boolean r) {
+        IUserDataObject u = getOrCreateUserOnThread(user.getUniqueId());
+        u.set(JailKeys.JAIL_ON_NEXT_LOGIN, r);
+        saveUser(user.getUniqueId(), u);
+    }
+
     @Override
     public boolean jailPlayer(User victim, String jail, CommandSource jailer, String reason) throws NoSuchLocationException {
         Preconditions.checkNotNull(victim);
@@ -216,10 +182,8 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
     }
 
     public boolean jailPlayer(User user, JailData data) {
-        IUserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
-        JailUserDataModule jailUserDataModule = udo.get(JailUserDataModule.class);
-
-        if (jailUserDataModule.getJailData().isPresent()) {
+        IUserDataObject udo = getOrCreateUserOnThread(user.getUniqueId());
+        if (udo.get(JailKeys.JAIL_DATA).isPresent()) {
             return false;
         }
 
@@ -237,7 +201,7 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
             return false;
         }
 
-        jailUserDataModule.setJailData(data);
+        udo.set(JailKeys.JAIL_DATA, data);
         if (user.isOnline()) {
             Sponge.getScheduler().createSyncExecutor(Nucleus.getNucleus()).execute(() -> {
                 Player player = user.getPlayer().get();
@@ -248,11 +212,11 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
                 udo.set(FlyKeys.FLY_TOGGLE, false);
             });
         } else {
-            jailUserDataModule.setJailOnNextLogin(true);
+            udo.set(JailKeys.JAIL_ON_NEXT_LOGIN, true);
         }
 
+        saveUser(user.getUniqueId(), udo);
         this.jailDataCache.put(user.getUniqueId(), new Context(NucleusJailService.JAIL_CONTEXT, data.getJailName()));
-        udo.set(jailUserDataModule);
         saveUser(user.getUniqueId(), udo);
 
         Sponge.getEventManager().post(new JailEvent.Jailed(
@@ -266,6 +230,12 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         return true;
     }
 
+    public void updateJailData(User user, JailData data) {
+        IUserDataObject udo = getOrCreateUserOnThread(user.getUniqueId());
+        udo.set(JailKeys.JAIL_DATA, data);
+        saveUser(user.getUniqueId(), udo);
+    }
+
     // Test
     @Override
     public boolean unjailPlayer(User user) {
@@ -273,9 +243,8 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
     }
 
     public boolean unjailPlayer(User user, Cause cause) {
-        UserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
-        final JailUserDataModule jailUserDataModule = udo.get(JailUserDataModule.class);
-        Optional<JailData> ojd = jailUserDataModule.getJailData();
+        IUserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
+        Optional<JailData> ojd = udo.get(JailKeys.JAIL_DATA);
         if (!ojd.isPresent()) {
             return false;
         }
@@ -289,16 +258,16 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
                 player.sendMessage(NucleusPlugin.getNucleus().getMessageProvider().getTextMessageWithFormat("jail.elapsed"));
 
                 // Remove after the teleport for the back data.
-                jailUserDataModule.removeJailData();
+                udo.remove(JailKeys.JAIL_DATA);
+                udo.remove(JailKeys.JAIL_ON_NEXT_LOGIN);
             });
         } else {
             udo.set(CoreKeys.LOCATION_ON_LOGIN,
                     new LocationNode(ow.orElseGet(() -> new Location<>(Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getUniqueId()).get(),
                             Sponge.getServer().getDefaultWorld().get().getSpawnPosition()))));
-            jailUserDataModule.removeJailData();
+            udo.remove(JailKeys.JAIL_DATA);
         }
 
-        udo.set(jailUserDataModule);
         saveUser(user.getUniqueId(), udo);
 
         Sponge.getEventManager().post(new JailEvent.Unjailed(user, cause));

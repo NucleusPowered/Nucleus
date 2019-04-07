@@ -37,7 +37,7 @@ public class WarpSerialiser implements TypeSerializer<Warp> {
                 NamedLocationSerialiser.getWorldUUID(value),
                 NamedLocationSerialiser.getPosition(value),
                 NamedLocationSerialiser.getRotation(value),
-                String.valueOf(value.getKey()).toLowerCase()
+                NamedLocationSerialiser.getName(value)
         );
     }
 

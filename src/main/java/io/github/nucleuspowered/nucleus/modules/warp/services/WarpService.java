@@ -65,8 +65,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
                 .getGeneralService()
                 .getOrNewOnThread();
 
-                this.warpCache.putAll(dataObject.get(WarpKeys.WARP_NODES)
-                    .orElseGet(ImmutableMap::of));
+        dataObject.get(WarpKeys.WARP_NODES)
+                .orElseGet(ImmutableMap::of)
+                .forEach((key, value) -> {
+                    this.warpCache.put(key.toLowerCase(), value);
+                });
 
                 this.warpCategoryCache.putAll(dataObject.get(WarpKeys.WARP_CATEGORIES)
                                 .orElseGet(ImmutableMap::of));

@@ -9,7 +9,6 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.events.NucleusSendToSpawnEvent;
 import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
@@ -18,7 +17,6 @@ import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.JailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
-import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.services.JailHandler;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.PermissionMessageChannel;
@@ -38,12 +36,11 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import javax.inject.Inject;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 public class JailListener implements Reloadable, ListenerBase {
 
@@ -65,12 +62,12 @@ public class JailListener implements Reloadable, ListenerBase {
     // fires after spawn login event
     @Listener
     public void onPlayerLogin(final NucleusOnLoginEvent event, @Getter("getTargetUser") User user, @Getter("getUserService") IUserDataObject qs) {
-        JailUserDataModule userDataModule = qs.get(JailUserDataModule.class);
-        if (!userDataModule.getJailData().isPresent()) {
+        Optional<JailData> optionalJailData = this.handler.getPlayerJailDataInternal(user);
+        if (!optionalJailData.isPresent()) {
             return;
         }
 
-        JailData jd = userDataModule.getJailData().get();
+        JailData jd = optionalJailData.get();
 
         // Send them back to where they should be.
         Optional<NamedLocation> owl = this.handler.getWarpLocation(user);
@@ -85,12 +82,13 @@ public class JailListener implements Reloadable, ListenerBase {
         event.setTo(owl.get().getTransform().get());
 
         // Jailing the subject if we need to.
-        if (userDataModule.jailOnNextLogin()) {
+        if (this.handler.shouldJailOnNextLogin(user)) {
             // only set previous location if the player hasn't been moved to the jail before.
             if (event.getFrom().equals(owl.get().getTransform().get())) {
                 jd.setPreviousLocation(event.getFrom().getLocation());
             }
-            userDataModule.setJailData(jd);
+
+            this.handler.updateJailData(user, jd);
             qs.set(FlyKeys.FLY_TOGGLE, false);
         }
     }
@@ -103,16 +101,10 @@ public class JailListener implements Reloadable, ListenerBase {
     @Listener(order = Order.LATE)
     public void onPlayerJoin(final ClientConnectionEvent.Join event) {
         final Player user = event.getTargetEntity();
-        Optional<ModularUserService> oqs = Nucleus.getNucleus().getUserDataManager().get(user);
-        if (!oqs.isPresent()) {
-            return;
-        }
-
-        JailUserDataModule qs = oqs.get().get(JailUserDataModule.class);
 
         // Jailing the subject if we need to.
         Optional<JailData> data = this.handler.getPlayerJailDataInternal(user);
-        if (qs.jailOnNextLogin() && data.isPresent()) {
+        if (this.handler.shouldJailOnNextLogin(user) && data.isPresent()) {
             // It exists.
             NamedLocation owl = this.handler.getWarpLocation(user).get();
             JailData jd = data.get();
@@ -130,11 +122,11 @@ public class JailListener implements Reloadable, ListenerBase {
             user.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("standard.reasoncoloured", jd.getReason()));
         }
 
-        qs.setJailOnNextLogin(false);
+        this.handler.setJailOnNextLogin(user, false);
 
         // Kick off a scheduled task to do jail time checks.
         Sponge.getScheduler().createTaskBuilder().async().delay(500, TimeUnit.MILLISECONDS).execute(() -> {
-            Optional<JailData> omd = qs.getJailData();
+            Optional<JailData> omd = this.handler.getPlayerJailDataInternal(user);
             if (omd.isPresent()) {
                 JailData md = omd.get();
                 md.nextLoginToTimestamp();

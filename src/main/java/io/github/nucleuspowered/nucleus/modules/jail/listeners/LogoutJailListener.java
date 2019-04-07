@@ -4,14 +4,12 @@
  */
 package io.github.nucleuspowered.nucleus.modules.jail.listeners;
 
-
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.modules.jail.JailModule;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
-import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
+import io.github.nucleuspowered.nucleus.modules.jail.services.JailHandler;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.Getter;
@@ -23,16 +21,16 @@ import java.util.Optional;
 
 public class LogoutJailListener implements ListenerBase.Conditional {
 
+    private final JailHandler handler = getServiceUnchecked(JailHandler.class);
+
     @Listener
     public void onLogout(ClientConnectionEvent.Disconnect event, @Getter("getTargetEntity") Player player) {
-        Nucleus.getNucleus().getUserDataManager().get(player).ifPresent(mus -> {
-            Optional<JailData> ojd = mus.get(JailUserDataModule.class).getJailData();
-            ojd.ifPresent(jailData -> {
+        this.handler.getPlayerJailDataInternal(player)
+                    .ifPresent(jailData -> {
                 Optional<Instant> end = jailData.getEndTimestamp();
                 end.ifPresent(instant -> jailData.setTimeFromNextLogin(Duration.between(Instant.now(), instant)));
-                mus.get(JailUserDataModule.class).setJailData(jailData);
+                this.handler.updateJailData(player, jailData);
             });
-        });
     }
 
     @Override public boolean shouldEnable() {

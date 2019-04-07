@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.jail;
 
-import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.internal.TypeTokens;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
@@ -19,6 +19,6 @@ public class JailKeys {
     public static final DataKey<Boolean, IUserDataObject> JAIL_ON_NEXT_LOGIN =
             DataKey.of(false, TypeTokens.BOOLEAN, IUserDataObject.class, "jailOnNextLogin");
 
-    public static final DataKey.MapKey<String, LocationNode, IGeneralDataObject> JAILS =
-            DataKey.ofMap(TypeTokens.STRING, TypeTokens.LOCATION_NODE, IGeneralDataObject.class, "jails");
+    public static final DataKey.MapKey<String, NamedLocation, IGeneralDataObject> JAILS =
+            DataKey.ofMap(TypeTokens.STRING, TypeTokens.NAMEDLOCATION, IGeneralDataObject.class, "jails");
 }

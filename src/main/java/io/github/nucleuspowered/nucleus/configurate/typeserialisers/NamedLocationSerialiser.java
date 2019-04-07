@@ -31,7 +31,7 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
         Vector3d rot = getRotation(value);
 
         return new LocationData(
-                String.valueOf(value.getKey()),
+                getName(value),
                 getWorldUUID(value),
                 pos,
                 rot
@@ -50,6 +50,10 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
         }
 
         serializeLocation(obj, value);
+    }
+
+    static String getName(ConfigurationNode value) {
+        return value.getNode("name").getString(String.valueOf(value.getKey()));
     }
 
     static UUID getWorldUUID(ConfigurationNode value) throws ObjectMappingException {
@@ -82,5 +86,7 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
         value.getNode("rotx").setValue(obj.getRotation().getX());
         value.getNode("roty").setValue(obj.getRotation().getY());
         value.getNode("rotz").setValue(obj.getRotation().getZ());
+
+        value.getNode("name").setValue(obj.getName());
     }
 }
