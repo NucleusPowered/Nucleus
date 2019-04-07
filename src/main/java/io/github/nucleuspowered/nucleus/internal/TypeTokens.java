@@ -6,9 +6,12 @@ package io.github.nucleuspowered.nucleus.internal;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.WarpCategory;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpCategoryDataNode;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpNode;
+import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.modules.mute.data.MuteData;
 import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
 import io.github.nucleuspowered.nucleus.modules.warn.data.WarnData;
@@ -47,7 +50,15 @@ public final class TypeTokens {
 
     public static final TypeToken<WarnData> WARN_DATA = TypeToken.of(WarnData.class);
 
-    public static final TypeToken<WarpNode> WARP_NODE = TypeToken.of(WarpNode.class);
-
     public static final TypeToken<WarpCategoryDataNode> WARP_CATEGORY_DATA_NODE = TypeToken.of(WarpCategoryDataNode.class);
+
+    public static final TypeToken<JailData> JAIL_DATA = TypeToken.of(JailData.class);
+
+    public static final TypeToken<Warp> WARP = TypeToken.of(Warp.class);
+
+    public static final TypeToken<WarpCategory> WARP_CATEGORY = TypeToken.of(WarpCategory.class);
+
+    public static final TypeToken<UUID> UUID = TypeToken.of(UUID.class);
+
+    public static final TypeToken<NamedLocation> NAMEDLOCATION = TypeToken.of(NamedLocation.class);
 }

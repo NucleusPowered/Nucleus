@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.jail.services;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
@@ -13,8 +14,12 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchLocationException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Inmate;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.WarpCategory;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpCategoryDataNode;
+import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.data.EndTimestamp;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
@@ -23,10 +28,14 @@ import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
+import io.github.nucleuspowered.nucleus.modules.jail.JailKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
-import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailGeneralDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.jail.events.JailEvent;
+import io.github.nucleuspowered.nucleus.modules.warp.WarpKeys;
+import io.github.nucleuspowered.nucleus.modules.warp.data.WarpCategoryData;
+import io.github.nucleuspowered.nucleus.modules.warp.data.WarpData;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
@@ -45,29 +54,105 @@ import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @NonnullByDefault
 @APIService(NucleusJailService.class)
 public class JailHandler implements NucleusJailService, ContextCalculator<Subject>, ServiceBase, IDataManagerTrait {
 
+    @Nullable private Map<String, LocationNode> warpCache = null;
+
+    public Map<String, LocationNode> getWarpCache() {
+        if (this.warpCache == null) {
+            updateCache();
+        }
+
+        return this.warpCache;
+    }
+
+    public void updateCache() {
+        this.warpCache = new HashMap<>();
+        IGeneralDataObject dataObject = Nucleus.getNucleus()
+                .getStorageManager()
+                .getGeneralService()
+                .getOrNewOnThread();
+
+        dataObject.get(JailKeys.JAILS)
+                .orElseGet(ImmutableMap::of)
+                .forEach((key, value) -> this.warpCache.put(
+                        key.toLowerCase(),
+                        new WarpData(
+                                value.getCategory().orElse(null),
+                                value.getCost(),
+                                value.getDescription(),
+                                value.getWorld(),
+                                value.getPosition(),
+                                value.getRotation(),
+                                key
+                        )
+                ));
+
+        dataObject.get(WarpKeys.WARP_CATEGORIES)
+                .orElseGet(ImmutableMap::of)
+                .forEach((key, value) -> this.warpCategoryCache.put(
+                        key.toLowerCase(),
+                        new WarpCategoryData(key,
+                                value.getDisplayName().orElse(null),
+                                value.getDescription().orElse(null))
+                ));
+    }
+
+    public void saveFromCache() {
+        if (this.warpCache == null || this.warpCategoryCache == null) {
+            return; // not loaded
+        }
+
+        Map<String, WarpNode> warpNodeMap = new HashMap<>();
+        for (Warp warp : this.warpCache.values()) {
+            warpNodeMap.put(
+                    warp.getName(),
+                    new WarpNode(
+                            warp.getWorldUUID(),
+                            warp.getPosition(),
+                            warp.getRotation(),
+                            warp.getCost().orElse(-1d),
+                            warp.getCategory().orElse(null),
+                            warp.getDescription().orElse(null)
+                    )
+            );
+        }
+
+        Map<String, WarpCategoryDataNode> categoryMap = new HashMap<>();
+        for (WarpCategory warpCategory : this.warpCategoryCache.values()) {
+            categoryMap.put(
+                    warpCategory.getId().toLowerCase(),
+                    new WarpCategoryDataNode(
+                            TextSerializers.JSON.serialize(warpCategory.getDisplayName()),
+                            warpCategory.getDescription().map(TextSerializers.JSON::serialize).orElse(null)
+                    ));
+        }
+
+        IGeneralDataObject dataObject = Nucleus.getNucleus()
+                .getStorageManager()
+                .getGeneralService()
+                .getOrNewOnThread();
+        dataObject.set(WarpKeys.WARP_NODES, warpNodeMap);
+        dataObject.set(WarpKeys.WARP_CATEGORIES, categoryMap);
+        Nucleus.getNucleus().getStorageManager().getGeneralService().save(dataObject);
+    }
+
+
     // Used for the context calculator
     private final Map<UUID, Context> jailDataCache = Maps.newHashMap();
     private final static Context jailContext = new Context(NucleusJailService.JAILED_CONTEXT, "true");
 
-    private JailGeneralDataModule getModule() {
-        return getGeneral().get(JailGeneralDataModule.class);
-    }
-
     @Override
     public Optional<NamedLocation> getJail(String warpName) {
-        return getModule().getJailLocation(warpName);
+        return getGeneral().get(JailKeys.JAILS)
+                .map(x -> x.get(warpName)).getJailLocation(warpName);
     }
 
     @Override
@@ -101,8 +186,8 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
 
     public Optional<JailData> getPlayerJailDataInternal(User user) {
         try {
-            Optional<JailData> data = getUser(user.getUniqueId()).join()
-                    .map(y -> y.get(JailUserDataModule.class).getJailData().orElse(null));
+            Optional<JailData> data = getUserOnThread(user.getUniqueId())
+                    .flatMap(y -> y.get(JailKeys.JAIL_DATA));
             if (data.isPresent()) {
                 this.jailDataCache.put(user.getUniqueId(), new Context(NucleusJailService.JAIL_CONTEXT, data.get().getJailName()));
             } else {

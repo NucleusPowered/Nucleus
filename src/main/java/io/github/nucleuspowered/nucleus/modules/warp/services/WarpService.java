@@ -12,8 +12,6 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.WarpCategory;
 import io.github.nucleuspowered.nucleus.api.service.NucleusWarpService;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpCategoryDataNode;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.WarpNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpKeys;
@@ -21,7 +19,6 @@ import io.github.nucleuspowered.nucleus.modules.warp.data.WarpCategoryData;
 import io.github.nucleuspowered.nucleus.modules.warp.data.WarpData;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -68,29 +65,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
                 .getGeneralService()
                 .getOrNewOnThread();
 
-                dataObject.get(WarpKeys.WARP_NODES)
-                    .orElseGet(ImmutableMap::of)
-                    .forEach((key, value) -> this.warpCache.put(
-                        key.toLowerCase(),
-                        new WarpData(
-                                value.getCategory().orElse(null),
-                                value.getCost(),
-                                value.getDescription(),
-                                value.getWorld(),
-                                value.getPosition(),
-                                value.getRotation(),
-                                key
-                        )
-                ));
+                this.warpCache.putAll(dataObject.get(WarpKeys.WARP_NODES)
+                    .orElseGet(ImmutableMap::of));
 
-                dataObject.get(WarpKeys.WARP_CATEGORIES)
-                        .orElseGet(ImmutableMap::of)
-                        .forEach((key, value) -> this.warpCategoryCache.put(
-                                key.toLowerCase(),
-                                new WarpCategoryData(key,
-                                        value.getDisplayName().orElse(null),
-                                        value.getDescription().orElse(null))
-                        ));
+                this.warpCategoryCache.putAll(dataObject.get(WarpKeys.WARP_CATEGORIES)
+                                .orElseGet(ImmutableMap::of));
     }
 
     public void saveFromCache() {
@@ -98,37 +77,12 @@ public class WarpService implements NucleusWarpService, ServiceBase {
             return; // not loaded
         }
 
-        Map<String, WarpNode> warpNodeMap = new HashMap<>();
-        for (Warp warp : this.warpCache.values()) {
-            warpNodeMap.put(
-                    warp.getName(),
-                    new WarpNode(
-                            warp.getWorldUUID(),
-                            warp.getPosition(),
-                            warp.getRotation(),
-                            warp.getCost().orElse(-1d),
-                            warp.getCategory().orElse(null),
-                            warp.getDescription().orElse(null)
-                    )
-            );
-        }
-
-        Map<String, WarpCategoryDataNode> categoryMap = new HashMap<>();
-        for (WarpCategory warpCategory : this.warpCategoryCache.values()) {
-            categoryMap.put(
-                    warpCategory.getId().toLowerCase(),
-                    new WarpCategoryDataNode(
-                            TextSerializers.JSON.serialize(warpCategory.getDisplayName()),
-                            warpCategory.getDescription().map(TextSerializers.JSON::serialize).orElse(null)
-                    ));
-        }
-
         IGeneralDataObject dataObject = Nucleus.getNucleus()
                 .getStorageManager()
                 .getGeneralService()
                 .getOrNewOnThread();
-        dataObject.set(WarpKeys.WARP_NODES, warpNodeMap);
-        dataObject.set(WarpKeys.WARP_CATEGORIES, categoryMap);
+        dataObject.set(WarpKeys.WARP_NODES, new HashMap<>(this.warpCache));
+        dataObject.set(WarpKeys.WARP_CATEGORIES, new HashMap<>(this.warpCategoryCache));
         Nucleus.getNucleus().getStorageManager().getGeneralService().save(dataObject);
     }
 
