@@ -48,14 +48,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 public class CoreListener implements Reloadable, ListenerBase, InternalServiceManagerTrait, IDataManagerTrait {
 
-    private final Set<UUID> firstPlayers = new HashSet<>();
     @Nullable private NucleusTextTemplate getKickOnStopMessage = null;
     @Nullable private final URL url;
     private boolean warnOnWildcard = true;
@@ -70,6 +66,13 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
         this.url = u;
     }
 
+    @Listener(order = Order.POST)
+    public void onPlayerAuth(final ClientConnectionEvent.Auth event) {
+        // Create user data if required, and place into cache.
+        // As this is already async, load on thread.
+        Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(event.getProfile().getUniqueId());
+    }
+
     /* (non-Javadoc)
      * We do this last to avoid interfering with other modules.
      */
@@ -77,7 +80,7 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
     public void onPlayerLoginLast(final ClientConnectionEvent.Login event, @Getter("getProfile") GameProfile profile,
         @Getter("getTargetUser") User user) {
 
-        IUserDataObject udo = getOrCreateUser(user.getUniqueId()).join();
+        IUserDataObject udo = getOrCreateUserOnThread(user.getUniqueId());
 
         if (event.getFromTransform().equals(event.getToTransform())) {
             // Check this

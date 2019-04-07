@@ -14,7 +14,6 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.warn.data.WarnData;
 import io.github.nucleuspowered.nucleus.modules.warn.services.WarnHandler;
-import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -58,7 +57,7 @@ public class RemoveWarningCommand extends AbstractCommand<CommandSource> {
             return CommandResult.success();
         }
 
-        if (this.handler.removeWarning(user, result.warnData, removePermanently, CauseStackHelper.createCause(src))) {
+        if (this.handler.removeWarning(user, result.warnData, removePermanently, cause)) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.removewarning.success", user.getName()));
             return CommandResult.success();
         }

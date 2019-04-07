@@ -2,15 +2,15 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.note;
+package io.github.nucleuspowered.nucleus.modules.warn;
 
 import io.github.nucleuspowered.nucleus.internal.TypeTokens;
-import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
+import io.github.nucleuspowered.nucleus.modules.warn.data.WarnData;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
 
-public class NoteKeys {
+public class WarnKeys {
 
-    public final static DataKey.ListKey<NoteData, IUserDataObject> NOTE_DATA =
-            DataKey.ofList(TypeTokens.NOTE_DATA, IUserDataObject.class, "notes");
+    public static final DataKey.ListKey<WarnData, IUserDataObject> WARNINGS
+            = DataKey.ofList(TypeTokens.WARN_DATA, IUserDataObject.class, "warnings");
 }

@@ -4,12 +4,12 @@
  */
 package io.github.nucleuspowered.nucleus.modules.warn.commands;
 
-import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.internal.annotations.RunAsync;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.warn.data.WarnData;
 import io.github.nucleuspowered.nucleus.modules.warn.services.WarnHandler;
@@ -38,17 +38,23 @@ public class ClearWarningsCommand extends AbstractCommand<CommandSource> {
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.flags().flag("-all", "a").flag("-remove", "r").flag("-expired", "e").buildWith(
-                        GenericArguments.onlyOne(GenericArguments.user(Text.of(this.playerKey))))};
+        return new CommandElement[] {
+                GenericArguments.flags()
+                        .flag("-all", "a")
+                        .flag("-remove", "r")
+                        .flag("-expired", "e")
+                        .buildWith(
+                                GenericArguments.onlyOne(GenericArguments.user(Text.of(this.playerKey))))
+        };
     }
 
     @Override
-    public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) {
-        User user = args.<User>getOne(this.playerKey).get();
+    public CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) throws ReturnMessageException {
+        User user = args.requireOne(this.playerKey);
 
         List<WarnData> warnings = this.handler.getWarningsInternal(user);
         if (warnings.isEmpty()) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.checkwarnings.none", user.getName()));
+            sendMessageTo(src, "command.checkwarnings.none", user.getName());
             return CommandResult.success();
         }
 
@@ -58,17 +64,19 @@ public class ClearWarningsCommand extends AbstractCommand<CommandSource> {
         //If the flag --remove is used then remove all active warnings.
         boolean removeActive = false;
         boolean removeExpired = false;
-        Text message = Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.clearwarnings.success", user.getName());
+        Text message;
         if (args.hasAny("all")) {
             removeActive = true;
             removeExpired = true;
-            message = Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.clearwarnings.all", user.getName());
+            message = getMessageFor(src, "command.clearwarnings.all", user.getName());
         } else if (args.hasAny("remove")) {
             removeActive = true;
-            message = Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.clearwarnings.remove", user.getName());
+            message = getMessageFor(src, "command.clearwarnings.remove", user.getName());
         } else if (args.hasAny("expired")) {
             removeExpired = true;
-            message = Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.clearwarnings.expired", user.getName());
+            message = getMessageFor(src, "command.clearwarnings.expired", user.getName());
+        } else {
+            message = getMessageFor(src, "command.clearwarnings.success", user.getName());
         }
 
         if (this.handler.clearWarnings(user, removeActive, removeExpired, CauseStackHelper.createCause(src))) {
@@ -76,7 +84,6 @@ public class ClearWarningsCommand extends AbstractCommand<CommandSource> {
             return CommandResult.success();
         }
 
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.clearwarnings.failure", user.getName()));
-        return CommandResult.empty();
+        throw ReturnMessageException.fromKey(src, "command.clearwarnings.failure", user.getName());
     }
 }
