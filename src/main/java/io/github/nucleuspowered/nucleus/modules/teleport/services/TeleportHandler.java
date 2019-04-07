@@ -5,6 +5,8 @@
 package io.github.nucleuspowered.nucleus.modules.teleport.services;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.NameUtil;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
@@ -18,8 +20,6 @@ import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTr
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
 import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
-import io.github.nucleuspowered.nucleus.modules.jail.JailModule;
-import io.github.nucleuspowered.nucleus.modules.jail.datamodules.JailUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.teleport.TeleportUserPrefKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportAcceptCommand;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportDenyCommand;
@@ -39,11 +39,9 @@ import org.spongepowered.api.text.format.TextStyles;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -53,8 +51,17 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
     private final Map<UUID, TeleportPrep> ask = new HashMap<>();
     private final String acceptPerm = getPermissionHandlerFor(TeleportAcceptCommand.class).getBase();
     private final String denyPerm = getPermissionHandlerFor(TeleportDenyCommand.class).getBase();
+    private final List<BiFunction<Player, CommandSource, Text>> playerChecks = Lists.newArrayList();
 
     private static final String tptoggleBypassPermission = PermissionRegistry.PERMISSIONS_PREFIX + "teleport.tptoggle.exempt";
+
+    public void registerPlayerCheck(BiFunction<Player, CommandSource, Text> playerPredicate) {
+        this.playerChecks.add(playerPredicate);
+    }
+
+    List<BiFunction<Player, CommandSource, Text>> getPlayerChecks() {
+        return ImmutableList.copyOf(this.playerChecks);
+    }
 
     public TeleportBuilder getBuilder() {
         return new TeleportBuilder();
@@ -424,14 +431,17 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
                 return false;
             }
 
-            if (Nucleus.getNucleus().isModuleLoaded(JailModule.ID) &&
-                    fromPlayer.get(JailUserDataModule.class).getJailData().isPresent()) {
-                // Don't teleport a jailed subject.
-                if (!this.silentSource) {
-                    sendMessageTo(source,"teleport.fail.jailed", nameUtil.getName(this.from));
-                }
+            for (BiFunction<Player, CommandSource, Text> test : Nucleus.getNucleus()
+                    .getInternalServiceManager().getServiceUnchecked(TeleportHandler.class)
+                    .getPlayerChecks()) {
+                @Nullable Text result = test.apply(fromPlayer.get(), source);
+                if (result != null) {
+                    if (!this.silentSource) {
+                        source.sendMessage(result);
+                    }
 
-                return false;
+                    return false;
+                }
             }
 
             TeleportTask tt;
