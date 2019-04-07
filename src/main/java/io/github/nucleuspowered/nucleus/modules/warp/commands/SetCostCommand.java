@@ -15,7 +15,7 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpParameters;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -32,7 +32,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @RegisterCommand(value = {"cost", "setcost"}, subcommandOf = WarpCommand.class)
 public class SetCostCommand extends AbstractCommand<CommandSource> implements Reloadable {
 
-    private final WarpHandler warpHandler = getServiceUnchecked(WarpHandler.class);
+    private final WarpService warpService = getServiceUnchecked(WarpService.class);
     private final String costKey = "cost";
     private double defaultCost = 0;
 
@@ -53,10 +53,10 @@ public class SetCostCommand extends AbstractCommand<CommandSource> implements Re
             return CommandResult.empty();
         }
 
-        if (cost == -1 && this.warpHandler.setWarpCost(warpData.getName(), -1)) {
+        if (cost == -1 && this.warpService.setWarpCost(warpData.getName(), -1)) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.warp.costset.reset", warpData.getName(), String.valueOf(this.defaultCost)));
             return CommandResult.success();
-        } else if (this.warpHandler.setWarpCost(warpData.getName(), cost)) {
+        } else if (this.warpService.setWarpCost(warpData.getName(), cost)) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.warp.costset.success", warpData.getName(), String.valueOf(cost)));
             return CommandResult.success();
         }

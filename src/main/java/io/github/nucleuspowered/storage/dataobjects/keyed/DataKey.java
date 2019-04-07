@@ -30,6 +30,11 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
         return new ListDataKey<>(key, type, target);
     }
 
+    static <K, V, O extends IKeyedDataObject<?>> DataKey.MapKey<K, V, O> ofMap(
+            TypeToken<K> keyType, TypeToken<V> value, Class<O> target, String... key) {
+        return new MappedDataKey<>(key, keyType, value, target);
+    }
+
     static <K, V, O extends IKeyedDataObject<?>> DataKey.MapListKey<K, V, O> ofMapList(
             TypeToken<K> keyType, TypeToken<V> listValueType, Class<O> target, String... key) {
         return new MappedListDataKey<>(key, keyType, listValueType, target);

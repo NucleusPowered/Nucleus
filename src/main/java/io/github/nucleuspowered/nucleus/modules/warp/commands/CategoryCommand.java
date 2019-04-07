@@ -15,7 +15,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Scan;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -53,7 +53,7 @@ public class CategoryCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = {"list"}, subcommandOf = CategoryCommand.class)
     public static class ListCategoryCommand extends AbstractCommand<CommandSource> {
 
-        private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+        private final WarpService handler = getServiceUnchecked(WarpService.class);
 
         @Override protected CommandResult executeCommand(CommandSource src, CommandContext args, Cause cause) {
             // Get all the categories.
@@ -81,7 +81,7 @@ public class CategoryCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = {"setdisplayname"}, subcommandOf = CategoryCommand.class)
     public static class CategoryDisplayNameCommand extends AbstractCommand<CommandSource> {
 
-        private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+        private final WarpService handler = getServiceUnchecked(WarpService.class);
 
         @Override public CommandElement[] getArguments() {
             return new CommandElement[] {
@@ -106,7 +106,7 @@ public class CategoryCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = {"removedisplayname"}, subcommandOf = CategoryCommand.class)
     public static class CategoryRemoveDisplayNameCommand extends AbstractCommand<CommandSource> {
 
-        private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+        private final WarpService handler = getServiceUnchecked(WarpService.class);
 
         @Override public CommandElement[] getArguments() {
             return new CommandElement[] {
@@ -128,7 +128,7 @@ public class CategoryCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = {"setdescription"}, subcommandOf = CategoryCommand.class)
     public static class CategoryDescriptionCommand extends AbstractCommand<CommandSource> {
 
-        private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+        private final WarpService handler = getServiceUnchecked(WarpService.class);
 
         @Override public CommandElement[] getArguments() {
             return new CommandElement[] {
@@ -152,7 +152,7 @@ public class CategoryCommand extends AbstractCommand<CommandSource> {
     @RegisterCommand(value = {"removedescription"}, subcommandOf = CategoryCommand.class)
     public static class CategoryRemoveDescriptionCommand extends AbstractCommand<CommandSource> {
 
-        private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+        private final WarpService handler = getServiceUnchecked(WarpService.class);
 
         @Override public CommandElement[] getArguments() {
             return new CommandElement[] {

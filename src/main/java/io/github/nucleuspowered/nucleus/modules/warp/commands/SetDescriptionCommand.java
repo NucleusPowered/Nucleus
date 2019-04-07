@@ -14,7 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpParameters;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpHandler;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -32,7 +32,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @RegisterCommand(value = {"setdescription"}, subcommandOf = WarpCommand.class)
 public class SetDescriptionCommand extends AbstractCommand<CommandSource> {
 
-    private final WarpHandler handler = getServiceUnchecked(WarpHandler.class);
+    private final WarpService handler = getServiceUnchecked(WarpService.class);
 
     @Override public CommandElement[] getArguments() {
         return new CommandElement[] {
