@@ -13,6 +13,11 @@ import javax.annotation.Nullable;
 
 public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends AbstractConfigurateBackedDataObject implements IKeyedDataObject<T> {
 
+    @Override
+    public boolean has(DataKey<?, ? extends T> dataKey) {
+        return this.backingNode.getNode((Object[]) dataKey.getKey()).isVirtual();
+    }
+
     public <V> Value<V> getAndSet(DataKey<V, ? extends T> dataKey) {
         return new ValueImpl<>(getNullable(dataKey), dataKey);
     }

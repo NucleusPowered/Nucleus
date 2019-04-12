@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMessageTokenService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
@@ -122,7 +122,7 @@ public abstract class Nucleus {
 
     public abstract void printStackTraceIfDebugMode(Throwable throwable);
 
-    public abstract KitService getKitService();
+    public abstract KitDataService getKitDataService();
 
     public abstract NameBanService getNameBanService();
 

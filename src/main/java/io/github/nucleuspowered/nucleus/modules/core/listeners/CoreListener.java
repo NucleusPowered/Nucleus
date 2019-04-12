@@ -20,6 +20,7 @@ import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.events.NucleusOnLoginEvent;
 import io.github.nucleuspowered.nucleus.modules.core.events.OnFirstLoginEvent;
+import io.github.nucleuspowered.nucleus.modules.core.events.UserDataLoadedEvent;
 import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
@@ -43,12 +44,14 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 public class CoreListener implements Reloadable, ListenerBase, InternalServiceManagerTrait, IDataManagerTrait {
 
@@ -68,9 +71,27 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
 
     @Listener(order = Order.POST)
     public void onPlayerAuth(final ClientConnectionEvent.Auth event) {
+        final UUID userId = event.getProfile().getUniqueId();
+        if (userId == null) { // it could be, I guess?
+            return;
+        }
+
         // Create user data if required, and place into cache.
         // As this is already async, load on thread.
-        Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(event.getProfile().getUniqueId());
+        IUserDataObject dataObject
+                = Nucleus.getNucleus().getStorageManager().getUserService().getOrNewOnThread(userId);
+
+        // Fire the event, which will be async too, perhaps unsurprisingly.
+        // The main use for this will be migrations.
+        UserDataLoadedEvent eventToFire = new UserDataLoadedEvent(
+                event.getCause().with(Nucleus.getNucleus()),
+                dataObject,
+                event.getProfile()
+        );
+        Sponge.getEventManager().post(eventToFire);
+        if (eventToFire.shouldSave()) {
+            Nucleus.getNucleus().getStorageManager().getUserService().save(userId, dataObject);
+        }
     }
 
     /* (non-Javadoc)

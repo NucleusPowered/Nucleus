@@ -24,7 +24,7 @@ import io.github.nucleuspowered.nucleus.api.service.NucleusWarmupManagerService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.configurate.ConfigurateHelper;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
 import io.github.nucleuspowered.nucleus.dataservices.dataproviders.DataProviders;
@@ -133,7 +133,7 @@ public class NucleusPlugin extends Nucleus {
     private ItemDataService itemDataService;
     private UserCacheService userCacheService;
     private NameBanService nameBanService;
-    private KitService kitService;
+    private KitDataService kitDataService;
     private TextParsingUtils textParsingUtils;
     private NameUtil nameUtil;
     private PermissionResolver permissionResolver = PermissionResolverImpl.INSTANCE;
@@ -303,7 +303,7 @@ public class NucleusPlugin extends Nucleus {
             DataProviders d = new DataProviders(this);
             this.itemDataService = new ItemDataService(d.getItemDataProvider());
             this.itemDataService.loadInternal();
-            this.kitService = new KitService(d.getKitsDataProvider());
+            this.kitDataService = new KitDataService(d.getKitsDataProvider());
             this.nameBanService = new NameBanService(d.getNameBanDataProvider());
             this.userCacheService = new UserCacheService(d.getUserCacheDataProvider());
             this.warmupManager = new WarmupManager();
@@ -503,7 +503,7 @@ public class NucleusPlugin extends Nucleus {
         resetDataPath(true);
         initStorageManager();
 
-        this.kitService.changeFile();
+        this.kitDataService.changeFile();
         this.nameBanService.changeFile();
         this.userCacheService.changeFile();
 
@@ -518,7 +518,7 @@ public class NucleusPlugin extends Nucleus {
 
             // Load up the general data files now, mods should have registered items by now.
             try {
-                this.kitService.loadInternal();
+                this.kitDataService.loadInternal();
             } catch (Exception e) {
                 this.isErrored = e;
                 disable();
@@ -859,8 +859,8 @@ public class NucleusPlugin extends Nucleus {
         return this.itemDataService;
     }
 
-    @Override public KitService getKitService() {
-        return this.kitService;
+    @Override public KitDataService getKitDataService() {
+        return this.kitDataService;
     }
 
     @Override public NameBanService getNameBanService() { return this.nameBanService; }

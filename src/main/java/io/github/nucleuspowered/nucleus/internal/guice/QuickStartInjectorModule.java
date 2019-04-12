@@ -8,7 +8,7 @@ import com.google.inject.AbstractModule;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
 import io.github.nucleuspowered.nucleus.internal.InternalServiceManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
@@ -40,6 +40,6 @@ public class QuickStartInjectorModule extends AbstractModule {
         bind(TextParsingUtils.class).toProvider(this.plugin::getTextParsingUtils);
         bind(MessageProvider.class).toProvider(this.plugin::getMessageProvider);
         bind(ItemDataService.class).toProvider(this.plugin::getItemDataService);
-        bind(KitService.class).toProvider(this.plugin::getKitService);
+        bind(KitDataService.class).toProvider(this.plugin::getKitDataService);
     }
 }

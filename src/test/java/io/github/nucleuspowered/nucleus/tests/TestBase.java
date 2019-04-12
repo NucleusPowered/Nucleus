@@ -9,7 +9,7 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMessageTokenService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.dataservices.NameBanService;
 import io.github.nucleuspowered.nucleus.dataservices.UserCacheService;
 import io.github.nucleuspowered.nucleus.internal.EconHelper;
@@ -266,7 +266,7 @@ public abstract class TestBase {
 
         }
 
-        @Override public KitService getKitService() {
+        @Override public KitDataService getKitDataService() {
             return null;
         }
 

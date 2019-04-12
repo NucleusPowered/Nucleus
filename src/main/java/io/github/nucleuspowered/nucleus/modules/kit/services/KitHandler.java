@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.api.events.NucleusKitEvent;
 import io.github.nucleuspowered.nucleus.api.exceptions.KitRedeemException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
-import io.github.nucleuspowered.nucleus.dataservices.KitService;
+import io.github.nucleuspowered.nucleus.dataservices.KitDataService;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
@@ -23,17 +23,18 @@ import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateFactory
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
+import io.github.nucleuspowered.nucleus.modules.kit.KitKeys;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.kit.KitCommand;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfig;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.kit.datamodules.KitUserDataModule;
 import io.github.nucleuspowered.nucleus.modules.kit.events.KitEvent;
 import io.github.nucleuspowered.nucleus.modules.kit.misc.KitRedeemResult;
 import io.github.nucleuspowered.nucleus.modules.kit.misc.SingleKit;
-import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Container;
@@ -49,6 +50,7 @@ import org.spongepowered.api.util.Tuple;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +83,7 @@ public class KitHandler implements NucleusKitService, Reloadable, InternalServic
     private final List<Container> viewers = Lists.newArrayList();
     private final Map<Container, Tuple<Kit, Inventory>> inventoryKitMap = Maps.newHashMap();
 
-    private final KitService store = Nucleus.getNucleus().getKitService();
+    private final KitDataService store = Nucleus.getNucleus().getKitDataService();
 
     public boolean exists(String name, boolean includeHidden) {
         return this.store.getKitNames(includeHidden).stream().anyMatch(x -> x.equalsIgnoreCase(name));
@@ -113,14 +115,12 @@ public class KitHandler implements NucleusKitService, Reloadable, InternalServic
 
     @Override
     public RedeemResult redeemKit(Kit kit, Player player, boolean performChecks) throws KitRedeemException {
-        return redeemKit(kit, player, performChecks, performChecks, this.isMustGetAll, false,
-                Nucleus.getNucleus().getUserDataManager().getUnchecked(player.getUniqueId()).get(KitUserDataModule.class));
+        return redeemKit(kit, player, performChecks, performChecks, this.isMustGetAll, false);
     }
 
     @Override
     public RedeemResult redeemKit(Kit kit, Player player, boolean performChecks, boolean mustRedeemAll) throws KitRedeemException {
-        return redeemKit(kit, player, performChecks, performChecks, mustRedeemAll, false,
-                Nucleus.getNucleus().getUserDataManager().getUnchecked(player.getUniqueId()).get(KitUserDataModule.class));
+        return redeemKit(kit, player, performChecks, performChecks, mustRedeemAll, false);
     }
 
     public RedeemResult redeemKit(Kit kit,
@@ -128,9 +128,16 @@ public class KitHandler implements NucleusKitService, Reloadable, InternalServic
             boolean checkOneTime,
             boolean checkCooldown,
             boolean isMustGetAll,
-            boolean isFirstJoin,
-            KitUserDataModule user) throws KitRedeemException {
-        Instant timeOfLastUse = user.getLastRedeemedTime(kit.getName());
+            boolean isFirstJoin) throws KitRedeemException {
+        IUserDataObject dataObject = Nucleus.getNucleus().getStorageManager()
+                .getUserService()
+                .getOrNewOnThread(player.getUniqueId());
+
+        Map<String, Instant> redeemed = dataObject
+                .get(KitKeys.REDEEMED_KITS)
+                .orElseGet(HashMap::new);
+
+        Instant timeOfLastUse = redeemed.get(kit.getName().toLowerCase());
         Instant now = Instant.now();
 
         // If the kit was used before...
@@ -152,56 +159,60 @@ public class KitHandler implements NucleusKitService, Reloadable, InternalServic
         }
 
         // Kit pre redeem
-        Cause cause = CauseStackHelper.createCause(player);
-
-        NucleusKitEvent.Redeem.Pre preEvent = new KitEvent.PreRedeem(cause, timeOfLastUse, kit, player);
-        if (Sponge.getEventManager().post(preEvent)) {
-            throw new KitRedeemException.PreCancelled(preEvent.getCancelMessage().orElse(null));
-        }
-
-        List<Optional<ItemStackSnapshot>> slotList = Lists.newArrayList();
-        Util.getStandardInventory(player).slots().forEach(x -> slotList.add(x.peek().map(ItemStack::createSnapshot)));
-
-        InventoryTransactionResult inventoryTransactionResult = EMPTY_ITR;
-        if (!kit.getStacks().isEmpty()) {
-            inventoryTransactionResult = addToStandardInventory(player, kit.getStacks(), this.isProcessTokens);
-            if (!isFirstJoin && !inventoryTransactionResult.getRejectedItems().isEmpty() && isMustGetAll) {
-                Inventory inventory = Util.getStandardInventory(player);
-
-                // Slots
-                Iterator<Inventory> slot = inventory.slots().iterator();
-
-                // Slots to restore
-                slotList.forEach(x -> {
-                    Inventory i = slot.next();
-                    i.clear();
-                    x.ifPresent(y -> i.offer(y.createStack()));
-                });
-
-                // My friend was playing No Man's Sky, I almost wrote "No free slots in suit inventory".
-                throw new KitRedeemException("No free slots in player inventory", KitRedeemException.Reason.NO_SPACE);
-            }
-        }
-
-        // If something was consumed, consider a success.
-        if (inventoryTransactionResult.getType() == InventoryTransactionResult.Type.SUCCESS) {
-            kit.redeemKitCommands(player);
-
-            // Register the last used time. Do it for everyone, in case
-            // permissions or cooldowns change later
-            if (checkCooldown) {
-                user.addKitLastUsedTime(kit.getName(), now);
+        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+            frame.pushCause(player);
+            Cause cause = frame.getCurrentCause();
+            NucleusKitEvent.Redeem.Pre preEvent = new KitEvent.PreRedeem(cause, timeOfLastUse, kit, player);
+            if (Sponge.getEventManager().post(preEvent)) {
+                throw new KitRedeemException.PreCancelled(preEvent.getCancelMessage().orElse(null));
             }
 
-            Sponge.getEventManager().post(new KitEvent.PostRedeem(cause, timeOfLastUse, kit, player));
-            return new KitRedeemResult(inventoryTransactionResult.getRejectedItems(), slotList.stream()
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList()));
-        } else {
-            // Failed.
-            Sponge.getEventManager().post(new KitEvent.FailedRedeem(cause, timeOfLastUse, kit, player));
-            throw new KitRedeemException("No items were redeemed", KitRedeemException.Reason.UNKNOWN);
+            List<Optional<ItemStackSnapshot>> slotList = Lists.newArrayList();
+            Util.getStandardInventory(player).slots().forEach(x -> slotList.add(x.peek().map(ItemStack::createSnapshot)));
+
+            InventoryTransactionResult inventoryTransactionResult = EMPTY_ITR;
+            if (!kit.getStacks().isEmpty()) {
+                inventoryTransactionResult = addToStandardInventory(player, kit.getStacks(), this.isProcessTokens);
+                if (!isFirstJoin && !inventoryTransactionResult.getRejectedItems().isEmpty() && isMustGetAll) {
+                    Inventory inventory = Util.getStandardInventory(player);
+
+                    // Slots
+                    Iterator<Inventory> slot = inventory.slots().iterator();
+
+                    // Slots to restore
+                    slotList.forEach(x -> {
+                        Inventory i = slot.next();
+                        i.clear();
+                        x.ifPresent(y -> i.offer(y.createStack()));
+                    });
+
+                    // My friend was playing No Man's Sky, I almost wrote "No free slots in suit inventory".
+                    throw new KitRedeemException("No free slots in player inventory", KitRedeemException.Reason.NO_SPACE);
+                }
+            }
+
+            // If something was consumed, consider a success.
+            if (inventoryTransactionResult.getType() == InventoryTransactionResult.Type.SUCCESS) {
+                kit.redeemKitCommands(player);
+
+                // Register the last used time. Do it for everyone, in case
+                // permissions or cooldowns change later
+                if (checkCooldown) {
+                    redeemed.put(kit.getName().toLowerCase(), now);
+                    dataObject.set(KitKeys.REDEEMED_KITS, redeemed);
+                    Nucleus.getNucleus().getStorageManager().getUserService().save(player.getUniqueId(), dataObject);
+                }
+
+                Sponge.getEventManager().post(new KitEvent.PostRedeem(cause, timeOfLastUse, kit, player));
+                return new KitRedeemResult(inventoryTransactionResult.getRejectedItems(), slotList.stream()
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList()));
+            } else {
+                // Failed.
+                Sponge.getEventManager().post(new KitEvent.FailedRedeem(cause, timeOfLastUse, kit, player));
+                throw new KitRedeemException("No items were redeemed", KitRedeemException.Reason.UNKNOWN);
+            }
         }
     }
 
@@ -381,4 +392,5 @@ public class KitHandler implements NucleusKitService, Reloadable, InternalServic
         this.isMustGetAll = kitConfig.isMustGetAll();
         this.isProcessTokens = kitConfig.isProcessTokens();
     }
+
 }

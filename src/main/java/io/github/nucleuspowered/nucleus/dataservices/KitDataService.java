@@ -20,9 +20,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class KitService extends AbstractService<KitConfigDataNode> {
+public class KitDataService extends AbstractService<KitConfigDataNode> {
 
-    public KitService(DataProvider<KitConfigDataNode> dataProvider) {
+    public KitDataService(DataProvider<KitConfigDataNode> dataProvider) {
         super(dataProvider);
     }
 
