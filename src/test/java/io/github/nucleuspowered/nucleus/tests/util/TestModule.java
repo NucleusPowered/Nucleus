@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus.tests.util;
 import com.google.inject.AbstractModule;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
-import io.github.nucleuspowered.nucleus.dataservices.loaders.UserDataManager;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.messages.ResourceMessageProvider;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
@@ -50,7 +49,6 @@ public class TestModule extends AbstractModule {
         try {
             NucleusPlugin plugin = getMockPlugin();
             this.bind(NucleusPlugin.class).toInstance(plugin);
-            this.bind(UserDataManager.class).toInstance(plugin.getUserDataManager());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -61,7 +59,6 @@ public class TestModule extends AbstractModule {
         PermissionRegistry pr = new PermissionRegistry();
         Mockito.when(plugin.getMessageProvider()).thenReturn(new ResourceMessageProvider(ResourceMessageProvider.messagesBundle));
         Mockito.when(plugin.getPermissionRegistry()).thenReturn(pr);
-        Mockito.when(plugin.getUserDataManager()).thenReturn(Mockito.mock(UserDataManager.class));
 /*
         Field f = Nucleus.class.getDeclaredField("nucleus");
         f.setAccessible(true);

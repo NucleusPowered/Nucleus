@@ -7,9 +7,20 @@ package io.github.nucleuspowered.nucleus.configurate;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.common.reflect.TypeToken;
 import io.github.nucleuspowered.neutrino.objectmapper.NeutrinoObjectMapperFactory;
-import io.github.nucleuspowered.neutrino.typeserialisers.*;
+import io.github.nucleuspowered.neutrino.typeserialisers.ByteArrayTypeSerialiser;
+import io.github.nucleuspowered.neutrino.typeserialisers.IntArrayTypeSerialiser;
+import io.github.nucleuspowered.neutrino.typeserialisers.PatternTypeSerialiser;
+import io.github.nucleuspowered.neutrino.typeserialisers.SetTypeSerialiser;
+import io.github.nucleuspowered.neutrino.typeserialisers.ShortArrayTypeSerialiser;
 import io.github.nucleuspowered.nucleus.Nucleus;
-import io.github.nucleuspowered.nucleus.configurate.typeserialisers.*;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.InstantTypeSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.MailMessageSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NamedLocationSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NucleusItemStackSnapshotSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NucleusTextTemplateTypeSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.Vector3dTypeSerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarpCategorySerialiser;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarpSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.wrappers.NucleusItemStackSnapshot;
 import io.github.nucleuspowered.nucleus.internal.TypeTokens;
 import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
@@ -89,6 +100,7 @@ public class ConfigurateHelper {
         typeSerializerCollection.registerType(TypeTokens.WARP, WarpSerialiser.INSTANCE);
         typeSerializerCollection.registerType(TypeTokens.WARP_CATEGORY, new WarpCategorySerialiser());
         typeSerializerCollection.registerType(TypeTokens.NAMEDLOCATION, new NamedLocationSerialiser());
+        typeSerializerCollection.registerType(TypeTokens.MAIL_MESSAGE, new MailMessageSerialiser());
 
         return typeSerializerCollection;
     }

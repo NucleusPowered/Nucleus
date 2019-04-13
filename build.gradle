@@ -30,7 +30,7 @@ allprojects {
 def apiVersion = '7.2.0-SNAPSHOT'
 def declaredApiVersion = '7.1.0'
 
-project.ext.versionno = '1.9.4'
+project.ext.versionno = '2.0.0'
 project.ext.minecraftversion = '1.12.2'
 project.ext.spongeapiversion = (declaredApiVersion =~ /^\d+\.\d+/)[0]
 project.ext.suffix = '-SNAPSHOT'
