@@ -6,9 +6,10 @@ package io.github.nucleuspowered.storage.dataobjects.keyed;
 
 import com.google.common.reflect.TypeToken;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Represents a data point in an {@link AbstractKeyBasedDataObject}
@@ -53,6 +54,13 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
      * @return The key
      */
     String[] getKey();
+
+    /**
+     * Gets the path as an object array.
+     *
+     * @return The object array.
+     */
+    Object[] getObjectArrayKey();
 
     /**
      * The {@link Class} of the data

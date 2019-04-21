@@ -7,7 +7,7 @@ package io.github.nucleuspowered.storage.persistence.configurate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonParser;
 import io.github.nucleuspowered.nucleus.util.ThrownFunction;
 import io.github.nucleuspowered.storage.exceptions.DataDeleteException;
 import io.github.nucleuspowered.storage.exceptions.DataLoadException;
@@ -46,7 +46,9 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
             try {
                 // Write the new file
                 try (BufferedReader reader = Files.newBufferedReader(path)) {
-                    return Optional.of(new JsonPrimitive(reader.lines().collect(Collectors.joining())).getAsJsonObject());
+                    return Optional.of(new JsonParser()
+                            .parse(reader.lines().collect(Collectors.joining()))
+                            .getAsJsonObject());
                 }
             } catch (Exception e) {
                 throw new DataLoadException("Could not load file at " + path.toAbsolutePath().toString(), e);

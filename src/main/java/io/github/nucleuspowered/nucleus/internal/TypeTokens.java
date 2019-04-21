@@ -23,15 +23,15 @@ import java.util.UUID;
 
 public final class TypeTokens {
 
-    public static final TypeToken<Boolean> BOOLEAN = TypeToken.of(boolean.class);
+    public static final TypeToken<Boolean> BOOLEAN = TypeToken.of(Boolean.class);
 
     public static final TypeToken<Instant> INSTANT = TypeToken.of(Instant.class);
 
     public static final TypeToken<LocationNode> LOCATION_NODE = TypeToken.of(LocationNode.class);
 
-    public static final TypeToken<Integer> INTEGER = TypeToken.of(int.class);
+    public static final TypeToken<Integer> INTEGER = TypeToken.of(Integer.class);
 
-    public static final TypeToken<Long> LONG = TypeToken.of(long.class);
+    public static final TypeToken<Long> LONG = TypeToken.of(Long.class);
 
     public static final TypeToken<String> STRING = TypeToken.of(String.class);
 

@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.storage.dataobjects.keyed;
 
 import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import java.util.Optional;
@@ -15,7 +16,7 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
 
     @Override
     public boolean has(DataKey<?, ? extends T> dataKey) {
-        return this.backingNode.getNode((Object[]) dataKey.getKey()).isVirtual();
+        return !getNode(dataKey.getKey()).isVirtual();
     }
 
     public <V> Value<V> getAndSet(DataKey<V, ? extends T> dataKey) {
@@ -25,7 +26,7 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
     @Nullable
     public <V> V getNullable(DataKey<V, ? extends T> dataKey) {
         try {
-            return this.backingNode.getNode((Object[]) dataKey.getKey()).getValue(dataKey.getType());
+            return getNode(dataKey.getKey()).getValue(dataKey.getType());
         } catch (ObjectMappingException e) {
             e.printStackTrace();
             return null;
@@ -48,7 +49,7 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
 
     public <V> boolean set(DataKey<V, ? extends T> dataKey, V data) {
         try {
-            this.backingNode.getNode((Object[]) dataKey.getKey()).setValue(dataKey.getType(), data);
+            getNode(dataKey.getKey()).setValue(dataKey.getType(), data);
             return true;
         } catch (ObjectMappingException e) {
             e.printStackTrace();
@@ -57,7 +58,16 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
     }
 
     public void remove(DataKey<?, ? extends T> dataKey) {
-        this.backingNode.getNode((Object[]) dataKey.getKey()).setValue(null);
+        getNode(dataKey.getKey()).setValue(null);
+    }
+
+    private ConfigurationNode getNode(String[] key) {
+        ConfigurationNode r = this.backingNode;
+        for (String k : key) {
+            r = r.getNode(k);
+        }
+
+        return r;
     }
 
     public class ValueImpl<V, B extends T> implements IKeyedDataObject.Value<V> {

@@ -11,12 +11,15 @@ import javax.annotation.Nullable;
 public class DataKeyImpl<R, O extends IKeyedDataObject<?>> implements DataKey<R, O> {
 
     private final String[] key;
+    private final Object[] objectKey;
     private final TypeToken<R> type;
     private final R def;
     private Class<O> target;
 
     public DataKeyImpl(String[] key, TypeToken<R> type, Class<O> target, @Nullable R def) {
         this.key = key;
+        this.objectKey = new Object[key.length];
+        System.arraycopy(this.key, 0, this.objectKey, 0, key.length);
         this.type = type;
         this.def = def;
         this.target = target;
@@ -28,6 +31,10 @@ public class DataKeyImpl<R, O extends IKeyedDataObject<?>> implements DataKey<R,
 
     @Override public String[] getKey() {
         return this.key;
+    }
+
+    @Override public Object[] getObjectArrayKey() {
+        return this.objectKey;
     }
 
     @Override public TypeToken<R> getType() {
