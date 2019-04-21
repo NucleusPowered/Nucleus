@@ -56,13 +56,6 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
     String[] getKey();
 
     /**
-     * Gets the path as an object array.
-     *
-     * @return The object array.
-     */
-    Object[] getObjectArrayKey();
-
-    /**
      * The {@link Class} of the data
      *
      * @return The {@link TypeToken}
