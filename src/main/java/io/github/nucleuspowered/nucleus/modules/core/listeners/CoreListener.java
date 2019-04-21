@@ -214,6 +214,7 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
             udo.set(CoreKeys.IP_ADDRESS, address.toString());
             udo.set(CoreKeys.LAST_LOCATION, new LocationNode(location));
             Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(player.getUniqueId(), udo);
+            saveUser(player.getUniqueId(), udo);
         } catch (Exception e) {
             Nucleus.getNucleus().printStackTraceIfDebugMode(e);
         }

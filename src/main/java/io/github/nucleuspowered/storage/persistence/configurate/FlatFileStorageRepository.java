@@ -6,8 +6,11 @@ package io.github.nucleuspowered.storage.persistence.configurate;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.util.ThrownFunction;
 import io.github.nucleuspowered.storage.exceptions.DataDeleteException;
 import io.github.nucleuspowered.storage.exceptions.DataLoadException;
@@ -41,6 +44,8 @@ import javax.annotation.Nullable;
 
 abstract class FlatFileStorageRepository implements IStorageRepository {
 
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     Optional<JsonObject> get(@Nullable Path path) throws DataLoadException {
         if (path != null) {
             try {
@@ -61,13 +66,17 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
     void save(Path file, JsonObject object) throws DataSaveException {
         try {
             // Backup the file
-            Files.copy(file, file.resolveSibling(file.getFileName() + ".bak"), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.copy(file, file.resolveSibling(file.getFileName() + ".bak"), StandardCopyOption.REPLACE_EXISTING);
 
             // Write the new file
             try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-                writer.write(object.toString());
+                writer.write(this.gson.toJson(object));
             }
         } catch (Exception ex) {
+            Nucleus.getNucleus().getLogger().error("Could not save " + file.toString());
+            if (Nucleus.getNucleus().isDebugMode()) {
+                ex.printStackTrace();
+            }
             throw new DataSaveException("Could not save " + file.toString(), ex);
         }
     }
