@@ -25,6 +25,27 @@ public class EventContexts {
     public static final EventContextKey<Boolean> SHOULD_FORMAT_CHANNEL =
             DummyObjectProvider.createExtendedFor(EventContextKey.class, "SHOULD_FORMAT_CHANNEL");
 
+    /**
+     * A context that indicates whether a teleport is a jailing action.
+     *
+     * <p>
+     *     For the ID, see {@link Identifiers#IS_JAILING_ACTION}
+     * </p>
+     */
+    public static final EventContextKey<Boolean> IS_JAILING_ACTION =
+            DummyObjectProvider.createExtendedFor(EventContextKey.class, "IS_JAILING_ACTION");
+
+    /**
+     * A context that indicates whether teleports should ignore the fact someone is jailed.
+     *
+     * <p>
+     *     For the ID, see {@link Identifiers#BYPASS_JAILING_RESTRICTION }
+     * </p>
+     */
+    public static final EventContextKey<Boolean> BYPASS_JAILING_RESTRICTION =
+            DummyObjectProvider.createExtendedFor(EventContextKey.class, "BYPASS_JAILING_RESTRICTION ");
+
+
     public static class Identifiers {
 
         private Identifiers() {}
@@ -34,6 +55,15 @@ public class EventContexts {
          */
         public static final String SHOULD_FORMAT_CHANNEL = "nucleus:should_format_channel";
 
+        /**
+         * ID for {@link EventContexts#IS_JAILING_ACTION}
+         */
+        public static final String IS_JAILING_ACTION = "nucleus:is_jailing_action";
+
+        /**
+         * ID for {@link EventContexts#BYPASS_JAILING_RESTRICTION}
+         */
+        public static final String BYPASS_JAILING_RESTRICTION = "nucleus:bypass_jailing_restriction";
     }
 
 }

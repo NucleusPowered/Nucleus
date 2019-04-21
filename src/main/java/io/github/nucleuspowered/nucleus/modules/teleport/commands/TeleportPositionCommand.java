@@ -7,6 +7,9 @@ package io.github.nucleuspowered.nucleus.modules.teleport.commands;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResults;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
@@ -16,8 +19,7 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
-import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -108,50 +110,33 @@ public class TeleportPositionCommand extends AbstractCommand<CommandSource> {
 
         // Create the location
         Location<World> loc = new Location<>(world, xx, yy, zz);
-        NucleusTeleportHandler teleportHandler = Nucleus.getNucleus().getTeleportHandler();
+        SafeTeleportService teleportHandler = getServiceUnchecked(SafeTeleportService.class);
 
-        // Don't bother with the safety if the flag is set.
-        if (args.<Boolean>getOne("f").orElse(false)) {
-            if (teleportHandler.teleportPlayer(pl, loc, pl.getRotation(),
-                    NucleusTeleportHandler.StandardTeleportMode.NO_CHECK, cause, false, !args.hasAny("b")).isSuccess()) {
+        boolean safe = args.<Boolean>getOne("f").orElse(false);
+        boolean border = args.hasAny("b");
+
+        try (AutoCloseable ac = teleportHandler.temporarilyDisableBorder(!safe && border, loc.getExtent())) {
+            TeleportResult result = teleportHandler.teleportPlayerSmart(
+                    pl,
+                    loc,
+                    false,
+                    safe,
+                    TeleportScanners.NO_SCAN
+            );
+
+            if (result.isSuccessful()) {
                 pl.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tppos.success.self"));
                 if (!src.equals(pl)) {
                     src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tppos.success.other", pl.getName()));
                 }
 
                 return CommandResult.success();
+            } else if (result == TeleportResults.FAIL_NO_LOCATION) {
+                throw ReturnMessageException.fromKey("command.tppos.nosafe");
             }
 
             throw ReturnMessageException.fromKey("command.tppos.cancelledevent");
         }
-
-        // If we have a chunk, scan the whole chunk.
-        NucleusTeleportHandler.StandardTeleportMode mode = teleportHandler.getTeleportModeForPlayer(pl);
-        if (args.hasAny("c") && mode == NucleusTeleportHandler.StandardTeleportMode.FLYING_THEN_SAFE) {
-            mode = NucleusTeleportHandler.StandardTeleportMode.FLYING_THEN_SAFE_CHUNK;
-        }
-
-        NucleusTeleportHandler.TeleportResult result = teleportHandler.teleportPlayer(pl, loc, pl.getRotation(), mode, cause,
-                true, !args.hasAny("b"));
-        if (result.isSuccess()) {
-/*            Vector3d rotation = pl.getHeadRotation();
-            pl.setHeadRotation(
-                    new Vector3d(
-                            args.<Double>getOne(this.p).orElse(rotation.getX()),
-                            args.<Double>getOne(this.yaw).orElse(rotation.getY()),
-                            0d)
-            );*/
-            pl.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tppos.success.self"));
-            if (!src.equals(pl)) {
-                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tppos.success.other", pl.getName()));
-            }
-
-            return CommandResult.success();
-        } else if (result == NucleusTeleportHandler.TeleportResult.FAILED_NO_LOCATION) {
-            throw ReturnMessageException.fromKey("command.tppos.nosafe");
-        }
-
-        throw ReturnMessageException.fromKey("command.tppos.cancelledevent");
     }
 
     private boolean isBetween(double toCheck, double max, double min) {

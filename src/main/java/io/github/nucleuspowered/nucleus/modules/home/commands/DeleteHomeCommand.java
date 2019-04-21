@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCom
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -33,7 +33,7 @@ public class DeleteHomeCommand extends AbstractCommand<Player> {
 
     private final String homeKey = "home";
 
-    private final HomeHandler homeHandler = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(HomeHandler.class);
+    private final HomeService homeService = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(HomeService.class);
 
     @Override
     public CommandElement[] getArguments() {
@@ -44,7 +44,7 @@ public class DeleteHomeCommand extends AbstractCommand<Player> {
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) throws Exception {
         Home wl = args.<Home>getOne(this.homeKey).get();
 
-        CauseStackHelper.createFrameWithCausesWithConsumer(c -> this.homeHandler.removeHomeInternal(c, wl), src);
+        CauseStackHelper.createFrameWithCausesWithConsumer(c -> this.homeService.removeHomeInternal(c, wl), src);
         src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.home.delete.success", wl.getName()));
         return CommandResult.success();
     }

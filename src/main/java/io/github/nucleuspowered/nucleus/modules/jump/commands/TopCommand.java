@@ -5,13 +5,17 @@
 package io.github.nucleuspowered.nucleus.modules.jump.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.catalogkeys.NucleusTeleportHelperFilters;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResults;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -24,6 +28,7 @@ import org.spongepowered.api.util.blockray.BlockRay;
 import org.spongepowered.api.util.blockray.BlockRayHit;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.teleport.TeleportHelperFilters;
 
 @Permissions(supportsSelectors = true, supportsOthers = true)
 @RegisterCommand({"top", "tosurface", "totop"})
@@ -50,34 +55,44 @@ public class TopCommand extends AbstractCommand<CommandSource> {
         Location<World> start = new Location<>(location.getExtent(), x, location.getExtent().getBlockMax().getY(), z);
         BlockRayHit<World> end = BlockRay.from(start).stopFilter(BlockRay.onlyAirFilter())
             .to(playerToTeleport.getLocation().getPosition().sub(0, 1, 0)).end()
-            .orElseThrow(() -> new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.nothingfound")));
+            .orElseThrow(() -> ReturnMessageException.fromKey(src, "command.top.nothingfound"));
 
         if (playerToTeleport.getLocation().getBlockPosition().equals(end.getBlockPosition())) {
             if (!playerToTeleport.equals(src)) {
-                throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.attop.other",
-                        Nucleus.getNucleus().getNameUtil().getSerialisedName(playerToTeleport)));
+                throw ReturnMessageException.fromKey(src,
+                        "command.top.attop.other",
+                        Nucleus.getNucleus().getNameUtil().getName(playerToTeleport));
             } else {
-                throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.attop.self"));
+                throw ReturnMessageException.fromKey(src, "command.top.attop.self");
             }
         }
 
-        NucleusTeleportHandler.TeleportResult result = Nucleus.getNucleus().getTeleportHandler()
-                .teleportPlayer(playerToTeleport, end.getLocation(), !args.hasAny("f"));
-        if (result.isSuccess()) {
+        boolean isSafe = !args.hasAny("f");
+        TeleportResult result = getServiceUnchecked(SafeTeleportService.class)
+                .teleportPlayer(
+                        playerToTeleport,
+                        end.getLocation(),
+                        playerToTeleport.getRotation(),
+                        false,
+                        TeleportScanners.NO_SCAN,
+                        isSafe ? TeleportHelperFilters.SURFACE_ONLY : NucleusTeleportHelperFilters.NO_CHECK
+                );
+
+        if (result.isSuccessful()) {
             // OK
             if (!playerToTeleport.equals(src)) {
-                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.success.other",
-                        Nucleus.getNucleus().getNameUtil().getSerialisedName(playerToTeleport)));
+                sendMessageTo(src,"command.top.success.other",
+                        Nucleus.getNucleus().getNameUtil().getName(playerToTeleport));
             }
 
-            playerToTeleport.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.success.self"));
+            sendMessageTo(src, "command.top.success.self");
             return CommandResult.success();
         }
 
-        if (result == NucleusTeleportHandler.TeleportResult.FAILED_NO_LOCATION) {
-            throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.notsafe"));
+        if (result == TeleportResults.FAIL_NO_LOCATION) {
+            throw ReturnMessageException.fromKey(src, "command.top.notsafe");
         } else {
-            throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.top.cancelled"));
+            throw ReturnMessageException.fromKey(src, "command.top.cancelled");
         }
     }
 }

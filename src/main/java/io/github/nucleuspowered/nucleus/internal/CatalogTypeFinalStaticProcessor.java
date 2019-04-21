@@ -49,6 +49,18 @@ public class CatalogTypeFinalStaticProcessor {
                 .name("Nucleus - Context to indicate whether a chat message should be formatted.")
                 .build();
         setFinalStatic(EventContexts.class.getDeclaredField("SHOULD_FORMAT_CHANNEL"), shouldFormatChannel);
+
+        EventContextKey<Boolean> isJailingAction = EventContextKey.builder(Boolean.class)
+                .id(EventContexts.Identifiers.IS_JAILING_ACTION)
+                .name("Nucleus - Context to indicate whether a teleport is a jailing teleport.")
+                .build();
+        setFinalStatic(EventContexts.class.getDeclaredField("IS_JAILING_ACTION"), shouldFormatChannel);
+
+        EventContextKey<Boolean> bypassJailingRestriction = EventContextKey.builder(Boolean.class)
+                .id(EventContexts.Identifiers.BYPASS_JAILING_RESTRICTION)
+                .name("Nucleus - Context to indicate whether the Nucleus system should ignore jailed status when teleporting a player.")
+                .build();
+        setFinalStatic(EventContexts.class.getDeclaredField("BYPASS_JAILING_RESTRICTION"), shouldFormatChannel);
     }
 
 }

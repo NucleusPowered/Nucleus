@@ -5,11 +5,12 @@
 package io.github.nucleuspowered.nucleus.modules.fly.listeners;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.fly.commands.FlyCommand;
 import io.github.nucleuspowered.nucleus.modules.fly.config.FlyConfig;
@@ -147,9 +148,14 @@ public class FlyListener implements Reloadable, ListenerBase, IDataManagerTrait 
     private void safeTeleport(Player pl) {
         if (!pl.isOnGround() && this.flyConfig.isFindSafeOnLogin()) {
             // Try to bring the subject down.
-            Nucleus.getNucleus().getTeleportHandler().teleportPlayer(pl,
-                    pl.getTransform(),
-                    NucleusTeleportHandler.StandardTeleportMode.SAFE_TELEPORT_DESCEND);
+            getServiceUnchecked(SafeTeleportService.class)
+                    .teleportPlayerSmart(
+                            pl,
+                            pl.getTransform(),
+                            false,
+                            true,
+                            TeleportScanners.DESCENDING_SCAN
+                    );
         }
     }
 }

@@ -11,7 +11,7 @@ import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTr
 import io.github.nucleuspowered.nucleus.modules.home.HomeModule;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfig;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
@@ -21,7 +21,7 @@ public class RespawnConditionalListener implements ListenerBase.Conditional, Int
 
     @Listener
     public void onRespawn(final RespawnPlayerEvent event, @Getter("getTargetEntity") final Player player) {
-        getServiceUnchecked(HomeHandler.class)
+        getServiceUnchecked(HomeService.class)
             .getHome(player.getUniqueId(), NucleusHomeService.DEFAULT_HOME_NAME)
             .ifPresent(x -> x.getTransform().ifPresent(event::setToTransform));
     }

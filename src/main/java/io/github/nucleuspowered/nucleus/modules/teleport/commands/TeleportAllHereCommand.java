@@ -5,12 +5,14 @@
 package io.github.nucleuspowered.nucleus.modules.teleport.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
-import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
+import io.github.nucleuspowered.nucleus.modules.teleport.services.PlayerTeleporterService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
@@ -28,11 +30,14 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @EssentialsEquivalent("tpall")
 public class TeleportAllHereCommand extends AbstractCommand<Player> {
 
-    private final TeleportHandler handler = getServiceUnchecked(TeleportHandler.class);
+    private final PlayerTeleporterService handler = getServiceUnchecked(PlayerTeleporterService.class);
+    private final SafeTeleportService service = getServiceUnchecked(SafeTeleportService.class);
 
     @Override
     public CommandElement[] getArguments() {
-        return new CommandElement[] {GenericArguments.flags().flag("f").buildWith(GenericArguments.none())};
+        return new CommandElement[] {
+                GenericArguments.flags().flag("f").buildWith(GenericArguments.none())
+        };
     }
 
     @Override
@@ -40,12 +45,13 @@ public class TeleportAllHereCommand extends AbstractCommand<Player> {
         MessageChannel.TO_ALL.send(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpall.broadcast", src.getName()));
         Sponge.getServer().getOnlinePlayers().forEach(x -> {
             if (!x.equals(src)) {
-                try {
-                    this.handler.getBuilder().setFrom(x).setTo(src).setSafe(!args.<Boolean>getOne("f").orElse(false)).setSilentSource(true)
-                            .setBypassToggle(true).startTeleport();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                this.service.teleportPlayerSmart(
+                        x,
+                        src.getTransform(),
+                        false,
+                        !args.<Boolean>getOne("f").orElse(false),
+                        TeleportScanners.NO_SCAN
+                );
             }
         });
 

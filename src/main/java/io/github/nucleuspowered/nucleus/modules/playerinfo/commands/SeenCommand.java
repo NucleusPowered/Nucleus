@@ -19,8 +19,8 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.SpeedCommand;
 import io.github.nucleuspowered.nucleus.modules.playerinfo.services.SeenHandler;
 import io.github.nucleuspowered.nucleus.modules.teleport.commands.TeleportPositionCommand;
@@ -47,14 +47,19 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
-import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 // TODO: 7.1 cleanup
 @Permissions
@@ -159,13 +164,9 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
         }
 
         Optional<WorldProperties> wp = user.getWorldUniqueId().map(x -> Sponge.getServer().getWorldProperties(x).orElse(null));
-        if (wp.isPresent()) {
-            return getLocationString("command.seen.lastlocation", wp.get(), user.getPosition(), source);
-        }
-
-        // TODO: Remove - this is a fallback
-        return userDataModule.get(CoreKeys.LAST_LOCATION).map(x -> x.getLocationIfExists().orElse(null))
-                .map(worldLocation -> getLocationString("command.seen.lastlocation", worldLocation, source)).orElse(null);
+        return wp.map(worldProperties ->
+                    getLocationString("command.seen.lastlocation", worldProperties, user.getPosition(), source))
+                .orElseGet(() -> Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("standard.unknown"));
     }
 
     @Nullable
@@ -283,7 +284,7 @@ public class SeenCommand extends AbstractCommand<CommandSource> {
             Sponge.getServer().getWorld(worldProperties.getUniqueId()).ifPresent(
                     x -> building.onClick(TextActions.executeCallback(cs -> {
                         if (cs instanceof Player) {
-                            NucleusTeleportHandler.setLocation((Player) cs, new Location<>(x, position));
+                            SafeTeleportService.setLocation((Player) cs, new Location<>(x, position));
                         }
                     })
             ));

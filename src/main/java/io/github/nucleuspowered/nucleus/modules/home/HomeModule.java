@@ -8,7 +8,7 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.service.NucleusHomeService;
 import io.github.nucleuspowered.nucleus.internal.qsml.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.Sponge;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 
@@ -25,8 +25,8 @@ public class HomeModule extends ConfigurableModule<HomeConfigAdapter> {
     @Override protected void performPreTasks() throws Exception {
         super.performPreTasks();
 
-        HomeHandler homeHandler = new HomeHandler();
-        Nucleus.getNucleus().getInternalServiceManager().registerService(HomeHandler.class, homeHandler);
-        Sponge.getServiceManager().setProvider(Nucleus.getNucleus(), NucleusHomeService.class, homeHandler);
+        HomeService homeService = new HomeService();
+        Nucleus.getNucleus().getInternalServiceManager().registerService(HomeService.class, homeService);
+        Sponge.getServiceManager().setProvider(Nucleus.getNucleus(), NucleusHomeService.class, homeService);
     }
 }

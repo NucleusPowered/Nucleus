@@ -6,13 +6,14 @@ package io.github.nucleuspowered.nucleus.modules.jump.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.jump.config.JumpConfigAdapter;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandResult;
@@ -76,7 +77,15 @@ public class JumpCommand extends AbstractCommand<Player> implements Reloadable {
             throw ReturnMessageException.fromKey("command.jump.outsideborder");
         }
 
-        if (Nucleus.getNucleus().getTeleportHandler().teleportPlayer(player, finalLocation, NucleusTeleportHandler.StandardTeleportMode.SAFE_TELEPORT).isSuccess()) {
+        boolean result = getServiceUnchecked(SafeTeleportService.class)
+                .teleportPlayerSmart(
+                        player,
+                        finalLocation,
+                        false,
+                        true,
+                        TeleportScanners.NO_SCAN
+                ).isSuccessful();
+        if (result) {
             player.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.jump.success"));
             return CommandResult.success();
         }

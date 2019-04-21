@@ -7,6 +7,9 @@ package io.github.nucleuspowered.nucleus.modules.warp.commands;
 import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Warp;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResults;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.argumentparsers.AdditionalCompletionsArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.NoModifiersArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.RequiredArgumentsArgument;
@@ -22,7 +25,7 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpParameters;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfig;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfigAdapter;
@@ -39,6 +42,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+import org.spongepowered.api.world.teleport.TeleportHelperFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,15 +194,26 @@ public class WarpCommand extends AbstractCommand<CommandSource> implements Reloa
 
         // Warp them.
         boolean isSafe = !args.getOne("f").isPresent() && this.isSafeTeleport;
-        NucleusTeleportHandler.TeleportResult result =
-                Nucleus.getNucleus().getTeleportHandler().teleportPlayer(player, wd.getLocation().get(), wd.getRotation(), isSafe);
-        if (!result.isSuccess()) {
+
+        SafeTeleportService safeLocationService = getServiceUnchecked(SafeTeleportService.class);
+        TeleportHelperFilter filter = safeLocationService.getAppropriateFilter(player, isSafe);
+
+        TeleportResult result = safeLocationService.teleportPlayer(
+                player,
+                wd.getLocation().get(),
+                wd.getRotation(),
+                false,
+                TeleportScanners.NO_SCAN,
+                filter
+        );
+
+        if (!result.isSuccessful()) {
             if (charge) {
                 Nucleus.getNucleus().getEconHelper().depositInPlayer(player, cost, false);
             }
 
             // Don't add the cooldown if enabled.
-            throw ReturnMessageException.fromKey(result == NucleusTeleportHandler.TeleportResult.FAILED_NO_LOCATION ? "command.warps.nosafe" :
+            throw ReturnMessageException.fromKey(result == TeleportResults.FAIL_NO_LOCATION ? "command.warps.nosafe" :
                     "command.warps.cancelled");
         }
 

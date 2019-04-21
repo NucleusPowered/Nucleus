@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.events.NucleusFirstJoinEvent;
 import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ListenerBase;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
@@ -24,7 +23,6 @@ import io.github.nucleuspowered.nucleus.modules.core.events.UserDataLoadedEvent;
 import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
-import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -41,8 +39,6 @@ import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -112,15 +108,6 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
             Sponge.getEventManager().post(onLoginEvent);
             if (onLoginEvent.getTo().isPresent()) {
                 event.setToTransform(onLoginEvent.getTo().get());
-                udo.remove(CoreKeys.LOCATION_ON_LOGIN);
-                return;
-            }
-
-            // If we have a location to send them to in the config, send them there now!
-            try (final IKeyedDataObject.Value<LocationNode> l = udo.getAndSet(CoreKeys.LOCATION_ON_LOGIN)) {
-                l.getValue().ifPresent(x ->
-                        x.getLocationIfExists().ifPresent(y -> event.setToTransform(event.getFromTransform().setLocation(y))));
-                l.setValue(null);
             }
         }
 
@@ -207,12 +194,10 @@ public class CoreListener implements Reloadable, ListenerBase, InternalServiceMa
     }
 
     private void onPlayerQuit(Player player, IUserDataObject udo) {
-        final Location<World> location = player.getLocation();
         final InetAddress address = player.getConnection().getAddress().getAddress();
 
         try {
             udo.set(CoreKeys.IP_ADDRESS, address.toString());
-            udo.set(CoreKeys.LAST_LOCATION, new LocationNode(location));
             Nucleus.getNucleus().getUserCacheService().updateCacheForPlayer(player.getUniqueId(), udo);
             saveUser(player.getUniqueId(), udo);
         } catch (Exception e) {

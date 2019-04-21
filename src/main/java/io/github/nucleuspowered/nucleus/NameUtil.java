@@ -104,6 +104,17 @@ public class NameUtil implements InternalServiceManagerTrait {
         return Sponge.getServiceManager().provideUnchecked(UserStorageService.class).get(player).map(this::getName);
     }
 
+    public Text getNameOrConsole(@Nullable UUID player) {
+        if (player == null || player == Util.consoleFakeUUID) {
+            return Text.of(Sponge.getServer().getConsole().getName());
+        }
+
+        return Sponge.getServiceManager().provideUnchecked(UserStorageService.class)
+                .get(player)
+                .map(this::getName)
+                .orElseGet(() -> Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("standard.unknown"));
+    }
+
      /**
      * Gets the display name from a {@link User} as Sponge sees it.
      *
@@ -140,8 +151,8 @@ public class NameUtil implements InternalServiceManagerTrait {
         return TextSerializers.FORMATTING_CODE.serialize(getName(player));
     }
 
-    public String getNameFromUUID(UUID uuid) {
-        if (Util.consoleFakeUUID.equals(uuid)) {
+    public String getNameFromUUID(@Nullable UUID uuid) {
+        if (uuid == null || Util.consoleFakeUUID.equals(uuid)) {
             return Sponge.getServer().getConsole().getName();
         }
 

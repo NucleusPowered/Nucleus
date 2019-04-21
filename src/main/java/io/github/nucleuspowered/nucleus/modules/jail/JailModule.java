@@ -14,7 +14,6 @@ import io.github.nucleuspowered.nucleus.modules.jail.commands.CheckJailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
 import io.github.nucleuspowered.nucleus.modules.jail.services.JailHandler;
-import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -37,22 +36,6 @@ public class JailModule extends ConfigurableModule<JailConfigAdapter> {
 
     @Override
     public void performEnableTasks() {
-        getServiceManager().getService(TeleportHandler.class)
-                .ifPresent(x -> x.registerPlayerCheck(
-                        (player, source) -> {
-
-                            if (Nucleus.getNucleus().getInternalServiceManager()
-                                    .getServiceUnchecked(JailHandler.class)
-                                    .isPlayerJailed(player)) {
-                                // Don't teleport a jailed subject.
-                                return getMessageFor(source,
-                                        "teleport.fail.jailed",
-                                            Nucleus.getNucleus().getNameUtil().getName(player)
-                                );
-                            }
-                            return null;
-                        }
-                ));
         createSeenModule(CheckJailCommand.class, (c, u) -> {
 
             // If we have a ban service, then check for a ban.

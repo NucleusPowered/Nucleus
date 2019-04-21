@@ -38,6 +38,10 @@ public abstract class NucleusRegistryModule<T extends CatalogType>
         // API 8 will rely on impl.
     }
 
+    protected boolean allowsAdditional() {
+        return true;
+    }
+
     public final void init() throws Exception {
         if (!this.registered) {
             registerModuleDefaults();
@@ -64,7 +68,11 @@ public abstract class NucleusRegistryModule<T extends CatalogType>
                     + "with the nucleus namespace");
         }
 
-        this.entries.put(entry.getId().toLowerCase(Locale.ENGLISH), entry);
+        if (!this.registered || allowsAdditional()) {
+            this.entries.put(entry.getId().toLowerCase(Locale.ENGLISH), entry);
+        }
+
+        throw new IllegalArgumentException("Cannot register additional types for this catalog");
     }
 
     @Override

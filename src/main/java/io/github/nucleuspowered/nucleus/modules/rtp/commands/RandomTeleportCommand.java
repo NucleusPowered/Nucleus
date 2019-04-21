@@ -19,7 +19,7 @@ import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.rtp.RTPModule;
 import io.github.nucleuspowered.nucleus.modules.rtp.config.RTPConfig;
 import io.github.nucleuspowered.nucleus.modules.rtp.config.RTPConfigAdapter;
@@ -183,7 +183,7 @@ public class RandomTeleportCommand extends AbstractCommand.SimpleTargetOtherPlay
                                     String.valueOf(targetLocation.getBlockX()),
                                     String.valueOf(targetLocation.getBlockY()),
                                     String.valueOf(targetLocation.getBlockZ())));
-                            if (NucleusTeleportHandler.setLocation(this.target, targetLocation)) {
+                            if (SafeTeleportService.setLocation(this.target, targetLocation)) {
                                 if (!this.isSelf) {
                                     sendMessageTo(this.target, "command.rtp.other");
                                     sendMessageTo(this.source, "command.rtp.successother",

@@ -23,9 +23,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.ResourceMessageProvide
 import io.github.nucleuspowered.nucleus.internal.qsml.NucleusConfigAdapter;
 import io.github.nucleuspowered.nucleus.internal.services.PermissionResolver;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
-import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
 import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.junit.BeforeClass;
@@ -151,11 +149,6 @@ public abstract class TestBase {
         }
 
         @Override
-        public void saveSystemConfig() throws IOException {
-
-        }
-
-        @Override
         public boolean reload() {
             return true;
         }
@@ -229,10 +222,6 @@ public abstract class TestBase {
             return null;
         }
 
-        @Override public int traceUserCreations() {
-            return 0;
-        }
-
         @Override public Optional<TextFileController> getTextFileController(String getController) {
             return Optional.empty();
         }
@@ -247,11 +236,6 @@ public abstract class TestBase {
 
         @Override public Optional<DocGenCache> getDocGenCache() {
             return Optional.empty();
-        }
-
-        @Override
-        public NucleusTeleportHandler getTeleportHandler() {
-            return null;
         }
 
         @Override public NucleusMessageTokenService getMessageTokenService() {
@@ -310,9 +294,5 @@ public abstract class TestBase {
             return null;
         }
 
-        @Override
-        public UserPreferenceService getUserPreferenceService() {
-            return null;
-        }
     }
 }

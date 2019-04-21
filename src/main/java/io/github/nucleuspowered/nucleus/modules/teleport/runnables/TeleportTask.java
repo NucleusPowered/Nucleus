@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.teleport.runnables;
 
 import io.github.nucleuspowered.nucleus.internal.interfaces.TaskBase;
-import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.teleport.services.PlayerTeleporterService;
 import org.spongepowered.api.scheduler.Task;
 
 import java.time.Duration;
@@ -14,11 +14,11 @@ import java.time.temporal.ChronoUnit;
 @SuppressWarnings("ALL")
 public class TeleportTask implements TaskBase {
 
-    private final TeleportHandler handler = getServiceUnchecked(TeleportHandler.class);
+    private final PlayerTeleporterService teleporterService = getServiceUnchecked(PlayerTeleporterService.class);
 
     @Override
     public void accept(Task task) {
-        handler.clearExpired();
+        teleporterService.removeExpired();
     }
 
     @Override

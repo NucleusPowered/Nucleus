@@ -5,12 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfigAdapter;
 import org.spongepowered.api.command.CommandResult;
@@ -42,7 +45,15 @@ public class FirstSpawnCommand extends AbstractCommand<Player> implements Reload
             return CommandResult.empty();
         }
 
-        if (Nucleus.getNucleus().getTeleportHandler().teleportPlayer(src, olwr.get(), this.isSafeTeleport, true).isSuccess()) {
+        TeleportResult result = getServiceUnchecked(SafeTeleportService.class)
+                .teleportPlayerSmart(
+                        src,
+                        olwr.get(),
+                        true,
+                        this.isSafeTeleport,
+                        TeleportScanners.NO_SCAN
+                );
+        if (result.isSuccessful()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.firstspawn.success"));
             return CommandResult.success();
         }

@@ -21,9 +21,7 @@ import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
 import io.github.nucleuspowered.nucleus.internal.qsml.NucleusConfigAdapter;
 import io.github.nucleuspowered.nucleus.internal.services.PermissionResolver;
 import io.github.nucleuspowered.nucleus.internal.services.WarmupManager;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.text.TextParsingUtils;
-import io.github.nucleuspowered.nucleus.internal.userprefs.UserPreferenceService;
 import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
 import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import org.slf4j.Logger;
@@ -65,8 +63,6 @@ public abstract class Nucleus {
 
     public abstract UserCacheService getUserCacheService();
 
-    public abstract void saveSystemConfig() throws IOException;
-
     public abstract boolean reload();
 
     public abstract boolean reloadMessages();
@@ -105,8 +101,6 @@ public abstract class Nucleus {
 
     public abstract MessageProvider getCommandMessageProvider();
 
-    public abstract int traceUserCreations();
-
     public abstract Optional<TextFileController> getTextFileController(String getController);
 
     public abstract void addTextFileController(String id, Asset asset, Path file) throws IOException;
@@ -114,8 +108,6 @@ public abstract class Nucleus {
     public abstract void registerReloadable(Reloadable reloadable);
 
     public abstract Optional<DocGenCache> getDocGenCache();
-
-    public abstract NucleusTeleportHandler getTeleportHandler();
 
     public abstract NucleusMessageTokenService getMessageTokenService();
 
@@ -145,5 +137,4 @@ public abstract class Nucleus {
 
     public abstract INucleusStorageManager<JsonObject> getStorageManager();
 
-    public abstract UserPreferenceService getUserPreferenceService();
 }

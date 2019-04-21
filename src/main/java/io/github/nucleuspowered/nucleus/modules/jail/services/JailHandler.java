@@ -11,19 +11,19 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.api.exceptions.NoSuchLocationException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Inmate;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.LocationData;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
 import io.github.nucleuspowered.nucleus.internal.data.EndTimestamp;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.messages.MessageProvider;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
-import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.fly.FlyKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.JailKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
@@ -36,6 +36,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.context.ContextCalculator;
@@ -45,11 +46,18 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.storage.WorldProperties;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 @NonnullByDefault
 @APIService(NucleusJailService.class)
@@ -189,7 +197,7 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
 
         // Get the jail.
         Optional<NamedLocation> owl = getJail(data.getJailName());
-        NamedLocation wl = owl.filter(x -> x.getLocation().isPresent()).orElseGet(() -> {
+        NamedLocation wl = owl.filter(x -> x.getTransform().isPresent()).orElseGet(() -> {
             if (!getJails().isEmpty()) {
                 return null;
             }
@@ -204,12 +212,21 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         udo.set(JailKeys.JAIL_DATA, data);
         if (user.isOnline()) {
             Sponge.getScheduler().createSyncExecutor(Nucleus.getNucleus()).execute(() -> {
-                Player player = user.getPlayer().get();
-                Nucleus.getNucleus().getTeleportHandler().teleportPlayer(player, owl.get().getLocation().get(), owl.get().getRotation(),
-                    NucleusTeleportHandler.StandardTeleportMode.NO_CHECK, Sponge.getCauseStackManager().getCurrentCause(), true);
-                player.offer(Keys.IS_FLYING, false);
-                player.offer(Keys.CAN_FLY, false);
-                udo.set(FlyKeys.FLY_TOGGLE, false);
+                try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+                    frame.addContext(EventContexts.IS_JAILING_ACTION, true);
+                    Player player = user.getPlayer().get();
+                    Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(SafeTeleportService.class)
+                            .teleportPlayerSmart(
+                                    player,
+                                    owl.get().getTransform().get(), // The transform exists.
+                                    true,
+                                    false,
+                                    TeleportScanners.NO_SCAN
+                            );
+                    player.offer(Keys.IS_FLYING, false);
+                    player.offer(Keys.CAN_FLY, false);
+                    udo.set(FlyKeys.FLY_TOGGLE, false);
+                }
             });
         } else {
             udo.set(JailKeys.JAIL_ON_NEXT_LOGIN, true);
@@ -220,12 +237,11 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         saveUser(user.getUniqueId(), udo);
 
         Sponge.getEventManager().post(new JailEvent.Jailed(
-            user,
-            CauseStackHelper.createCause(Util.getObjectFromUUID(data.getJailerInternal())),
-            data.getJailName(),
-            TextSerializers.FORMATTING_CODE.deserialize(data.getReason()),
-            data.getRemainingTime().orElse(null)));
-
+                user,
+                CauseStackHelper.createCause(Util.getObjectFromUUID(data.getJailerInternal())),
+                data.getJailName(),
+                TextSerializers.FORMATTING_CODE.deserialize(data.getReason()),
+                data.getRemainingTime().orElse(null)));
 
         return true;
     }
@@ -254,7 +270,7 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
         if (user.isOnline()) {
             Player player = user.getPlayer().get();
             Sponge.getScheduler().createSyncExecutor(Nucleus.getNucleus()).execute(() -> {
-                NucleusTeleportHandler.setLocation(player, ow.orElseGet(() -> player.getWorld().getSpawnLocation()));
+                SafeTeleportService.setLocation(player, ow.orElseGet(() -> player.getWorld().getSpawnLocation()));
                 player.sendMessage(NucleusPlugin.getNucleus().getMessageProvider().getTextMessageWithFormat("jail.elapsed"));
 
                 // Remove after the teleport for the back data.
@@ -262,9 +278,16 @@ public class JailHandler implements NucleusJailService, ContextCalculator<Subjec
                 udo.remove(JailKeys.JAIL_ON_NEXT_LOGIN);
             });
         } else {
-            udo.set(CoreKeys.LOCATION_ON_LOGIN,
-                    new LocationNode(ow.orElseGet(() -> new Location<>(Sponge.getServer().getWorld(Sponge.getServer().getDefaultWorld().get().getUniqueId()).get(),
-                            Sponge.getServer().getDefaultWorld().get().getSpawnPosition()))));
+            if (ow.isPresent()) {
+                Location<World> l = ow.get();
+                user.setLocation(l.getPosition(), l.getExtent().getUniqueId());
+            } else {
+                WorldProperties w = Sponge.getServer().getDefaultWorld().get();
+                user.setLocation(
+                        w.getSpawnPosition().toDouble(), w.getUniqueId()
+                );
+            }
+
             udo.remove(JailKeys.JAIL_DATA);
         }
 

@@ -20,7 +20,7 @@ import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformati
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfig;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -57,7 +57,7 @@ public class ListHomeCommand extends AbstractCommand<CommandSource> implements R
     private final String exemptSameDimension = Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(HomeCommand.class)
                                                       .getPermissionWithSuffix(HomeCommand.EXEMPT_SAMEDIMENSION_SUFFIX);
 
-    private final HomeHandler homeHandler = getServiceUnchecked(HomeHandler.class);
+    private final HomeService homeService = getServiceUnchecked(HomeService.class);
 
     private boolean isOnlySameDimension = false;
 
@@ -87,7 +87,7 @@ public class ListHomeCommand extends AbstractCommand<CommandSource> implements R
             throw new ReturnMessageException(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.listhome.exempt"));
         }
 
-        List<Home> msw = this.homeHandler.getHomes(user);
+        List<Home> msw = this.homeService.getHomes(user);
         if (msw.isEmpty()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.home.nohomes"));
             return CommandResult.empty();

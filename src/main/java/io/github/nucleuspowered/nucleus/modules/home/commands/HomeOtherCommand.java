@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.home.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
 import io.github.nucleuspowered.nucleus.argumentparsers.HomeOtherArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
@@ -15,9 +16,7 @@ import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.home.events.UseHomeEvent;
-import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
-import org.spongepowered.api.Sponge;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -26,8 +25,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,22 +57,20 @@ public class HomeOtherCommand extends AbstractCommand<Player> implements Reloada
     @Override
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) throws Exception {
         // Get the home.
-        Home wl = args.<Home>getOne(this.home).get();
+        Home wl = args.requireOne(this.home);
 
-        Sponge.getServer().loadWorld(wl.getWorldProperties()
-                .orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", wl.getName())));
-
-        Location<World> targetLocation = wl.getLocation().orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", wl.getName()));
-
-        UseHomeEvent event = CauseStackHelper.createFrameWithCausesWithReturn(c -> new UseHomeEvent(c, src, wl), src);
-        if (Sponge.getEventManager().post(event)) {
-            throw new ReturnMessageException(event.getCancelMessage().orElseGet(() ->
-                    Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("nucleus.eventcancelled")
-            ));
-        }
+        TeleportResult result =
+                Nucleus.getNucleus()
+                    .getInternalServiceManager()
+                    .getServiceUnchecked(HomeService.class)
+                    .warpToHome(
+                            src,
+                            wl,
+                            this.isSafeTeleport
+                    );
 
         // Warp to it safely.
-        if (Nucleus.getNucleus().getTeleportHandler().teleportPlayer(src, targetLocation, wl.getRotation(), this.isSafeTeleport).isSuccess()) {
+        if (result.isSuccessful()) {
             src.sendMessage(
                     Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.homeother.success", wl.getUser().getName(), wl.getName()));
             return CommandResult.success();

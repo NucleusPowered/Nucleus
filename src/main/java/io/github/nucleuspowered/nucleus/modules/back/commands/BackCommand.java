@@ -6,6 +6,9 @@ package io.github.nucleuspowered.nucleus.modules.back.commands;
 
 import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResults;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -14,10 +17,10 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
 import io.github.nucleuspowered.nucleus.modules.back.config.BackConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.back.listeners.BackListeners;
 import io.github.nucleuspowered.nucleus.modules.back.services.BackHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -69,6 +72,7 @@ public class BackCommand extends AbstractCommand<Player> implements Reloadable {
             throw ReturnMessageException.fromKey(src, "command.back.noloc");
         }
 
+        boolean border = args.hasAny("b");
         Transform<World> loc = ol.get();
         if (this.sameDimensionCheck && src.getWorld().getUniqueId() != loc.getExtent().getUniqueId()) {
             if (!hasPermission(src, EXEMPT_PERMISSION)) {
@@ -76,17 +80,27 @@ public class BackCommand extends AbstractCommand<Player> implements Reloadable {
             }
         }
 
-        NucleusTeleportHandler.TeleportResult result =
-                Nucleus.getNucleus().getTeleportHandler()
-                    .teleportPlayer(src, loc, !args.hasAny("f"), !args.hasAny("b"));
-        if (result.isSuccess()) {
-            src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.back.success"));
-            return CommandResult.success();
-        } else if (result == NucleusTeleportHandler.TeleportResult.FAILED_NO_LOCATION) {
-            throw ReturnMessageException.fromKey("command.back.nosafe");
-        }
+        SafeTeleportService service = getServiceUnchecked(SafeTeleportService.class);
 
-        throw ReturnMessageException.fromKey("command.back.cancelled");
+        try (AutoCloseable ac = service.temporarilyDisableBorder(border, loc.getExtent())) {
+
+            TeleportResult result = getServiceUnchecked(SafeTeleportService.class)
+                    .teleportPlayerSmart(
+                            src,
+                            loc,
+                            false,
+                            !args.hasAny("f"),
+                            TeleportScanners.NO_SCAN
+                    );
+            if (result.isSuccessful()) {
+                src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.back.success"));
+                return CommandResult.success();
+            } else if (result == TeleportResults.FAIL_NO_LOCATION) {
+                throw ReturnMessageException.fromKey("command.back.nosafe");
+            }
+
+            throw ReturnMessageException.fromKey("command.back.cancelled");
+        }
     }
 
     @Override

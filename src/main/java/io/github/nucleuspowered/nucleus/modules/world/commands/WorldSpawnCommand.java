@@ -9,7 +9,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
@@ -28,7 +28,7 @@ public class WorldSpawnCommand extends AbstractCommand<Player> {
 
     @Override
     public CommandResult executeCommand(Player pl, CommandContext args, Cause cause) {
-        NucleusTeleportHandler.setLocation(pl, pl.getWorld().getSpawnLocation());
+        SafeTeleportService.setLocation(pl, pl.getWorld().getSpawnLocation());
         pl.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.world.spawn.success"));
         return CommandResult.success();
     }

@@ -25,6 +25,9 @@ public class JailConfig {
     @Setting(value = "require-separate-unjail-permission", comment = "config.jail.unjail")
     private boolean requireUnjailPermission = false;
 
+    @Setting(value = "prevent-teleport-when-jailed-aggressively", comment = "config.jail.aggressive-teleport")
+    private boolean aggressiveDisableTeleport = true;
+
     public List<String> getAllowedCommands() {
         return this.allowedCommands;
     }
@@ -39,5 +42,9 @@ public class JailConfig {
 
     public boolean isRequireUnjailPermission() {
         return this.requireUnjailPermission;
+    }
+
+    public boolean aggressivelyDisableTeleportsForJailed() {
+        return this.aggressiveDisableTeleport;
     }
 }

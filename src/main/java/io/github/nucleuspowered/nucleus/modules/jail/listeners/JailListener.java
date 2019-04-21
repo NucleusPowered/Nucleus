@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.jail.listeners;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.api.events.NucleusSendToSpawnEvent;
 import io.github.nucleuspowered.nucleus.api.events.NucleusTeleportEvent;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
@@ -24,6 +25,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.action.InteractEvent;
@@ -36,11 +38,12 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import javax.inject.Inject;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 public class JailListener implements Reloadable, ListenerBase {
 
@@ -83,13 +86,16 @@ public class JailListener implements Reloadable, ListenerBase {
 
         // Jailing the subject if we need to.
         if (this.handler.shouldJailOnNextLogin(user)) {
-            // only set previous location if the player hasn't been moved to the jail before.
-            if (event.getFrom().equals(owl.get().getTransform().get())) {
-                jd.setPreviousLocation(event.getFrom().getLocation());
-            }
+            try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+                frame.addContext(EventContexts.IS_JAILING_ACTION, true);
+                // only set previous location if the player hasn't been moved to the jail before.
+                if (event.getFrom().equals(owl.get().getTransform().get())) {
+                    jd.setPreviousLocation(event.getFrom().getLocation());
+                }
 
-            this.handler.updateJailData(user, jd);
-            qs.set(FlyKeys.FLY_TOGGLE, false);
+                this.handler.updateJailData(user, jd);
+                qs.set(FlyKeys.FLY_TOGGLE, false);
+            }
         }
     }
 
@@ -105,21 +111,24 @@ public class JailListener implements Reloadable, ListenerBase {
         // Jailing the subject if we need to.
         Optional<JailData> data = this.handler.getPlayerJailDataInternal(user);
         if (this.handler.shouldJailOnNextLogin(user) && data.isPresent()) {
-            // It exists.
-            NamedLocation owl = this.handler.getWarpLocation(user).get();
-            JailData jd = data.get();
-            Optional<Duration> timeLeft = jd.getRemainingTime();
-            Text message = timeLeft.map(duration -> Nucleus.getNucleus().getMessageProvider()
-                .getTextMessageWithFormat("command.jail.jailedfor", owl.getName(),
-                        Nucleus.getNucleus().getNameUtil().getNameFromUUID(jd.getJailerInternal()),
-                        Util.getTimeStringFromSeconds(duration.getSeconds())))
-                .orElseGet(() -> Nucleus.getNucleus().getMessageProvider()
-                    .getTextMessageWithFormat("command.jail.jailedperm", owl.getName(),
-                            Nucleus.getNucleus().getNameUtil().getNameFromUUID(jd.getJailerInternal()), "",
-                        ""));
+            try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+                frame.addContext(EventContexts.IS_JAILING_ACTION, true);
+                // It exists.
+                NamedLocation owl = this.handler.getWarpLocation(user).get();
+                JailData jd = data.get();
+                Optional<Duration> timeLeft = jd.getRemainingTime();
+                Text message = timeLeft.map(duration -> Nucleus.getNucleus().getMessageProvider()
+                        .getTextMessageWithFormat("command.jail.jailedfor", owl.getName(),
+                                Nucleus.getNucleus().getNameUtil().getNameFromUUID(jd.getJailerInternal()),
+                                Util.getTimeStringFromSeconds(duration.getSeconds())))
+                        .orElseGet(() -> Nucleus.getNucleus().getMessageProvider()
+                                .getTextMessageWithFormat("command.jail.jailedperm", owl.getName(),
+                                        Nucleus.getNucleus().getNameUtil().getNameFromUUID(jd.getJailerInternal()), "",
+                                        ""));
 
-            user.sendMessage(message);
-            user.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("standard.reasoncoloured", jd.getReason()));
+                user.sendMessage(message);
+                user.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("standard.reasoncoloured", jd.getReason()));
+            }
         }
 
         this.handler.setJailOnNextLogin(user, false);
@@ -155,15 +164,19 @@ public class JailListener implements Reloadable, ListenerBase {
 
     @Listener
     public void onAboutToTeleport(NucleusTeleportEvent.AboutToTeleport event, @Root CommandSource cause, @Getter("getTargetEntity") Player player) {
-        if (this.handler.isPlayerJailed(player)) {
-            if (!hasPermission(cause, this.teleport)) {
-                event.setCancelled(true);
-                event.setCancelMessage(
-                        Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("jail.abouttoteleporttarget.isjailed", player.getName()));
-            } else if (!hasPermission(cause, this.teleportto)) {
-                event.setCancelled(true);
-                event.setCancelMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("jail.abouttoteleportcause.targetisjailed",
-                        player.getName()));
+        if (event.getCause().getContext().get(EventContexts.IS_JAILING_ACTION).orElse(false)) {
+            if (this.handler.isPlayerJailed(player)) {
+                if (!hasPermission(cause, this.teleport)) {
+                    event.setCancelled(true);
+                    event.setCancelMessage(
+                            Nucleus.getNucleus().getMessageProvider()
+                                    .getTextMessageWithFormat("jail.abouttoteleporttarget.isjailed", player.getName()));
+                } else if (!hasPermission(cause, this.teleportto)) {
+                    event.setCancelled(true);
+                    event.setCancelMessage(
+                            Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("jail.abouttoteleportcause.targetisjailed",
+                                    player.getName()));
+                }
             }
         }
     }

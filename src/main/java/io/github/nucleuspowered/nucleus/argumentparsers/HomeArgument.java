@@ -10,7 +10,7 @@ import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.internal.traits.InternalServiceManagerTrait;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.ArgumentParseException;
 import org.spongepowered.api.command.args.CommandArgs;
@@ -53,7 +53,7 @@ public class HomeArgument extends CommandElement implements InternalServiceManag
 
     Home getHome(User user, String home, CommandArgs args) throws ArgumentParseException {
         try {
-            Optional<Home> owl = getServiceUnchecked(HomeHandler.class).getHome(user.getUniqueId(), home);
+            Optional<Home> owl = getServiceUnchecked(HomeService.class).getHome(user.getUniqueId(), home);
             if (owl.isPresent()) {
                 return owl.get();
             }
@@ -85,7 +85,7 @@ public class HomeArgument extends CommandElement implements InternalServiceManag
     protected List<String> complete(User src, String homeName) {
         Collection<String> s;
         try {
-            s = getServiceUnchecked(HomeHandler.class).getHomeNames(src.getUniqueId());
+            s = getServiceUnchecked(HomeService.class).getHomeNames(src.getUniqueId());
         } catch (Exception e) {
             return Lists.newArrayList();
         }

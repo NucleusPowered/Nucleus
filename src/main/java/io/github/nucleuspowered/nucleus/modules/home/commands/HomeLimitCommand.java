@@ -11,7 +11,7 @@ import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeHandler;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
@@ -30,7 +30,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 public class HomeLimitCommand extends AbstractCommand<CommandSource> {
 
     private final String player = "player";
-    private final HomeHandler handler = getServiceUnchecked(HomeHandler.class);
+    private final HomeService handler = getServiceUnchecked(HomeService.class);
 
     @Override
     protected CommandElement[] getArguments() {

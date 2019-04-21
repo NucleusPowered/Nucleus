@@ -14,25 +14,33 @@ import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.exceptions.NucleusException;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
 import io.github.nucleuspowered.nucleus.api.service.NucleusHomeService;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.APIService;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.MessageProviderTrait;
 import io.github.nucleuspowered.nucleus.internal.traits.PermissionTrait;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.home.HomeKeys;
 import io.github.nucleuspowered.nucleus.modules.home.commands.SetHomeCommand;
 import io.github.nucleuspowered.nucleus.modules.home.events.AbstractHomeEvent;
 import io.github.nucleuspowered.nucleus.modules.home.events.CreateHomeEvent;
 import io.github.nucleuspowered.nucleus.modules.home.events.DeleteHomeEvent;
 import io.github.nucleuspowered.nucleus.modules.home.events.ModifyHomeEvent;
+import io.github.nucleuspowered.nucleus.modules.home.events.UseHomeEvent;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.teleport.TeleportHelperFilter;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +52,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 @APIService(NucleusHomeService.class)
-public class HomeHandler implements NucleusHomeService, MessageProviderTrait, PermissionTrait, ServiceBase, IDataManagerTrait {
+public class HomeService implements NucleusHomeService, MessageProviderTrait, PermissionTrait, ServiceBase, IDataManagerTrait {
 
     private final String unlimitedPermission
             = Nucleus.getNucleus().getPermissionRegistry().getPermissionsForNucleusCommand(SetHomeCommand.class).getPermissionWithSuffix("unlimited");
@@ -151,6 +159,34 @@ public class HomeHandler implements NucleusHomeService, MessageProviderTrait, Pe
         }
 
         return Math.max(Util.getPositiveIntOptionFromSubject(src, "home-count", "homes").orElse(1), 1);
+    }
+
+    public TeleportResult warpToHome(Player src, Home home, boolean safeTeleport) throws ReturnMessageException {
+        Sponge.getServer().loadWorld(home.getWorldProperties()
+                .orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", home.getName())));
+
+        Location<World> targetLocation = home.getLocation().orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", home.getName()));
+
+        UseHomeEvent event = CauseStackHelper.createFrameWithCausesWithReturn(c -> new UseHomeEvent(c, src, home), src);
+        if (Sponge.getEventManager().post(event)) {
+            throw new ReturnMessageException(event.getCancelMessage().orElseGet(() ->
+                    Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("nucleus.eventcancelled")
+            ));
+        }
+
+        SafeTeleportService safeLocationService = Nucleus.getNucleus()
+                .getInternalServiceManager()
+                .getServiceUnchecked(SafeTeleportService.class);
+        TeleportHelperFilter filter = safeLocationService.getAppropriateFilter(src, safeTeleport);
+
+        return safeLocationService.teleportPlayer(
+                        src,
+                        targetLocation,
+                        home.getRotation(),
+                        false,
+                        TeleportScanners.NO_SCAN,
+                        filter
+                );
     }
 
     private void postEvent(AbstractHomeEvent event) throws NucleusException {

@@ -6,11 +6,13 @@ package io.github.nucleuspowered.nucleus.modules.jump.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
+import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.jump.config.JumpConfigAdapter;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandResult;
@@ -32,7 +34,7 @@ public class ThruCommand extends AbstractCommand<Player> implements Reloadable {
     // Original code taken from EssentialCmds. With thanks to 12AwsomeMan34 for
     // the initial contribution.
     @Override
-    public CommandResult executeCommand(Player player, CommandContext args, Cause cause) {
+    public CommandResult executeCommand(Player player, CommandContext args, Cause cause) throws ReturnMessageException{
         BlockRay<World> playerBlockRay = BlockRay.from(player).distanceLimit(this.maxThru).build();
         World world = player.getWorld();
 
@@ -59,18 +61,24 @@ public class ThruCommand extends AbstractCommand<Player> implements Reloadable {
                 }
 
                 // If we can go, do so.
-                if (Nucleus.getNucleus().getTeleportHandler()
-                        .teleportPlayer(player, b.getLocation(), NucleusTeleportHandler.StandardTeleportMode.SAFE_TELEPORT).isSuccess()) {
-                    player.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.thru.success"));
+                boolean result = getServiceUnchecked(SafeTeleportService.class)
+                        .teleportPlayerSmart(
+                                player,
+                                b.getLocation(),
+                                false,
+                                true,
+                                TeleportScanners.NO_SCAN
+                        ).isSuccessful();
+                if (result) {
+                    sendMessageTo(player, "command.thru.success");
                     return CommandResult.success();
                 } else {
-                    player.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.thru.notsafe"));
-                    return CommandResult.empty();
+                    throw ReturnMessageException.fromKey(player, "command.thru.notsafe");
                 }
             }
         } while (playerBlockRay.hasNext());
 
-        player.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.thru.nospot"));
+        sendMessageTo(player, "command.thru.nospot");
         return CommandResult.empty();
     }
 

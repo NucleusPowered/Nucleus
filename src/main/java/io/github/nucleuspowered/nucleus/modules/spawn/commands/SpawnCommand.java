@@ -5,6 +5,9 @@
 package io.github.nucleuspowered.nucleus.modules.spawn.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResults;
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportScanners;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -13,7 +16,7 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.internal.teleport.NucleusTeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.core.services.SafeTeleportService;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.GlobalSpawnConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.SpawnConfigAdapter;
@@ -97,16 +100,21 @@ public class SpawnCommand extends AbstractCommand<Player> implements Reloadable 
         }
 
         // If we don't have a rotation, then use the current rotation
-        NucleusTeleportHandler.TeleportResult result = Nucleus.getNucleus().getTeleportHandler()
-                .teleportPlayer(src,
-                    SpawnHelper.getSpawn(ow.get().getProperties(), src),
-                    !force && this.sc.isSafeTeleport(), true);
-        if (result.isSuccess()) {
+        TeleportResult result = getServiceUnchecked(SafeTeleportService.class)
+                .teleportPlayerSmart(
+                        src,
+                        SpawnHelper.getSpawn(ow.get().getProperties(), src),
+                        true,
+                        !force && this.sc.isSafeTeleport(),
+                        TeleportScanners.NO_SCAN
+                );
+
+        if (result.isSuccessful()) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.spawn.success", wp.getWorldName()));
             return CommandResult.success();
         }
 
-        if (result == NucleusTeleportHandler.TeleportResult.FAILED_NO_LOCATION) {
+        if (result == TeleportResults.FAIL_NO_LOCATION) {
             throw ReturnMessageException.fromKey("command.spawn.fail", wp.getWorldName());
         }
 

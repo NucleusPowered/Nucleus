@@ -18,7 +18,7 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.teleport.events.RequestEvent;
-import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
+import io.github.nucleuspowered.nucleus.modules.teleport.services.PlayerTeleporterService;
 import io.github.nucleuspowered.nucleus.util.CauseStackHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
@@ -27,13 +27,12 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.plugin.meta.util.NonnullByDefault;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("ALL")
+@NonnullByDefault
 @Permissions(prefix = "teleport", suggestedLevel = SuggestedLevel.MOD, supportsSelectors = true)
 @RunAsync
 @NoWarmup(generateConfigEntry = true, generatePermissionDocs = true)
@@ -42,7 +41,7 @@ import java.util.Map;
 @NotifyIfAFK(NucleusParameters.Keys.PLAYER)
 public class TeleportAskHereCommand extends AbstractCommand<Player> {
 
-    private final TeleportHandler tpHandler = getServiceUnchecked(TeleportHandler.class);
+    private final PlayerTeleporterService playerTeleporterService = getServiceUnchecked(PlayerTeleporterService.class);
 
     @Override
     public Map<String, PermissionInformation> permissionSuffixesToRegister() {
@@ -62,12 +61,14 @@ public class TeleportAskHereCommand extends AbstractCommand<Player> {
 
     @Override
     protected ContinueMode preProcessChecks(Player source, CommandContext args) {
-        return TeleportHandler.canTeleportTo(permissions, source, args.<Player>getOne(NucleusParameters.Keys.PLAYER).get()) ? ContinueMode.CONTINUE : ContinueMode.STOP;
+        return this.playerTeleporterService
+                .canTeleportTo(source, args.<Player>getOne(NucleusParameters.Keys.PLAYER).get()) ?
+                    ContinueMode.CONTINUE : ContinueMode.STOP;
     }
 
     @Override
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) throws Exception {
-        Player target = args.<Player>getOne(NucleusParameters.Keys.PLAYER).get();
+        Player target = args.requireOne(NucleusParameters.Keys.PLAYER);
         if (src.equals(target)) {
             src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.teleport.self"));
             return CommandResult.empty();
@@ -80,24 +81,20 @@ public class TeleportAskHereCommand extends AbstractCommand<Player> {
                     event.getCancelMessage().orElseGet(() -> Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpa.eventfailed")));
         }
 
-        TeleportHandler.TeleportBuilder tb = tpHandler.getBuilder().setFrom(target).setTo(src).setSafe(!args.<Boolean>getOne("f").orElse(false));
-        int warmup = getWarmup(target);
-        if (warmup > 0) {
-            tb.setWarmupTime(warmup);
-        }
+        this.playerTeleporterService.requestTeleport(
+                src,
+                target,
+                getCost(src, args),
+                getWarmup(src),
+                target,
+                src,
+                !args.<Boolean>getOne("f").orElse(false),
+                false,
+                false,
+                this::setCooldown,
+                "command.tpahere.question"
+        );
 
-        double cost = getCost(src, args);
-        if (cost > 0.) {
-            tb.setCharge(src).setCost(cost);
-        }
-
-        // The question needs to be asked of the target
-        TeleportHandler.TeleportPrep tp = new TeleportHandler.TeleportPrep(Instant.now().plus(30, ChronoUnit.SECONDS), src, cost, tb);
-        this.tpHandler.addAskQuestion(target.getUniqueId(), tp);
-        target.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpahere.question", src.getName()));
-        target.sendMessage(this.tpHandler.getAcceptDenyMessage(src, tp));
-
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.tpask.sent", target.getName()));
         return CommandResult.success();
     }
 }

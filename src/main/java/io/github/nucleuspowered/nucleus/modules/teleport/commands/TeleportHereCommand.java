@@ -4,8 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.teleport.commands;
 
+import io.github.nucleuspowered.nucleus.api.teleport.TeleportResult;
 import io.github.nucleuspowered.nucleus.argumentparsers.IfConditionElseArgument;
-import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.NoModifiers;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
@@ -16,10 +16,8 @@ import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEq
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
 import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
-import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.modules.teleport.config.TeleportConfigAdapter;
-import io.github.nucleuspowered.nucleus.modules.teleport.services.TeleportHandler;
-import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.modules.teleport.services.PlayerTeleporterService;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.args.CommandElement;
@@ -44,8 +42,6 @@ import java.util.Map;
         notes = "If you have permission, this will override '/tptoggle' automatically.")
 @NonnullByDefault
 public class TeleportHereCommand extends AbstractCommand<Player> implements Reloadable {
-
-    private final TeleportHandler handler = getServiceUnchecked(TeleportHandler.class);
 
     private boolean isDefaultQuiet = false;
 
@@ -74,23 +70,24 @@ public class TeleportHereCommand extends AbstractCommand<Player> implements Relo
     public CommandResult executeCommand(Player src, CommandContext args, Cause cause) throws Exception {
         boolean beQuiet = args.<Boolean>getOne("q").orElse(this.isDefaultQuiet);
         User target = args.<User>getOne(NucleusParameters.Keys.PLAYER).get();
+        PlayerTeleporterService sts = getServiceUnchecked(PlayerTeleporterService.class);
         if (target.getPlayer().isPresent()) {
-            this.handler.getBuilder().setFrom(target.getPlayer().get()).setTo(src).setSilentSource(beQuiet).startTeleport();
+            Player to = target.getPlayer().get();
+            TeleportResult result = sts.teleportWithMessage(
+                    src,
+                    to,
+                    src,
+                    false,
+                    beQuiet,
+                    false
+            );
+            return result.isSuccessful() ? CommandResult.success() : CommandResult.empty();
         } else {
             this.permissions.checkSuffix(src, "offline", () -> ReturnMessageException.fromKey("command.tphere.noofflineperms"));
 
             // Update the offline player's next location
-            final LocationNode l = new LocationNode(src.getLocation());
-            getUser(target.getUniqueId())
-                    .thenAccept(x -> {
-                        if (x.isPresent()) {
-                            IUserDataObject u = x.get();
-                            u.set(CoreKeys.LOCATION_ON_LOGIN, l);
-                            sendMessageTo(src, "command.tphere.offlinesuccess", target.getName());
-                        } else {
-                            sendMessageTo(src, "command.tphere.couldnotset", target.getName());
-                        }
-                    });
+            target.setLocation(src.getPosition(), src.getWorld().getUniqueId());
+            sendMessageTo(src, "command.tphere.offlinesuccess", target.getName());
         }
 
         return CommandResult.success();
