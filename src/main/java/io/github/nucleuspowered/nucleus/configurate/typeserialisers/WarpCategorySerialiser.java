@@ -16,11 +16,14 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 
 public class WarpCategorySerialiser implements TypeSerializer<WarpCategory>  {
 
+    private static final String DESCRIPTION_ID = "description";
+    private static final String DISPLAY_NAME_ID = "displayName";
+
     @Nullable
     @Override
     public WarpCategory deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) {
-        @Nullable String description = value.getNode("description").getString();
-        @Nullable String displayName = value.getNode("displayName").getString();
+        String description = value.getNode(DESCRIPTION_ID).getString();
+        String displayName = value.getNode(DISPLAY_NAME_ID).getString();
         return new WarpCategoryData(
                 String.valueOf(value.getKey()),
                 displayName == null ? Text.of(value.getKey()) : TextSerializers.JSON.deserialize(displayName),
@@ -33,7 +36,7 @@ public class WarpCategorySerialiser implements TypeSerializer<WarpCategory>  {
         if (obj == null) {
             return;
         }
-        obj.getDescription().ifPresent(x -> value.getNode("description").setValue(TextSerializers.JSON.serialize(x)));
-        value.getNode("displayName").setValue(TextSerializers.JSON.serialize(obj.getDisplayName()));
+        obj.getDescription().ifPresent(x -> value.getNode(DESCRIPTION_ID).setValue(TextSerializers.JSON.serialize(x)));
+        value.getNode(DISPLAY_NAME_ID).setValue(TextSerializers.JSON.serialize(obj.getDisplayName()));
     }
 }
