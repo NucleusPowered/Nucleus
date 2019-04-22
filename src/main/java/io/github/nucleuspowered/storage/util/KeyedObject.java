@@ -23,10 +23,6 @@ public class KeyedObject<K, O> {
         return this.key;
     }
 
-    public boolean hasValue() {
-        return this.value != null;
-    }
-
     public Optional<O> getValue() {
         return Optional.ofNullable(this.value);
     }

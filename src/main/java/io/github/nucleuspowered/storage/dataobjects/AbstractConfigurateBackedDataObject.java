@@ -13,10 +13,6 @@ public abstract class AbstractConfigurateBackedDataObject implements IConfigurat
 
     protected ConfigurationNode backingNode;
 
-    public final boolean isAttached() {
-        return this.backingNode != null;
-    }
-
     @Override public ConfigurationNode getBackingNode() {
         return this.backingNode.copy();
     }
