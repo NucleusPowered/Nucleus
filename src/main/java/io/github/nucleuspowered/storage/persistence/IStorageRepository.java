@@ -26,7 +26,7 @@ import java.util.UUID;
  * into storage is equivalent to that coming out. You may inspect the json as you wish (which you may
  * want to do to support queries more effectively)</p>
  */
-public interface IStorageRepository {
+public interface IStorageRepository<O> {
 
     /**
      * Shutdown the repository, finishing any operations.
@@ -60,21 +60,21 @@ public interface IStorageRepository {
     /**
      * A repository where a single document is stored.
      */
-    interface Single extends IStorageRepository {
+    interface Single<O> extends IStorageRepository<O> {
 
         /**
          * Gets the object, if it exists
          *
          * @return The object, if it exists
          */
-        Optional<JsonObject> get() throws DataLoadException, DataQueryException;
+        Optional<O> get() throws DataLoadException, DataQueryException;
 
         /**
          * Saves the supplied {@code object}
          *
          * @param object The object to save
          */
-        void save(JsonObject object) throws ObjectMappingException, DataSaveException;
+        void save(O object) throws ObjectMappingException, DataSaveException;
     }
 
     /**
@@ -82,7 +82,7 @@ public interface IStorageRepository {
      *
      * @param <Q> The query object
      */
-    interface Keyed<K, Q extends IQueryObject<K, Q>> extends IStorageRepository {
+    interface Keyed<K, Q extends IQueryObject<K, Q>, O> extends IStorageRepository<O> {
 
         /**
          * Whether this storage mechanism supports complex queries
@@ -107,7 +107,7 @@ public interface IStorageRepository {
          * @param query The query
          * @return The object, if it exists, along with its primary key
          */
-        Optional<KeyedObject<K, JsonObject>> get(Q query) throws DataLoadException, DataQueryException;
+        Optional<KeyedObject<K, O>> get(Q query) throws DataLoadException, DataQueryException;
 
         /**
          * Gets the number of objects that satisfies the query.
@@ -119,12 +119,12 @@ public interface IStorageRepository {
         int count(Q query);
 
         /**
-         * Saves the supplied {@code object} in the position suggested by the suppleid {@code query}
+         * Saves the supplied {@code object} in the position suggested by the supplied {@code query}
          *
          * @param key The key that indicates the location to store the object in
          * @param object The object to save
          */
-        void save(K key, JsonObject object) throws ObjectMappingException, DataSaveException;
+        void save(K key, O object) throws ObjectMappingException, DataSaveException;
 
         /**
          * Deletes the object at the supplied {@code key}
@@ -147,7 +147,7 @@ public interface IStorageRepository {
          * @param key The key
          * @return The object, if it exists
          */
-        Optional<JsonObject> get(K key) throws DataLoadException, DataQueryException;
+        Optional<O> get(K key) throws DataLoadException, DataQueryException;
 
         /**
          * Gets all the stored keys
@@ -164,7 +164,7 @@ public interface IStorageRepository {
          * @return The objects, if any exist, or an empty map if {@link #supportsNonKeyQueries()} is {@code false} and the query is more than
          *         just a key.
          */
-        Map<K, JsonObject> getAll(Q query) throws DataLoadException, DataQueryException;
+        Map<K, O> getAll(Q query) throws DataLoadException, DataQueryException;
 
         /**
          * Gets the objects that satisfy the {@code query}

@@ -4,15 +4,14 @@
  */
 package io.github.nucleuspowered.storage.dataaccess;
 
-import com.google.gson.JsonObject;
 import io.github.nucleuspowered.storage.dataobjects.IDataObject;
 
-public interface IDataAccess<R extends IDataObject> {
+public interface IDataTranslator<R extends IDataObject, O> {
 
     R createNew();
 
-    R fromJsonObject(JsonObject object);
+    R fromDataAccessObject(O object);
 
-    JsonObject toJsonObject(R object);
+    O toDataAccessObject(R object);
 
 }

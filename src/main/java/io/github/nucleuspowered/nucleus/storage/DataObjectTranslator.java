@@ -5,10 +5,10 @@
 package io.github.nucleuspowered.nucleus.storage;
 
 import com.google.common.reflect.TypeToken;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.GeneralDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.UserDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.WorldDataObject;
-import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;

@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.storage.dataobjects.keyed;
 
-import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 

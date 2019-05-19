@@ -9,16 +9,14 @@ import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObj
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IWorldDataObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IWorldQueryObject;
-import io.github.nucleuspowered.nucleus.storage.services.persistent.IGeneralDataService;
-import io.github.nucleuspowered.storage.dataaccess.IDataAccess;
+import io.github.nucleuspowered.nucleus.storage.services.IGeneralDataService;
+import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
-import io.github.nucleuspowered.storage.services.storage.IStorageService;
+import io.github.nucleuspowered.storage.services.IStorageService;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-public interface INucleusStorageManager {
+public interface INucleusStorageManager<O> {
 
     IGeneralDataService getGeneralService();
 
@@ -26,16 +24,16 @@ public interface INucleusStorageManager {
 
     IStorageService.Keyed<UUID, IWorldQueryObject, IWorldDataObject> getWorldService();
 
-    IDataAccess<IUserDataObject> getUserDataAccess();
+    IDataTranslator<IUserDataObject, O> getUserDataAccess();
 
-    IDataAccess<IWorldDataObject> getWorldDataAccess();
+    IDataTranslator<IWorldDataObject, O> getWorldDataAccess();
 
-    IDataAccess<IGeneralDataObject> getGeneralDataAccess();
+    IDataTranslator<IGeneralDataObject, O> getGeneralDataAccess();
 
-    @Nullable IStorageRepository.Keyed<UUID, IUserQueryObject> getUserRepository();
+    IStorageRepository.Keyed<UUID, IUserQueryObject, O> getUserRepository();
 
-    @Nullable IStorageRepository.Keyed<UUID, IWorldQueryObject> getWorldRepository();
+    IStorageRepository.Keyed<UUID, IWorldQueryObject, O> getWorldRepository();
 
-    @Nullable IStorageRepository.Single getGeneralRepository();
+    IStorageRepository.Single<O> getGeneralRepository();
 
 }

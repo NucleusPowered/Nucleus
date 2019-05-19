@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus;
 
+import com.google.gson.JsonObject;
 import io.github.nucleuspowered.nucleus.api.service.NucleusMessageTokenService;
 import io.github.nucleuspowered.nucleus.config.CommandsConfig;
 import io.github.nucleuspowered.nucleus.dataservices.ItemDataService;
@@ -142,7 +143,7 @@ public abstract class Nucleus {
 
     public abstract boolean isPrintingSavesAndLoads();
 
-    public abstract INucleusStorageManager getStorageManager();
+    public abstract INucleusStorageManager<JsonObject> getStorageManager();
 
     public abstract UserPreferenceService getUserPreferenceService();
 }

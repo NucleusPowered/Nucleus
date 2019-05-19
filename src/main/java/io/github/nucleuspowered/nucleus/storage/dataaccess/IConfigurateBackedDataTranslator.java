@@ -2,18 +2,18 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.storage.dataaccess;
+package io.github.nucleuspowered.nucleus.storage.dataaccess;
 
 import com.google.gson.JsonObject;
-import io.github.nucleuspowered.storage.dataaccess.configurate.ConfigurationNodeJsonTranslator;
-import io.github.nucleuspowered.storage.dataobjects.IConfigurateBackedDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.IConfigurateBackedDataObject;
+import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import ninja.leaping.configurate.ConfigurationNode;
 
 @FunctionalInterface
-public interface IConfigurateBackedDataAccess<R extends IConfigurateBackedDataObject> extends IDataAccess<R> {
+public interface IConfigurateBackedDataTranslator<R extends IConfigurateBackedDataObject> extends IDataTranslator<R, JsonObject> {
 
     @Override
-    default R fromJsonObject(JsonObject object) {
+    default R fromDataAccessObject(JsonObject object) {
         // Get the ConfigNode from the JsonObject
         ConfigurationNode node = ConfigurationNodeJsonTranslator.INSTANCE.from(object);
         R obj = createNew();
@@ -22,7 +22,7 @@ public interface IConfigurateBackedDataAccess<R extends IConfigurateBackedDataOb
     }
 
     @Override
-    default JsonObject toJsonObject(R object) {
+    default JsonObject toDataAccessObject(R object) {
         ConfigurationNode node = object.getBackingNode();
         return ConfigurationNodeJsonTranslator.INSTANCE.jsonFrom(node);
     }

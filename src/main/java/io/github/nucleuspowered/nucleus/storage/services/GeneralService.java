@@ -2,42 +2,46 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.storage.services.persistent;
+package io.github.nucleuspowered.nucleus.storage.services;
 
+import io.github.nucleuspowered.nucleus.storage.INucleusStorageManager;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
-import io.github.nucleuspowered.storage.dataaccess.IDataAccess;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.services.ServicesUtil;
+import io.github.nucleuspowered.storage.util.ThrownConsumer;
+import io.github.nucleuspowered.storage.util.ThrownSupplier;
 
-import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+
 public class GeneralService implements IGeneralDataService {
 
-    private final Supplier<IStorageRepository.Single> storageRepository;
-    private final Supplier<IDataAccess<IGeneralDataObject>> dataAccess;
+    private final Supplier<IGeneralDataObject> createNew;
+    private final ThrownSupplier<Optional<IGeneralDataObject>, Exception> get;
+    private final ThrownConsumer<IGeneralDataObject, Exception> save;
+    private final Supplier<IStorageRepository.Single<?>> repositorySupplier;
 
     private IGeneralDataObject cached = null;
 
-    public GeneralService(Supplier<IDataAccess<IGeneralDataObject>> dataAccess, Supplier<IStorageRepository.Single> storageRepository) {
-        this.storageRepository = storageRepository;
-        this.dataAccess = dataAccess;
+    public <O> GeneralService(INucleusStorageManager<O> storageManager) {
+        this.createNew = () -> storageManager.getGeneralDataAccess().createNew();
+        this.get = () -> storageManager.getGeneralRepository().get()
+                .map(x -> storageManager.getGeneralDataAccess().fromDataAccessObject(x));
+        this.save = r -> storageManager.getGeneralRepository().save(storageManager.getGeneralDataAccess().toDataAccessObject(r));
+        this.repositorySupplier = storageManager::getGeneralRepository;
     }
 
     @Override
-    public IStorageRepository.Single getStorageRepository() {
-        return this.storageRepository.get();
+    public IGeneralDataObject createNew() {
+        return this.createNew.get();
     }
 
-    @Override public CompletableFuture<Void> ensureSaved() {
+    @Override
+    public CompletableFuture<Void> ensureSaved() {
         return null;
-    }
-
-    @Override
-    public IDataAccess<IGeneralDataObject> getDataAccess() {
-        return this.dataAccess.get();
     }
 
     @Override
@@ -68,7 +72,7 @@ public class GeneralService implements IGeneralDataService {
     }
 
     private Optional<IGeneralDataObject> getFromRepo() throws Exception {
-        Optional<IGeneralDataObject> gdo = getStorageRepository().get().map(getDataAccess()::fromJsonObject);
+        Optional<IGeneralDataObject> gdo = this.get.get();
         gdo.ifPresent(x -> this.cached = x);
         return gdo;
     }
@@ -84,19 +88,21 @@ public class GeneralService implements IGeneralDataService {
         return d;
     }
 
-    @Override public CompletableFuture<Void> save(@Nonnull IGeneralDataObject value) {
+    @Override
+    public CompletableFuture<Void> save(@Nonnull IGeneralDataObject value) {
         return ServicesUtil.run(() -> {
-            getStorageRepository().save(getDataAccess().toJsonObject(value));
+            this.save.save(value);
             this.cached = value;
             return null;
         });
     }
 
-    @Override public CompletableFuture<Void> clearCache() {
+    @Override
+    public CompletableFuture<Void> clearCache() {
         this.cached = null;
-        if (getStorageRepository().hasCache()) {
+        if (this.repositorySupplier.get().hasCache()) {
             return ServicesUtil.run(() -> {
-                getStorageRepository().clearCache();
+                this.repositorySupplier.get().clearCache();
                 return null;
             });
         } else {

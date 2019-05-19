@@ -2,19 +2,18 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.storage.services.storage;
+package io.github.nucleuspowered.storage.services;
 
-import io.github.nucleuspowered.storage.dataaccess.IDataAccess;
-import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import io.github.nucleuspowered.storage.dataobjects.IDataObject;
-import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.queryobjects.IQueryObject;
 import io.github.nucleuspowered.storage.util.KeyedObject;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import javax.annotation.Nonnull;
 
 /**
  * The entry point into the storage system. All storage checks are not dependent on the main thread,
@@ -23,18 +22,11 @@ import java.util.concurrent.CompletableFuture;
 public interface IStorageService<D extends IDataObject> {
 
     /**
-     * Gets the {@link IDataAccess} associated with this service
+     * Creates a new {@link D} object.
      *
-     * @return The {@link IDataAccess}
+     * @return A new {@link D}
      */
-    IDataAccess<D> getDataAccess();
-
-    /**
-     * Gets the {@link IStorageRepository} associated with this service
-     *
-     * @return The {@link IStorageRepository}
-     */
-    IStorageRepository getStorageRepository();
+    D createNew();
 
     /**
      * Provides a hint to the storage engine that anything that has been not yet been
@@ -54,16 +46,6 @@ public interface IStorageService<D extends IDataObject> {
      * @param <D> The data object type
      */
     interface Single<D extends IDataObject> extends IStorageService<D> {
-
-        /**
-         * Get the {@link IStorageRepository.Single} that is the backing store for this service.
-         *
-         * <p>Users should not store this as this is subject to change during the lifetime of the
-         * application.</p>
-         *
-         * @return The {@link IStorageRepository.Single}
-         */
-        IStorageRepository.Single getStorageRepository();
 
         /**
          * Gets the data.
@@ -86,7 +68,7 @@ public interface IStorageService<D extends IDataObject> {
          */
         default CompletableFuture<D> getOrNew() {
             return get().thenApply(d -> d.orElseGet(() -> {
-                D result = getDataAccess().createNew();
+                D result = createNew();
                 save(result);
                 return result;
             }));
@@ -99,7 +81,7 @@ public interface IStorageService<D extends IDataObject> {
          */
         default D getOrNewOnThread() {
             return getOnThread().orElseGet(() -> {
-                D result = getDataAccess().createNew();
+                D result = createNew();
                 save(result);
                 return result;
             });
@@ -129,16 +111,6 @@ public interface IStorageService<D extends IDataObject> {
      * @param <D> The {@link AbstractConfigurateBackedDataObject} that this service deals with.
      */
     interface Keyed<K, Q extends IQueryObject<K, Q>, D extends IDataObject> extends IStorageService<D> {
-
-        /**
-         * Get the {@link IStorageRepository.Keyed} that is the backing store for this service.
-         *
-         * <p>Users should not store this as this is subject to change during the lifetime of the
-         * application.</p>
-         *
-         * @return The {@link IStorageRepository.Keyed}
-         */
-        IStorageRepository.Keyed<K, Q> getStorageRepository();
 
         /**
          * Whether the backing storage engine supports queries that is not simply
@@ -174,7 +146,7 @@ public interface IStorageService<D extends IDataObject> {
          */
         default CompletableFuture<D> getOrNew(@Nonnull K key) {
             return get(key).thenApply(d -> d.orElseGet(() -> {
-                D result = getDataAccess().createNew();
+                D result = createNew();
                 save(key, result);
                 return result;
             }));
@@ -188,7 +160,7 @@ public interface IStorageService<D extends IDataObject> {
          */
         default D getOrNewOnThread(@Nonnull K key) {
             return getOnThread(key).orElseGet(() -> {
-                D result = getDataAccess().createNew();
+                D result = createNew();
                 save(key, result);
                 return result;
             });

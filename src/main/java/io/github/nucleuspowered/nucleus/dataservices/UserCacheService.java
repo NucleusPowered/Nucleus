@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.internal.traits.IDataManagerTrait;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.UserQueryObject;
-import io.github.nucleuspowered.storage.services.storage.IStorageService;
+import io.github.nucleuspowered.storage.services.IStorageService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.util.Identifiable;

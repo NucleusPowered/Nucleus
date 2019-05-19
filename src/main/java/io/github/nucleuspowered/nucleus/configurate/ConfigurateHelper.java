@@ -25,7 +25,7 @@ import io.github.nucleuspowered.nucleus.configurate.wrappers.NucleusItemStackSna
 import io.github.nucleuspowered.nucleus.internal.TypeTokens;
 import io.github.nucleuspowered.nucleus.internal.text.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.storage.DataObjectTranslator;
-import io.github.nucleuspowered.storage.dataobjects.AbstractConfigurateBackedDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 

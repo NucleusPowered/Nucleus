@@ -2,8 +2,9 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.storage.persistence.configurate;
+package io.github.nucleuspowered.nucleus.storage.persistence;
 
+import com.google.gson.JsonObject;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IWorldQueryObject;
@@ -15,9 +16,9 @@ import io.github.nucleuspowered.storage.queryobjects.IQueryObject;
 import java.util.Collection;
 import java.util.UUID;
 
-public final class FlatFileStorageRepositoryFactory implements IStorageRepositoryFactory {
+public final class FlatFileStorageRepositoryFactory implements IStorageRepositoryFactory<JsonObject> {
 
-    public static final IStorageRepositoryFactory INSTANCE = new FlatFileStorageRepositoryFactory();
+    public static final IStorageRepositoryFactory<JsonObject> INSTANCE = new FlatFileStorageRepositoryFactory();
 
     private static final String wd = "worlddata";
     private static final String ud = "userdata";
@@ -25,16 +26,16 @@ public final class FlatFileStorageRepositoryFactory implements IStorageRepositor
     private FlatFileStorageRepositoryFactory() {}
 
     @Override
-    public IStorageRepository.Keyed<UUID, IUserQueryObject> userRepository() {
+    public IStorageRepository.Keyed<UUID, IUserQueryObject, JsonObject> userRepository() {
         return repository(ud);
     }
 
     @Override
-    public IStorageRepository.Keyed<UUID, IWorldQueryObject> worldRepository() {
+    public IStorageRepository.Keyed<UUID, IWorldQueryObject, JsonObject> worldRepository() {
         return repository(wd);
     }
 
-    private <R extends IQueryObject<UUID, R>> IStorageRepository.Keyed<UUID, R> repository(final String p) {
+    private <R extends IQueryObject<UUID, R>> IStorageRepository.Keyed<UUID, R, JsonObject> repository(final String p) {
         return new FlatFileStorageRepository.UUIDKeyed<>(query -> {
             if (query.keys().size() == 1) {
                 Collection<UUID> uuids = query.keys();

@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.storage.persistence.configurate;
+package io.github.nucleuspowered.nucleus.storage.persistence;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-abstract class FlatFileStorageRepository implements IStorageRepository {
+abstract class FlatFileStorageRepository implements IStorageRepository<JsonObject> {
 
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -94,7 +94,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
         return false;
     }
 
-    static class Single extends FlatFileStorageRepository implements IStorageRepository.Single {
+    static class Single extends FlatFileStorageRepository implements IStorageRepository.Single<JsonObject> {
 
         private final Supplier<Path> FILENAME_RESOLVER;
 
@@ -120,7 +120,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
 
     static class UUIDKeyed<Q extends IQueryObject<UUID, Q>>
             extends FlatFileStorageRepository
-            implements Keyed<UUID, Q> {
+            implements Keyed<UUID, Q, JsonObject> {
 
         private final ThrownFunction<Q, Path, DataQueryException> FILENAME_RESOLVER;
         private final Supplier<Path> BASE_PATH;

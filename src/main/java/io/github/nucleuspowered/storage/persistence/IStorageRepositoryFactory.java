@@ -17,27 +17,27 @@ import java.util.UUID;
  * <p>Any of these methods may return {@code null} to indicate that the storage type is
  * <strong>not supported</strong> for this specific data type.</p>
  */
-public interface IStorageRepositoryFactory extends CatalogType {
+public interface IStorageRepositoryFactory<O> extends CatalogType {
 
     /**
      * Gets a storage system for user data
      *
      * @return The storage system, if offered.
      */
-    IStorageRepository.@Nullable Keyed<UUID, IUserQueryObject> userRepository();
+    IStorageRepository.@Nullable Keyed<UUID, IUserQueryObject, O> userRepository();
 
     /**
      * Gets a storage system for world data
      *
      * @return The storage system, if offered.
      */
-    IStorageRepository.@Nullable Keyed<UUID, IWorldQueryObject> worldRepository();
+    IStorageRepository.@Nullable Keyed<UUID, IWorldQueryObject, O> worldRepository();
 
     /**
      * Gets a storage system for general data
      *
      * @return The storage system, if offered.
      */
-    IStorageRepository.@Nullable Single generalRepository();
+    IStorageRepository.@Nullable Single<O> generalRepository();
 
 }

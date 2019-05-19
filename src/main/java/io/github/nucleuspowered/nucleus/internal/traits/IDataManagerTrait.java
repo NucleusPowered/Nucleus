@@ -8,7 +8,7 @@ import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IGeneralDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IWorldDataObject;
-import io.github.nucleuspowered.nucleus.storage.services.persistent.IGeneralDataService;
+import io.github.nucleuspowered.nucleus.storage.services.IGeneralDataService;
 
 import java.util.Optional;
 import java.util.UUID;

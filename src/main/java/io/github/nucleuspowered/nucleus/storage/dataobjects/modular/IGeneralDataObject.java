@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.storage.dataobjects.modular;
 
-import io.github.nucleuspowered.storage.dataobjects.IConfigurateBackedDataObject;
+import io.github.nucleuspowered.nucleus.storage.dataobjects.configurate.IConfigurateBackedDataObject;
 import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
 
 public interface IGeneralDataObject extends IKeyedDataObject<IGeneralDataObject>, IConfigurateBackedDataObject {

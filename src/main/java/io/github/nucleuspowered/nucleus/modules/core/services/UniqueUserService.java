@@ -9,19 +9,20 @@ import io.github.nucleuspowered.nucleus.internal.interfaces.ServiceBase;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.storage.queryobjects.IUserQueryObject;
-import io.github.nucleuspowered.storage.services.storage.IStorageService;
+import io.github.nucleuspowered.storage.services.IStorageService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.manipulator.mutable.entity.JoinData;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.user.UserStorageService;
 
-import javax.annotation.Nullable;
-import javax.inject.Singleton;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+import javax.inject.Singleton;
 
 @Singleton
 public class UniqueUserService implements ServiceBase {
