@@ -120,7 +120,7 @@ public class TeleportCommand extends AbstractCommand<CommandSource> implements R
     }
 
     @Override protected ContinueMode preProcessChecks(CommandSource source, CommandContext args) {
-        return TeleportHandler.canTeleportTo(source, args.<User>getOne(NucleusParameters.Keys.PLAYER).get()) ? ContinueMode.CONTINUE : ContinueMode.STOP;
+        return TeleportHandler.canTeleportTo(permissions, source, args.<User>getOne(NucleusParameters.Keys.PLAYER).get()) ? ContinueMode.CONTINUE : ContinueMode.STOP;
     }
 
     @Override

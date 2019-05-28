@@ -5,11 +5,11 @@
 package io.github.nucleuspowered.nucleus.modules.teleport.services;
 
 import com.google.common.base.Preconditions;
-import io.github.nucleuspowered.nucleus.NameUtil;
 import io.github.nucleuspowered.nucleus.Nucleus;
 import io.github.nucleuspowered.nucleus.NucleusPlugin;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.dataservices.modular.ModularUserService;
+import io.github.nucleuspowered.nucleus.internal.CommandPermissionHandler;
 import io.github.nucleuspowered.nucleus.internal.PermissionRegistry;
 import io.github.nucleuspowered.nucleus.internal.interfaces.CancellableTask;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
@@ -51,6 +51,7 @@ import javax.annotation.Nullable;
 public class TeleportHandler implements MessageProviderTrait, InternalServiceManagerTrait, PermissionTrait, ServiceBase, Reloadable {
 
     private boolean refundOnDeny;
+    private static boolean isOnlySameDimension;
     private final Map<UUID, TeleportPrep> ask = new HashMap<>();
     private final String acceptPerm = getPermissionHandlerFor(TeleportAcceptCommand.class).getBase();
     private final String denyPerm = getPermissionHandlerFor(TeleportDenyCommand.class).getBase();
@@ -65,12 +66,21 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
         return Nucleus.getNucleus().getPermissionResolver().hasPermission(from, tptoggleBypassPermission);
     }
 
-    public static boolean canTeleportTo(CommandSource source, User to)  {
+    public static boolean canTeleportTo(CommandPermissionHandler permissions, CommandSource source, User to)  {
         if (source instanceof Player && !TeleportHandler.canBypassTpToggle(source)) {
             UserPreferenceService ups = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(UserPreferenceService.class);
             if (!ups.get(to.getUniqueId(), TeleportUserPrefKeys.TELEPORT_TARGETABLE).orElse(true)) {
                 source.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("teleport.fail.targettoggle", to.getName()));
                 return false;
+            }
+        }
+
+        if (isOnlySameDimension && source instanceof Player) {
+            if (!to.getWorldUniqueId().orElse(UUID.randomUUID()).equals(((Player) source).getWorldUniqueId().orElse(UUID.randomUUID()))) {
+                if (!permissions.testSuffix(source, "exempt.samedimension", source, true)) {
+                    source.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("teleport.fail.samedimension", to.getName()));
+                    return false;
+                }
             }
         }
 
@@ -209,6 +219,7 @@ public class TeleportHandler implements MessageProviderTrait, InternalServiceMan
     @Override
     public void onReload() {
         this.refundOnDeny = getServiceUnchecked(TeleportConfigAdapter.class).getNodeOrDefault().isRefundOnDeny();
+        isOnlySameDimension = getServiceUnchecked(TeleportConfigAdapter.class).getNodeOrDefault().isOnlySameDimension();
     }
 
     private static class TeleportTask implements CancellableTask {

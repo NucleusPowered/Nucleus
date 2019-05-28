@@ -62,7 +62,7 @@ public class TeleportAskHereCommand extends AbstractCommand<Player> {
 
     @Override
     protected ContinueMode preProcessChecks(Player source, CommandContext args) {
-        return TeleportHandler.canTeleportTo(source, args.<Player>getOne(NucleusParameters.Keys.PLAYER).get()) ? ContinueMode.CONTINUE : ContinueMode.STOP;
+        return TeleportHandler.canTeleportTo(permissions, source, args.<Player>getOne(NucleusParameters.Keys.PLAYER).get()) ? ContinueMode.CONTINUE : ContinueMode.STOP;
     }
 
     @Override

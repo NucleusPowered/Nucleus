@@ -19,6 +19,9 @@ public class TeleportConfig {
     @Setting(value = "refund-on-deny", comment = "config.teleport.refundondeny")
     private boolean refundOnDeny = true;
 
+    @Setting(value = "only-same-dimension", comment = "config.teleport.onlySameDimension")
+    private boolean onlySameDimension = false;
+
     public boolean isDefaultQuiet() {
         return this.defaultQuiet;
     }
@@ -29,5 +32,9 @@ public class TeleportConfig {
 
     public boolean isRefundOnDeny() {
         return refundOnDeny;
+    }
+
+    public boolean isOnlySameDimension() {
+        return onlySameDimension;
     }
 }
