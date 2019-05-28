@@ -14,6 +14,7 @@ import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
 import io.github.nucleuspowered.nucleus.internal.command.ReturnMessageException;
 import io.github.nucleuspowered.nucleus.internal.docgen.annotations.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.internal.interfaces.Reloadable;
+import io.github.nucleuspowered.nucleus.internal.permissions.PermissionInformation;
 import io.github.nucleuspowered.nucleus.internal.permissions.SuggestedLevel;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfig;
 import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfigAdapter;
@@ -32,6 +33,8 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Permissions(suggestedLevel = SuggestedLevel.USER)
@@ -42,16 +45,25 @@ public class HomeCommand extends AbstractCommand<Player> implements Reloadable {
 
     private final String home = "home";
 
+    public static final String EXEMPT_SAMEDIMENSION_SUFFIX = "exempt.samedimension";
+
     private final HomeHandler homeHandler = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(HomeHandler.class);
 
     private boolean isSafeTeleport = true;
     private boolean isPreventOverhang = true;
+    private boolean isOnlySameDimension = false;
 
     @Override
     public CommandElement[] getArguments() {
         return new CommandElement[] {
             GenericArguments.onlyOne(GenericArguments.optional(new HomeArgument(Text.of(this.home), Nucleus.getNucleus())))
         };
+    }
+
+    @Override protected Map<String, PermissionInformation> permissionSuffixesToRegister() {
+        return new HashMap<String, PermissionInformation>() {{
+            put(EXEMPT_SAMEDIMENSION_SUFFIX, PermissionInformation.getWithTranslation("permission.home.exempt.samedimension", SuggestedLevel.ADMIN));
+        }};
     }
 
     @Override
@@ -77,6 +89,14 @@ public class HomeCommand extends AbstractCommand<Player> implements Reloadable {
                 .orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", wl.getName())));
 
         Location<World> targetLocation = wl.getLocation().orElseThrow(() -> ReturnMessageException.fromKey("command.home.invalid", wl.getName()));
+
+        if (this.isOnlySameDimension) {
+            if (!targetLocation.getExtent().getUniqueId().equals(src.getLocation().getExtent().getUniqueId())) {
+                if (!this.permissions.testSuffix(src, "exempt.samedimension", src, true)) {
+                    throw ReturnMessageException.fromKey("command.home.invalid", wl.getName());
+                }
+            }
+        }
 
         UseHomeEvent event = CauseStackHelper.createFrameWithCausesWithReturn(c -> new UseHomeEvent(c, src, wl), src);
         if (Sponge.getEventManager().post(event)) {
@@ -104,5 +124,6 @@ public class HomeCommand extends AbstractCommand<Player> implements Reloadable {
         HomeConfig hc = Nucleus.getNucleus().getInternalServiceManager().getServiceUnchecked(HomeConfigAdapter.class).getNodeOrDefault();
         this.isSafeTeleport = hc.isSafeTeleport();
         this.isPreventOverhang = hc.isPreventHomeCountOverhang();
+        this.isOnlySameDimension = hc.isOnlySameDimension();
     }
 }

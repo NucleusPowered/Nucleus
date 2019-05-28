@@ -18,6 +18,9 @@ public class HomeConfig {
 
     @Setting(value = "prevent-home-count-overhang", comment = "config.home.overhang")
     private boolean preventHomeCountOverhang = true;
+    
+    @Setting(value = "only-same-dimension", comment = "config.home.onlySameDimension")
+    private boolean onlySameDimension = false;
 
     public boolean isSafeTeleport() {
         return this.safeTeleport;
@@ -29,5 +32,9 @@ public class HomeConfig {
 
     public boolean isPreventHomeCountOverhang() {
         return this.preventHomeCountOverhang;
+    }
+
+    public boolean isOnlySameDimension() {
+        return this.onlySameDimension;
     }
 }
