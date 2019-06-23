@@ -72,7 +72,7 @@ public abstract class DataModule<S extends ModularDataService<S>> {
 
     protected <T> Optional<T> getValue(TypeToken<T> token, String path, ConfigurationNode node) {
         try {
-            return Optional.ofNullable(node.getNode(path).getValue(token));
+            return Optional.ofNullable(node.getNode(path)).map(innerNode -> innerNode.getValue(token));
         } catch (ObjectMappingException e) {
             e.printStackTrace();
             return Optional.empty();
