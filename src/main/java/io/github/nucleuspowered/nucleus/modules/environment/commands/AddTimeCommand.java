@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.modules.environment.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
@@ -20,7 +24,6 @@ import java.util.function.LongFunction;
 
 @Permissions(prefix = "time")
 @RegisterCommand(value = "add", subcommandOf = TimeCommand.class, rootAliasRegister = { "addtime", "timeadd" })
-@EssentialsEquivalent(value = {"time", "day", "night"}, isExact = false, notes = "A time MUST be specified.")
 @NonnullByDefault
 public class AddTimeCommand extends AbstractCommand<CommandSource> {
     private final String time = "time";
@@ -41,7 +44,7 @@ public class AddTimeCommand extends AbstractCommand<CommandSource> {
         long tick = args.<Long>getOne(this.time).get();
         long time = pr.getWorldTime() + tick;
         pr.setWorldTime(time);
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.addtime.done2",
+        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.addtime.done",
                 pr.getWorldName(),
                 tick,
                 Util.getTimeFromTicks(time)));

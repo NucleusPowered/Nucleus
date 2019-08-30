@@ -46,7 +46,7 @@ public class SetTimeCommand extends AbstractCommand<CommandSource> {
         LongFunction<Long> tick = args.<LongFunction<Long>>getOne(this.time).get();
         long time = tick.apply(pr.getWorldTime());
         pr.setWorldTime(time);
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.settime.done2",
+        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.settime.done",
                 pr.getWorldName(),
                 String.valueOf(Util.getTimeFromTicks(time))));
         return CommandResult.success();

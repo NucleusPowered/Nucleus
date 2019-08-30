@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.modules.environment.commands;
 
 import io.github.nucleuspowered.nucleus.Nucleus;
@@ -18,7 +22,6 @@ import org.spongepowered.api.world.storage.WorldProperties;
 
 @Permissions(prefix = "time")
 @RegisterCommand(value = "remove", subcommandOf = TimeCommand.class, rootAliasRegister = { "removetime", "timeremove"})
-@EssentialsEquivalent(value = {"time", "day", "night"}, isExact = false, notes = "A time MUST be specified.")
 @NonnullByDefault
 public class RemoveTimeCommand extends AbstractCommand<CommandSource> {
     private final String time = "time";
@@ -39,7 +42,7 @@ public class RemoveTimeCommand extends AbstractCommand<CommandSource> {
         long tick = args.<Long>getOne(this.time).get();
         long time = pr.getWorldTime() - tick;
         pr.setWorldTime(time);
-        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.removetime.done2",
+        src.sendMessage(Nucleus.getNucleus().getMessageProvider().getTextMessageWithFormat("command.removetime.done",
                 pr.getWorldName(),
                 tick,
                 Util.getTimeFromTicks(time)));
