@@ -54,6 +54,7 @@ open class UploadToGithubReleases : DefaultTask() {
                 val gson = Gson()
                 val uploadUrl = try {
                     con.requestMethod = "POST"
+                    con.setRequestProperty("Authorization", "token $token")
                     con.setRequestProperty("Content-Type", ContentType.APPLICATION_JSON.mimeType)
                     con.setRequestProperty("User-Agent", "Nucleus/Gradle")
 
@@ -71,19 +72,20 @@ open class UploadToGithubReleases : DefaultTask() {
 
                 // POST :server/repos/:owner/:repo/releases/:release_id/assets{?name,label}
                 val uploadStripped = uploadUrl.replace("{?name,label}", "")
-                apiFile?.also { uploadJarFile(uploadStripped, it.get()) }
-                jdFile?.also { uploadJarFile(uploadStripped, it.get()) }
-                pluginFile?.also { uploadJarFile(uploadStripped, it.get()) }
+                apiFile?.also { uploadJarFile(uploadStripped, token!!, it.get()) }
+                jdFile?.also { uploadJarFile(uploadStripped, token!!, it.get()) }
+                pluginFile?.also { uploadJarFile(uploadStripped, token!!, it.get()) }
             }
         }
     }
 
-    private fun uploadJarFile(uploadStripped: String, file: RegularFile) {
+    private fun uploadJarFile(uploadStripped: String, token: String, file: RegularFile) {
         val fileName = file.asFile.nameWithoutExtension
         val toUpload = URL("$uploadStripped?name=$fileName")
         val con: HttpURLConnection = toUpload.openConnection() as HttpURLConnection
         try {
             con.requestMethod = "POST"
+            con.setRequestProperty("Authorization", "token $token")
             con.setRequestProperty("Content-Type", "application/java-archive")
             con.setRequestProperty("User-Agent", "Nucleus/Gradle")
             con.doOutput = true
