@@ -12,6 +12,7 @@ import org.gradle.api.tasks.TaskAction
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.stream.Collectors
@@ -20,7 +21,6 @@ val GITHUB_API_URL = "https://api.github.com"
 
 open class UploadToGithubReleases : DefaultTask() {
 
-    var releaseToken: String? = null
     var mcVersion: () -> String = { "1.12.2" }
     var version: () -> String = { "unknown" }
     var apiFile: Provider<RegularFile>? = null
@@ -49,7 +49,7 @@ open class UploadToGithubReleases : DefaultTask() {
                 )
 
                 // POST /repos/:owner/:repo/releases
-                val apiEndpoint = URL("https://api.github.com/repos/$ownerName/$repoName/releases")
+                val apiEndpoint = URL("$GITHUB_API_URL/repos/$ownerName/$repoName/releases")
                 val con: HttpURLConnection = apiEndpoint.openConnection() as HttpURLConnection
                 val gson = Gson()
                 val uploadUrl = try {
@@ -57,6 +57,10 @@ open class UploadToGithubReleases : DefaultTask() {
                     con.setRequestProperty("Authorization", "token $token")
                     con.setRequestProperty("Content-Type", ContentType.APPLICATION_JSON.mimeType)
                     con.setRequestProperty("User-Agent", "Nucleus/Gradle")
+                    con.doOutput = true
+                    PrintWriter(con.outputStream).use {
+                        it.write(gson.toJson(creation))
+                    }
 
                     val status = con.responseCode
                     if (status != 201) {

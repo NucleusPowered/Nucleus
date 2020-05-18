@@ -1,6 +1,8 @@
 import io.github.nucleuspowered.gradle.enums.getLevel
 import io.github.nucleuspowered.gradle.task.RelNotesTask
 import io.github.nucleuspowered.gradle.task.StdOutExec
+import io.github.nucleuspowered.gradle.task.UploadToGithubReleases
+import io.github.nucleuspowered.gradle.task.UploadToOre
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -160,7 +162,7 @@ val outputRelNotes by tasks.registering {
 
 val shadowJar: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar by tasks
 
-val upload by tasks.registering(io.github.nucleuspowered.gradle.task.UploadToOre::class) {
+val upload by tasks.registering(UploadToOre::class) {
     dependsOn(shadowJar)
     dependsOn(relNotes)
     fileProvider = shadowJar.archiveFile
@@ -168,6 +170,21 @@ val upload by tasks.registering(io.github.nucleuspowered.gradle.task.UploadToOre
     releaseLevel = { level }
     apiKey = properties["ore_apikey"]?.toString() ?: System.getenv("NUCLEUS_ORE_APIKEY")
     pluginid = "nucleus"
+}
+
+val ghReleases by tasks.registering(UploadToGithubReleases::class) {
+    dependsOn(shadowJar)
+    dependsOn(":nucleus-api:jar")
+    dependsOn(relNotes)
+    version = { versionString }
+    notes = { relNotes.get().relNotes!! }
+    releaseLevel = { level }
+    tag = properties["gh_tag"]?.toString() ?: System.getenv("NUCLEUS_GH_TAG")
+    ownerName = properties["gh_owner"]?.toString() ?: System.getenv("NUCLEUS_GH_OWNER")
+    repoName = properties["gh_repo"]?.toString() ?: System.getenv("NUCLEUS_GH_REPO")
+    pluginFile = shadowJar.archiveFile
+    apiFile = (project(":nucleus-api").tasks["jar"] as org.gradle.jvm.tasks.Jar).archiveFile
+    jdFile = (project(":nucleus-api").tasks["javadocJar"] as org.gradle.jvm.tasks.Jar).archiveFile
 }
 
 val compileKotlin: KotlinCompile by tasks
