@@ -54,7 +54,7 @@ public class KitInfoCommand extends KitFallbackBase<CommandSource> {
                         mp.getTextMessageWithFormat("command.kit.info.onetime", yesno(mp, kit.isOneTime())),
                         mp.getTextMessageWithFormat("command.kit.info.autoredeem", yesno(mp, kit.isAutoRedeem())),
                         mp.getTextMessageWithFormat("command.kit.info.hidden", yesno(mp, kit.isHiddenFromList())),
-                        mp.getTextMessageWithFormat("command.kit.info.displayredeem", yesno(mp, kit.isAutoRedeem())),
+                        mp.getTextMessageWithFormat("command.kit.info.displayredeem", yesno(mp, kit.isDisplayMessageOnRedeem())),
                         mp.getTextMessageWithFormat("command.kit.info.ignoresperm", yesno(mp, kit.ignoresPermission()))
                 ).sendTo(src);
         return CommandResult.success();
