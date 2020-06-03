@@ -33,7 +33,7 @@ def declaredApiVersion = '7.1.0'
 project.ext.versionno = '1.14.5'
 project.ext.minecraftversion = '1.12.2'
 project.ext.spongeapiversion = (declaredApiVersion =~ /^\d+\.\d+/)[0]
-project.ext.suffix = '-SNAPSHOT'
+project.ext.suffix = ''
 project.ext.hash = ''
 
 String docVer
