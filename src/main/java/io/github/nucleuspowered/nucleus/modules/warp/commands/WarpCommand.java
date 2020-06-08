@@ -39,6 +39,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -149,11 +150,14 @@ public class WarpCommand extends AbstractCommand<CommandSource> implements Reloa
         boolean isOther = !(source instanceof Player) || !((Player) source).getUniqueId().equals(player.getUniqueId());
 
         // Permission checks are done by the parser.
-        Warp wd = args.<Warp>getOne(WarpParameters.WARP_KEY).get();
+        Warp wd = args.requireOne(WarpParameters.WARP_KEY);
+        WorldProperties worldProperties = wd.getWorldProperties().orElseThrow(() -> ReturnMessageException.fromKey(
+                "command.warp.worlddoesnotexist"
+        ));
 
         // Load the world in question
         if (!wd.getTransform().isPresent()) {
-            Sponge.getServer().loadWorld(wd.getWorldProperties().get().getUniqueId())
+            Sponge.getServer().loadWorld(worldProperties.getUniqueId())
                 .orElseThrow(() -> ReturnMessageException.fromKey(
                     "command.warp.worldnotloaded"
                 ));
