@@ -6,30 +6,33 @@ package io.github.nucleuspowered.nucleus.modules.rtp.kernels;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
+import com.google.common.annotations.VisibleForTesting;
 import io.github.nucleuspowered.nucleus.api.service.NucleusRTPService;
 
 import java.util.Random;
 
-class KernelHelper {
+@VisibleForTesting
+public class KernelHelper {
 
-    private KernelHelper() {}
+    public static final KernelHelper INSTANCE = new KernelHelper();
 
-    private static final Random random = new Random();
+    protected KernelHelper() {}
 
-    static int getRandomBetween(int min, int max) {
+    private final Random random = new Random();
+
+    public int getRandomBetween(int min, int max) {
         return random.nextInt(max - min) + min;
     }
 
-    static int randomSign(int in) {
+    public int randomSign(int in) {
         return random.nextInt(2) == 0 ? -in : in;
     }
 
-    static Vector3d getLocationWithOffset(Vector3i centre, NucleusRTPService.RTPOptions options) {
-        return new Vector3d(
-                randomSign(getRandomBetween(options.minRadius(), options.maxRadius()) + centre.getX()),
-                getRandomBetween(options.minHeight(), options.maxHeight()),
-                randomSign(getRandomBetween(options.minRadius(), options.maxRadius()) + centre.getZ())
-        );
+    public Vector3d getLocationWithOffset(Vector3i centre, NucleusRTPService.RTPOptions options) {
+        int x = this.randomSign(this.getRandomBetween(options.minRadius(), options.maxRadius())) + centre.getX();
+        int y = this.getRandomBetween(options.minHeight(), options.maxHeight());
+        int z = this.randomSign(this.getRandomBetween(options.minRadius(), options.maxRadius())) + centre.getZ();
+        return new Vector3d(x, y, z);
     }
 
 }

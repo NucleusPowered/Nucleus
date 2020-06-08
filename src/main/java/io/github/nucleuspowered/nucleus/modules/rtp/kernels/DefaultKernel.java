@@ -36,7 +36,7 @@ public class DefaultKernel implements RTPKernel {
                 return Optional.empty();
             }
 
-            location = KernelHelper.getLocationWithOffset(getCentralLocation(currentLocation, target), options);
+            location = KernelHelper.INSTANCE.getLocationWithOffset(getCentralLocation(currentLocation, target), options);
         } while (!Util.isLocationInWorldBorder(location.toDouble(), target));
 
         Location<World> worldLocation = getStartingLocation(new Location<>(target, location));
