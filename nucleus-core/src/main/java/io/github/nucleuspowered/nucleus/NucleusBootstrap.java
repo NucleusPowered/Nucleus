@@ -24,8 +24,6 @@ import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.services.UUIDChangeService;
 import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
-import io.github.nucleuspowered.nucleus.modules.core.teleport.filters.NoCheckFilter;
-import io.github.nucleuspowered.nucleus.modules.core.teleport.filters.WallCheckFilter;
 import io.github.nucleuspowered.nucleus.quickstart.ModuleRegistrationProxyService;
 import io.github.nucleuspowered.nucleus.quickstart.NucleusLoggerProxy;
 import io.github.nucleuspowered.nucleus.quickstart.QuickStartModuleConstructor;
@@ -43,7 +41,6 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IModuleDataProvider;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.nucleus.util.ClientMessageReciever;
-import io.github.nucleuspowered.nucleus.util.PrettyPrinter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
@@ -56,7 +53,6 @@ import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -74,11 +70,8 @@ import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.teleport.TeleportHelperFilter;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
-import uk.co.drnaylor.quickstart.exceptions.QuickStartModuleDiscoveryException;
-import uk.co.drnaylor.quickstart.exceptions.QuickStartModuleLoaderException;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 import uk.co.drnaylor.quickstart.holders.discoverystrategies.Strategy;
 import uk.co.drnaylor.quickstart.loaders.ModuleEnablerBuilder;
@@ -125,8 +118,10 @@ public class NucleusBootstrap {
     private boolean isServer = false;
     @Nullable private String versionFail;
     private final boolean docgenOnly;
+    private final boolean shutdownAtLoadEnd;
 
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
+        // Require PlaceholderParser
         Pattern matching = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)");
         Optional<String> v = Sponge.getPlatform().getContainer(Platform.Component.API).getVersion();
 
@@ -138,7 +133,8 @@ public class NucleusBootstrap {
 
             int maj = Integer.parseInt(version.group("major"));
             int min = Integer.parseInt(version.group("minor"));
-            @SuppressWarnings("ConstantConditions") boolean notRequiringSnapshot = !NucleusPluginInfo.SPONGE_API_VERSION.contains("SNAPSHOT");
+            //noinspection MismatchedStringCase,ConstantConditions
+            boolean notRequiringSnapshot = !NucleusPluginInfo.SPONGE_API_VERSION.contains("SNAPSHOT");
 
             Matcher m = matching.matcher(v.get());
             if (m.find()) {
@@ -199,6 +195,7 @@ public class NucleusBootstrap {
                 this.dataDir,
                 this.configDir);
         this.docgenOnly = System.getProperty(DOCGEN_PROPERTY) != null;
+        this.shutdownAtLoadEnd = System.getProperty(DOCGEN_PROPERTY) != null;
     }
 
     private INucleusServiceCollection getServiceCollection() {
@@ -208,13 +205,6 @@ public class NucleusBootstrap {
     private DiscoveryModuleHolder<?, ?> getDiscoveryModuleHolder() {
         return this.moduleContainer;
     }
-
-    @Listener
-    public void onRegisterTeleportHelperFilters(GameRegistryEvent.Register<TeleportHelperFilter> event) {
-        event.register(new NoCheckFilter());
-        event.register(new WallCheckFilter());
-    }
-
 
     @Listener(order = Order.FIRST)
     public void onPreInit(GamePreInitializationEvent preInitializationEvent) {
@@ -270,21 +260,23 @@ public class NucleusBootstrap {
             // don't worry about it
         }
 
-        if (System.getProperty("nucleusnocheck") == null) {
-            try {
+        try {
+            if (System.getProperty("nucleusnocheck") == null) {
                 if (!versionCheck(messageProvider)) {
-                    s.sendMessage(messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
+                    s.sendMessage(
+                            messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
                 }
-            } catch (IllegalStateException e) {
-                s.sendMessage(messageProvider.getMessage("startup.nostart.compat", NucleusPluginInfo.NAME,
-                        Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(),
-                        Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("unknown")));
-                s.sendMessage(messageProvider.getMessage("startup.nostart.compat2", e.getMessage()));
-                s.sendMessage(messageProvider.getMessage("startup.nostart.compat3", NucleusPluginInfo.NAME));
-                this.versionFail = e.getMessage();
-                disable();
-                return;
             }
+            new NucleusRegistration(this.serviceCollection);
+        } catch (IllegalStateException | ClassNotFoundException e) {
+            s.sendMessage(messageProvider.getMessage("startup.nostart.compat", NucleusPluginInfo.NAME,
+                    Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(),
+                    Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("unknown")));
+            s.sendMessage(messageProvider.getMessage("startup.nostart.compat2", e.getMessage()));
+            s.sendMessage(messageProvider.getMessage("startup.nostart.compat3", NucleusPluginInfo.NAME));
+            this.versionFail = e.getMessage();
+            disable();
+            return;
         }
 
         s.sendMessage(messageProvider.getMessage("startup.welcome", NucleusPluginInfo.NAME,
@@ -348,8 +340,6 @@ public class NucleusBootstrap {
                             .createPreEnablePhase("enable", holder -> Sponge.getEventManager().post(new BaseModuleEvent.PreEnable(this)))
                             .createEnablePhase("command-discovery", (module, holder) -> module.loadCommands())
                             .createEnablePhase("aliased-commands", (module, holder) -> module.prepareAliasedCommands())
-                            .createPreEnablePhase("command-registration",
-                                holder -> this.serviceCollection.commandMetadataService().completeRegistrationPhase(this.serviceCollection))
                             .createEnablePhase("events", (module, holder) -> module.loadEvents())
                             .createEnablePhase("runnables", (module, holder) -> module.loadRunnables())
                             .createEnablePhase("infoproviders", (module, holder) -> module.loadInfoProviders())
@@ -409,21 +399,13 @@ public class NucleusBootstrap {
                     e.printStackTrace();
                 }
             });
+
         } catch (Exception e) {
             this.isErrored = e;
             disable();
             e.printStackTrace();
-        }
-    }
-
-    @Listener(order = Order.POST)
-    public void onInitLate(GameInitializationEvent event) {
-        IMessageProviderService messageProvider = this.serviceCollection.messageProvider();
-        if (this.isErrored != null) {
             return;
         }
-
-        this.logger.info(messageProvider.getMessageString("startup.postinit", NucleusPluginInfo.NAME));
 
         // Load up the general data files now, mods should have registered items by now.
         try {
@@ -456,9 +438,23 @@ public class NucleusBootstrap {
         }
 
         this.logger.info(messageProvider.getMessageString("startup.moduleloaded", NucleusPluginInfo.NAME));
-        this.serviceCollection.permissionService().registerDescriptions();
         Sponge.getEventManager().post(new BaseModuleEvent.Complete(this));
         this.logger.info(messageProvider.getMessageString("startup.completeinit", NucleusPluginInfo.NAME));
+    }
+
+    @Listener(order = Order.POST)
+    public void onInitLate(GameInitializationEvent event) {
+        IMessageProviderService messageProvider = this.serviceCollection.messageProvider();
+        if (this.isErrored != null) {
+            return;
+        }
+
+        this.logger.info(messageProvider.getMessageString("startup.postinit", NucleusPluginInfo.NAME));
+
+        // Actual command registration happens here
+        this.serviceCollection.commandMetadataService().completeRegistrationPhase(this.serviceCollection);
+        this.serviceCollection.permissionService().registerDescriptions();
+
         if (this.docgenOnly) {
             final Path finalPath;
             try {
@@ -548,7 +544,7 @@ public class NucleusBootstrap {
 
     @Listener(order = Order.PRE)
     public void onGameStarted(GameStartedServerEvent event) {
-        if (this.docgenOnly) {
+        if (this.shutdownAtLoadEnd) {
             Sponge.getServer().shutdown();
             return;
         }
@@ -718,6 +714,10 @@ public class NucleusBootstrap {
         } else {
             Sponge.getServer().getConsole().sendMessages(getErrorMessage());
         }
+
+        if (this.shutdownAtLoadEnd) {
+            Sponge.getServer().shutdown();
+        }
     }
 
     private List<Text> getIncorrectVersion() {
@@ -867,4 +867,5 @@ public class NucleusBootstrap {
         messages.add(Text.of(TextColors.YELLOW, "----------------------------"));
         return messages;
     }
+
 }

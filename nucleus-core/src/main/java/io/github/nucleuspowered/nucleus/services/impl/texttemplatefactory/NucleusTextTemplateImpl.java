@@ -9,10 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderVariables;
 import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.services.impl.placeholder.NucleusPlaceholderStandardBuilder;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.services.interfaces.ITextStyleService;
 import io.github.nucleuspowered.nucleus.util.JsonConfigurateStringHelper;
@@ -111,7 +109,7 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
 
     @Override
     public Text getForCommandSource(CommandSource source) {
-        return getForCommandSource(source, ImmutableMap.of(), NucleusPlaceholderStandardBuilder.EMPTY);
+        return getForCommandSource(source, ImmutableMap.of());
     }
 
     @Override
@@ -121,20 +119,12 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
         return getForCommandSource(source,
                 ImmutableMap.<String, Function<CommandSource, Optional<Text>>>builder()
                         .put("sender", se -> s)
-                        .build(),
-                NucleusPlaceholderStandardBuilder.EMPTY);
-    }
-
-    @Override
-    public Text getForCommandSource(CommandSource source,
-            @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray) {
-        return getForCommandSource(source, tokensArray, NucleusPlaceholderStandardBuilder.EMPTY);
+                        .build());
     }
 
     @Override @SuppressWarnings("SameParameterValue")
     public Text getForCommandSource(CommandSource source,
-            @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray,
-            PlaceholderVariables variables) {
+            @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray) {
 
         Map<String, TextTemplate.Arg> tokens = this.textTemplate.getArguments();
         Map<String, TextRepresentable> finalArgs = Maps.newHashMap();
@@ -148,7 +138,7 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
             } else if (tokensArray != null && tokensArray.containsKey(key)) {
                 t = tokensArray.get(key).apply(source).orElse(null);
             } else {
-                t = this.serviceCollection.placeholderService().parse(source, key, variables);
+                t = this.serviceCollection.placeholderService().parse(source, key);
             }
 
             if (t != null) {

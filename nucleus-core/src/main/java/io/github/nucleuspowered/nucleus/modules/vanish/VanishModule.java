@@ -5,16 +5,16 @@
 package io.github.nucleuspowered.nucleus.modules.vanish;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.modules.core.CoreModule;
 import io.github.nucleuspowered.nucleus.modules.vanish.config.VanishConfig;
 import io.github.nucleuspowered.nucleus.modules.vanish.config.VanishConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.vanish.services.VanishService;
 import io.github.nucleuspowered.nucleus.quickstart.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.services.impl.placeholder.parser.ConditionalParser;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 
@@ -40,11 +40,20 @@ public class VanishModule extends ConfigurableModule<VanishConfig, VanishConfigA
 
     @Override
     protected Map<String, PlaceholderParser> tokensToRegister() {
-        return ImmutableMap.<String,  PlaceholderParser>builder()
-                .put("vanished", new ConditionalParser.PlayerCondition(
-                        Text.of(TextColors.GRAY, "[Vanished]"),
-                        player -> serviceCollection.getServiceUnchecked(VanishService.class).isVanished(player)
-                )).build();
+        return ImmutableMap.<String, PlaceholderParser>builder()
+                .put("vanished",
+                        PlaceholderParser.builder()
+                                .plugin(this.serviceCollection.pluginContainer())
+                                .id("vanished")
+                                .name("Nucleus Vanished Indicator Token")
+                                .parser(p -> {
+                                    if (p.getAssociatedObject().filter(x -> x instanceof User)
+                                            .map(x -> this.serviceCollection.getServiceUnchecked(VanishService.class).isVanished((User) x))
+                                            .orElse(false)) {
+                                        return Text.of(TextColors.GRAY, "[Vanished]");
+                                    }
+                                    return Text.EMPTY;
+                                }).build()).build();
     }
 
 }

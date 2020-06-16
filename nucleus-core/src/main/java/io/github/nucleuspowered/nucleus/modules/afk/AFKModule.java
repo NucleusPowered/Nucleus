@@ -5,15 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.afk;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfig;
 import io.github.nucleuspowered.nucleus.modules.afk.config.AFKConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.afk.services.AFKHandler;
 import io.github.nucleuspowered.nucleus.quickstart.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.services.impl.placeholder.parser.ConditionalParser;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 
@@ -41,8 +41,17 @@ public class AFKModule extends ConfigurableModule<AFKConfig, AFKConfigAdapter> {
     protected Map<String, PlaceholderParser> tokensToRegister() {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("afk",
-                        new ConditionalParser.PlayerCondition(Text.of(TextColors.GRAY, "[AFK]"),
-                                player -> serviceCollection.getServiceUnchecked(AFKHandler.class).isAFK(player)))
-                .build();
+                        PlaceholderParser.builder()
+                                .plugin(this.serviceCollection.pluginContainer())
+                                .id("afk")
+                                .name("Nucleus Muted Indicator Token")
+                                .parser(p -> {
+                                    if (p.getAssociatedObject().filter(x -> x instanceof Player)
+                                            .map(x -> this.serviceCollection.getServiceUnchecked(AFKHandler.class).isAFK((Player) x))
+                                            .orElse(false)) {
+                                        return Text.of(TextColors.GRAY, "[AFK]");
+                                    }
+                                    return Text.EMPTY;
+                                }).build()).build();
     }
 }

@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus.quickstart.module;
 import com.google.common.collect.ImmutableMap;
 import io.github.nucleuspowered.nucleus.Constants;
 import io.github.nucleuspowered.nucleus.annotationprocessor.Store;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.quickstart.annotation.RequireExistenceOf;
 import io.github.nucleuspowered.nucleus.quickstart.annotation.RequiresPlatform;
 import io.github.nucleuspowered.nucleus.quickstart.annotation.ServerOnly;
@@ -33,6 +32,7 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.context.ContextCalculator;
 import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.Module;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
@@ -319,7 +319,7 @@ public abstract class StandardModule implements Module {
         if (!map.isEmpty()) {
             map.forEach((k, t) -> {
                 try {
-                    this.serviceCollection.placeholderService().registerToken(this.serviceCollection.pluginContainer(), k, t);
+                    this.serviceCollection.placeholderService().registerToken(k, t);
                 } catch (Exception e) {
                     this.serviceCollection.logger().warn("Could not register nucleus token identifier " + k, e);
                 }

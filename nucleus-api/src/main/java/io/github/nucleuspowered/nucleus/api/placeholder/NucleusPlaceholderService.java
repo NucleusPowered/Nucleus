@@ -6,59 +6,23 @@ package io.github.nucleuspowered.nucleus.api.placeholder;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.text.Text;
+import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.text.TextRepresentable;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
+import org.spongepowered.api.text.placeholder.PlaceholderText;
 
 import java.util.Optional;
 
 /**
- * Provides a way to supply placeholders to Nucleus
+ * Provides a way to determine how Nucleus uses placeholders.
  */
 public interface NucleusPlaceholderService {
 
-    /**
-     * Parses a string on behalf of a {@link CommandSource} based on the Nucleus
-     * chat format.
-     *
-     * @param commandSource The source that tokens should use as a context. May
-     *                      be {@code null}, but some tokens may not parse
-     *                      without this supplied.
-     * @param token The token text to parse.
-     * @return The parsed {@link Text}.
-     */
-    default TextRepresentable parse(@Nullable CommandSource commandSource, String token) {
-        return parse(commandSource, token, PlaceholderVariables.empty());
-    }
+    TextRepresentable parse(@Nullable CommandSource commandSource, String input);
 
     /**
-     * Parses a string on behalf of a {@link CommandSource} based on the Nucleus
-     * chat format.
-     *
-     * @param commandSource The source that tokens should use as a context. May
-     *                      be {@code null}, but some tokens may not parse
-     *                      without this supplied.
-     * @param token The token text to parse.
-     * @param variables The variables to pass to the placeholder parser.
-     * @return The parsed {@link Text}.
-     */
-    TextRepresentable parse(@Nullable CommandSource commandSource, String token, PlaceholderVariables variables);
-
-    /**
-     * Registers a token.
-     *
-     * @param pluginContainer The {@link PluginContainer} that wants to register
-     *                        the token
-     * @param tokenName The name of the token to register. This will be converted
-     *                  to lowercase.
-     * @param parser The parser to register.
-     * @throws IllegalArgumentException if the token name contains whitespace, :, | or _
-     * @throws IllegalStateException if the token name has already been registered
-     */
-    void registerToken(PluginContainer pluginContainer, String tokenName, PlaceholderParser parser);
-
-    /**
-     * Gets the parser associated with the provided token name, if any.
+     * Gets the parser associated with the provided token name, if any,
+     * prefixing un-namespaced tokens with the Nucleus prefix.
      *
      * @param token The token name
      * @return The {@link PlaceholderParser}, if any
@@ -66,10 +30,19 @@ public interface NucleusPlaceholderService {
     Optional<PlaceholderParser> getParser(String token);
 
     /**
-     * Gets the {@link PluginContainer} that registered provided token name, if any.
+     * Gets the Nucleus placeholder parser for displaying
+     * {@link Subject#getOption(String)}
      *
-     * @param token The token name
-     * @return The {@link PluginContainer}, if any
+     * @return The parser.
      */
-    Optional<PluginContainer> getOwner(String token);
+    PlaceholderParser optionParser();
+
+    /**
+     * Creates a {@link PlaceholderText} for displaying a {@link Subject}s
+     * option.
+     *
+     * @return The {@link PlaceholderText}
+     */
+    PlaceholderText textForSubjectAndOption(Subject subject, String option);
+
 }

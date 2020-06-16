@@ -5,15 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.fly;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.modules.fly.config.FlyConfig;
 import io.github.nucleuspowered.nucleus.modules.fly.config.FlyConfigAdapter;
 import io.github.nucleuspowered.nucleus.quickstart.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.services.impl.placeholder.parser.ConditionalParser;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 
@@ -38,8 +38,19 @@ public class FlyModule extends ConfigurableModule<FlyConfig, FlyConfigAdapter> {
     @Override
     protected Map<String, PlaceholderParser> tokensToRegister() {
         return ImmutableMap.<String, PlaceholderParser>builder()
-                .put("flying", new ConditionalParser.PlayerCondition(Text.of(TextColors.GRAY, "[Flying]"),
-                        player -> player.get(Keys.IS_FLYING).orElse(false)))
+                .put("flying",
+                        PlaceholderParser.builder()
+                            .plugin(this.serviceCollection.pluginContainer())
+                            .id("flying")
+                            .name("Nucleus Flying Indicator Token")
+                            .parser(p -> {
+                                if (p.getAssociatedObject().filter(x -> x instanceof Player).flatMap(x -> ((Player) x).get(Keys.IS_FLYING))
+                                        .orElse(false)) {
+                                    return Text.of(TextColors.GRAY, "[Flying]");
+                                }
+                                return Text.EMPTY;
+                            })
+                            .build())
                 .build();
     }
 }

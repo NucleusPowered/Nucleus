@@ -4,38 +4,64 @@
  */
 package io.github.nucleuspowered.nucleus.services.impl.placeholder.standard;
 
-import io.github.nucleuspowered.nucleus.api.placeholder.Placeholder;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.services.interfaces.IPlayerDisplayNameService;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.placeholder.PlaceholderContext;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 
-public class NamePlaceholder implements PlaceholderParser.RequireSender {
+public class NamePlaceholder implements PlaceholderParser {
 
     private static final Text CONSOLE = Text.of("-");
     private final IPlayerDisplayNameService playerDisplayNameService;
     private final boolean consoleFilter;
     private final BiFunction<IPlayerDisplayNameService, CommandSource, Text> parser;
+    private final String id;
+    private final String name;
 
-    public NamePlaceholder(IPlayerDisplayNameService playerDisplayNameService, BiFunction<IPlayerDisplayNameService, CommandSource, Text> parser) {
-        this(playerDisplayNameService, parser, false);
+    public NamePlaceholder(IPlayerDisplayNameService playerDisplayNameService,
+            BiFunction<IPlayerDisplayNameService, CommandSource, Text> parser,
+            String id,
+            String name) {
+        this(playerDisplayNameService, parser, id, name, false);
     }
 
-    public NamePlaceholder(IPlayerDisplayNameService playerDisplayNameService, BiFunction<IPlayerDisplayNameService, CommandSource, Text> parser, boolean consoleFilter) {
+    public NamePlaceholder(IPlayerDisplayNameService playerDisplayNameService,
+            BiFunction<IPlayerDisplayNameService, CommandSource, Text> parser,
+            String id,
+            String name,
+            boolean consoleFilter) {
         this.playerDisplayNameService = playerDisplayNameService;
         this.parser = parser;
         this.consoleFilter = consoleFilter;
+        this.id = id;
+        this.name = name;
     }
 
     @Override
-    public Text parse(Placeholder.Standard placeholder) {
-        if (this.consoleFilter && placeholder.getAssociatedSource().get() instanceof ConsoleSource) {
-            return CONSOLE;
+    public Text parse(PlaceholderContext placeholder) {
+        Optional<CommandSource> commandSource = placeholder.getAssociatedObject().filter(x -> x instanceof CommandSource).map(x -> (CommandSource) x);
+        if (commandSource.isPresent()) {
+            if (this.consoleFilter && placeholder.getAssociatedObject().map(x -> x instanceof ConsoleSource).isPresent()) {
+                return CONSOLE;
+            } else {
+                return this.parser.apply(this.playerDisplayNameService, commandSource.get());
+            }
         }
-        return this.parser.apply(this.playerDisplayNameService, placeholder.getAssociatedSource().get());
+        return Text.EMPTY;
     }
 
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
 }

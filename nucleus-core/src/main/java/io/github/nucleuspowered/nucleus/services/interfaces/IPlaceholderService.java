@@ -8,12 +8,17 @@ import com.google.inject.ImplementedBy;
 import io.github.nucleuspowered.nucleus.api.placeholder.NucleusPlaceholderService;
 import io.github.nucleuspowered.nucleus.services.impl.placeholder.PlaceholderMetadata;
 import io.github.nucleuspowered.nucleus.services.impl.placeholder.PlaceholderService;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 @ImplementedBy(PlaceholderService.class)
 public interface IPlaceholderService extends NucleusPlaceholderService {
 
-    Collection<PlaceholderMetadata> getNucleusParsers();
+    Set<PlaceholderParser> getParsers();
 
+    void registerToken(String tokenName, PlaceholderParser parser);
+
+    Map<String, PlaceholderMetadata> getNucleusParsers();
 }

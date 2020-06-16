@@ -27,7 +27,7 @@ public class LazyLoad<T> implements Provider<T> {
         if (this.instance == null) {
             this.instance = this.injector.getInstance(this.clazz);
             if (this.instance instanceof IInitService) {
-                ((IInitService) this.instance).init(nucleusServiceCollection);
+                ((IInitService) this.instance).init(this.nucleusServiceCollection);
             }
         }
         return this.instance;

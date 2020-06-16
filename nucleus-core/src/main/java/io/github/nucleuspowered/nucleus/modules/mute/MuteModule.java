@@ -5,15 +5,15 @@
 package io.github.nucleuspowered.nucleus.modules.mute;
 
 import com.google.common.collect.ImmutableMap;
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
 import io.github.nucleuspowered.nucleus.modules.mute.config.MuteConfig;
 import io.github.nucleuspowered.nucleus.modules.mute.config.MuteConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.mute.services.MuteHandler;
 import io.github.nucleuspowered.nucleus.quickstart.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.services.impl.placeholder.parser.ConditionalParser;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 
@@ -40,10 +40,18 @@ public class MuteModule extends ConfigurableModule<MuteConfig, MuteConfigAdapter
 
     @Override protected Map<String, PlaceholderParser> tokensToRegister() {
         return ImmutableMap.<String, PlaceholderParser>builder()
-                .put("muted", new ConditionalParser.PlayerCondition(
-                        Text.of(TextColors.GRAY, "[Muted]"),
-                        player -> serviceCollection.getServiceUnchecked(MuteHandler.class).isMuted(player)
-                ))
-                .build();
+                .put("muted",
+                        PlaceholderParser.builder()
+                                .plugin(this.serviceCollection.pluginContainer())
+                                .id("muted")
+                                .name("Nucleus Muted Indicator Token")
+                                .parser(p -> {
+                                    if (p.getAssociatedObject().filter(x -> x instanceof User)
+                                            .map(x -> this.serviceCollection.getServiceUnchecked(MuteHandler.class).isMuted((User) x))
+                                            .orElse(false)) {
+                                        return Text.of(TextColors.GRAY, "[Muted]");
+                                    }
+                                    return Text.EMPTY;
+                                }).build()).build();
     }
 }

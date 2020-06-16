@@ -13,6 +13,9 @@ public class TokenDoc {
     @Setting("name")
     private String name;
 
+    @Setting("id")
+    private String externalId;
+
     @Setting("description")
     private String description;
 
@@ -22,6 +25,11 @@ public class TokenDoc {
 
     public TokenDoc setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public TokenDoc setId(String id) {
+        this.externalId = id;
         return this;
     }
 

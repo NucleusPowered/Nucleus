@@ -4,26 +4,19 @@
  */
 package io.github.nucleuspowered.nucleus.services.impl.placeholder;
 
-import io.github.nucleuspowered.nucleus.api.placeholder.PlaceholderParser;
-import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 
 public class PlaceholderMetadata {
     private final String token;
-    private final PluginContainer pluginContainer;
     private final PlaceholderParser parser;
 
-    PlaceholderMetadata(String token, PluginContainer pluginContainer, PlaceholderParser parser) {
+    PlaceholderMetadata(String token, PlaceholderParser parser) {
         this.token = token;
-        this.pluginContainer = pluginContainer;
         this.parser = parser;
     }
 
     public String getToken() {
         return this.token;
-    }
-
-    public PluginContainer getPluginContainer() {
-        return this.pluginContainer;
     }
 
     public PlaceholderParser getParser() {
