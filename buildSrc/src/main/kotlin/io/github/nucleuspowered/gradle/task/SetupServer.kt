@@ -18,8 +18,9 @@ open class SetupServer : DefaultTask() {
 
     var directory: Path = Paths.get("run")
     var spongeVanillaFileName: String = "sv.jar"
-    var spongeVanillaDownload: URL = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2.2/spongevanilla-1.12.2-7.2.2.jar")
-    var spongeVanillaSHA1Hash: String = "eebec22f58e27fef974e3bc108c70af1b3a47f8e"
+    var spongeVanillaDownload: URL? = null // = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2
+    // .2/spongevanilla-1.12.2-7.2.2.jar")
+    var spongeVanillaSHA1Hash: String? = null // = "eebec22f58e27fef974e3bc108c70af1b3a47f8e"
     var fileProvider: Provider<RegularFile>? = null
 
     /**
@@ -29,6 +30,9 @@ open class SetupServer : DefaultTask() {
 
     @TaskAction
     fun execute() {
+        if (this.spongeVanillaDownload == null || this.spongeVanillaSHA1Hash == null) {
+            throw GradleException("The file and SHA1 hash must be set.")
+        }
         if (!this.acceptEula) {
             throw GradleException("The EULA must be accepted to run this task")
         }
@@ -38,7 +42,7 @@ open class SetupServer : DefaultTask() {
         // we know it exists
         val file: RegularFile = fileProvider!!.get()
         val pathForServer = this.directory
-        val svdl = this.spongeVanillaDownload
+        val svdl = this.spongeVanillaDownload!!
 
         // Create path.
         if (Files.exists(pathForServer) && !Files.isDirectory(pathForServer)) {
@@ -75,7 +79,7 @@ open class SetupServer : DefaultTask() {
 
             logger.quiet("Checking Hash for SV")
             val hash = checkHashOfFile(svFile)
-            if (hash != spongeVanillaSHA1Hash) {
+            if (hash != spongeVanillaSHA1Hash!!) {
                 Files.deleteIfExists(svFile)
                 throw GradleException("Expected hash $spongeVanillaSHA1Hash does not match actual hash $hash. File has been deleted.")
             }

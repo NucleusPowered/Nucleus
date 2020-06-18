@@ -3,6 +3,7 @@ import io.github.nucleuspowered.gradle.task.RelNotesTask
 import io.github.nucleuspowered.gradle.task.StdOutExec
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.ByteArrayOutputStream
+import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
@@ -184,6 +185,8 @@ compileTestKotlin.kotlinOptions {
 
 val setupDocGen by tasks.registering(io.github.nucleuspowered.gradle.task.SetupServer::class) {
     dependsOn(shadowJar)
+    spongeVanillaDownload = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2.3-RC372/spongevanilla-1.12.2-7.2.3-RC372.jar")
+    spongeVanillaSHA1Hash = "e72ec4bc0368cd2fc604f412eed5fa8941d7580c"
     acceptEula = true
     fileProvider = shadowJar.archiveFile
 }

@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -98,6 +99,7 @@ import javax.annotation.Nullable;
 public class NucleusBootstrap {
 
     private static final String DOCGEN_PROPERTY = "nucleus.docgen";
+    private static final String NO_VERSION_CHECK = "nucleus.nocheck";
 
     private static final String divider = "+------------------------------------------------------------+";
     private static final int length = divider.length() - 2;
@@ -120,53 +122,66 @@ public class NucleusBootstrap {
     private final boolean docgenOnly;
     private final boolean shutdownAtLoadEnd;
 
+    private static final ImmutableSet<String> requiredClasses = ImmutableSet.of("org.spongepowered.api.text.placeholder.PlaceholderParser");
+
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
-        // Require PlaceholderParser
-        Pattern matching = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)");
-        Optional<String> v = Sponge.getPlatform().getContainer(Platform.Component.API).getVersion();
-
-        if (v.isPresent()) {
-            Matcher version = matching.matcher(NucleusPluginInfo.SPONGE_API_VERSION);
-            if (!version.find()) {
-                return false; // can't compare.
+        for (String str : requiredClasses) {
+            try {
+                Class.forName(str);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(provider.getMessageString("startup.nostart.missingclass", str));
             }
-
-            int maj = Integer.parseInt(version.group("major"));
-            int min = Integer.parseInt(version.group("minor"));
-            //noinspection MismatchedStringCase,ConstantConditions
-            boolean notRequiringSnapshot = !NucleusPluginInfo.SPONGE_API_VERSION.contains("SNAPSHOT");
-
-            Matcher m = matching.matcher(v.get());
-            if (m.find()) {
-                int major = Integer.parseInt(m.group("major"));
-                if (major != maj) {
-                    // not current API
-                    throw new IllegalStateException(provider.getMessageString("startup.nostart.spongeversion.major",
-                            NucleusPluginInfo.NAME, v.get(), NucleusPluginInfo.SPONGE_API_VERSION,
-                            Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName()));
-                }
-
-                int minor = Integer.parseInt(m.group("minor"));
-                boolean serverIsSnapshot = v.get().contains("SNAPSHOT");
-
-                //noinspection ConstantConditions
-                if (serverIsSnapshot && notRequiringSnapshot) {
-                    // If we are a snapshot, and the target version is NOT a snapshot, decrement our version number.
-                    minor = minor - 1;
-                }
-
-                if (minor < min) {
-                    // not right minor version
-                    throw new IllegalStateException(provider.getMessageString("startup.nostart.spongeversion.minor",
-                            Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(), NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
-                }
-            }
-
-            return true;
-        } else {
-            // no idea.
-            return false;
         }
+
+        if (System.getProperty(NO_VERSION_CHECK) != null) {
+            Pattern matching = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)");
+            Optional<String> v = Sponge.getPlatform().getContainer(Platform.Component.API).getVersion();
+
+            if (v.isPresent()) {
+                Matcher version = matching.matcher(NucleusPluginInfo.SPONGE_API_VERSION);
+                if (!version.find()) {
+                    return false; // can't compare.
+                }
+
+                int maj = Integer.parseInt(version.group("major"));
+                int min = Integer.parseInt(version.group("minor"));
+                //noinspection MismatchedStringCase,ConstantConditions
+                boolean notRequiringSnapshot = !NucleusPluginInfo.SPONGE_API_VERSION.contains("SNAPSHOT");
+
+                Matcher m = matching.matcher(v.get());
+                if (m.find()) {
+                    int major = Integer.parseInt(m.group("major"));
+                    if (major != maj) {
+                        // not current API
+                        throw new IllegalStateException(provider.getMessageString("startup.nostart.spongeversion.major",
+                                NucleusPluginInfo.NAME, v.get(), NucleusPluginInfo.SPONGE_API_VERSION,
+                                Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName()));
+                    }
+
+                    int minor = Integer.parseInt(m.group("minor"));
+                    boolean serverIsSnapshot = v.get().contains("SNAPSHOT");
+
+                    //noinspection ConstantConditions
+                    if (serverIsSnapshot && notRequiringSnapshot) {
+                        // If we are a snapshot, and the target version is NOT a snapshot, decrement our version number.
+                        minor = minor - 1;
+                    }
+
+                    if (minor < min) {
+                        // not right minor version
+                        throw new IllegalStateException(provider.getMessageString("startup.nostart.spongeversion.minor",
+                                Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(), NucleusPluginInfo.NAME,
+                                NucleusPluginInfo.SPONGE_API_VERSION));
+                    }
+                }
+
+                return true;
+            } else {
+                // no idea.
+                return false;
+            }
+        }
+        return true;
     }
 
     // We inject this into the constructor so we can build the config path ourselves.
@@ -261,14 +276,11 @@ public class NucleusBootstrap {
         }
 
         try {
-            if (System.getProperty("nucleusnocheck") == null) {
-                if (!versionCheck(messageProvider)) {
-                    s.sendMessage(
-                            messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
-                }
+            if (!versionCheck(messageProvider)) {
+                s.sendMessage(
+                        messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
             }
-            new NucleusRegistration(this.serviceCollection);
-        } catch (IllegalStateException | ClassNotFoundException e) {
+        } catch (IllegalStateException e) {
             s.sendMessage(messageProvider.getMessage("startup.nostart.compat", NucleusPluginInfo.NAME,
                     Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getName(),
                     Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("unknown")));
@@ -279,6 +291,8 @@ public class NucleusBootstrap {
             return;
         }
 
+        // Deferred for version check.
+        Sponge.getEventManager().registerListeners(this.serviceCollection.pluginContainer(), new NucleusRegistration(this.serviceCollection));
         s.sendMessage(messageProvider.getMessage("startup.welcome", NucleusPluginInfo.NAME,
                 NucleusPluginInfo.VERSION, Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().orElse("unknown")));
 

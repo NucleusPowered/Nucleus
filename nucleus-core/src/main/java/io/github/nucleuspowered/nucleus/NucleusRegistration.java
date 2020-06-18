@@ -7,7 +7,6 @@ package io.github.nucleuspowered.nucleus;
 import io.github.nucleuspowered.nucleus.modules.core.teleport.filters.NoCheckFilter;
 import io.github.nucleuspowered.nucleus.modules.core.teleport.filters.WallCheckFilter;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.text.placeholder.PlaceholderParser;
@@ -17,9 +16,8 @@ public class NucleusRegistration {
 
     private final INucleusServiceCollection serviceCollection;
 
-    NucleusRegistration(INucleusServiceCollection serviceCollection) throws ClassNotFoundException {
+    NucleusRegistration(INucleusServiceCollection serviceCollection) {
         this.serviceCollection = serviceCollection;
-        Sponge.getEventManager().registerListeners(this.serviceCollection.pluginContainer(), this);
     }
 
     @Listener
