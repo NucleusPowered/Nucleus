@@ -51,7 +51,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class NucleusPermissionService implements IPermissionService, IReloadableService.Reloadable {
+public class NucleusPermissionService implements IPermissionService, IReloadableService.Reloadable, ContextCalculator<Subject> {
 
     private final IMessageProviderService messageProviderService;
     private final INucleusServiceCollection serviceCollection;
@@ -104,7 +104,7 @@ public class NucleusPermissionService implements IPermissionService, IReloadable
 
     @Override public void registerContextCalculator(ContextCalculator<Subject> calculator) {
         this.contextCalculators.add(calculator);
-        Sponge.getServiceManager().provideUnchecked(PermissionService.class).registerContextCalculator(calculator);
+        Sponge.getServiceManager().provide(PermissionService.class).ifPresent(x -> x.registerContextCalculator(calculator));
     }
 
     @Override public void checkServiceChange(ProviderRegistration<PermissionService> service) {

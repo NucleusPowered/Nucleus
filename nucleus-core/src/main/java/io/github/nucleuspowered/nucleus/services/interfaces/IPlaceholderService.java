@@ -20,5 +20,7 @@ public interface IPlaceholderService extends NucleusPlaceholderService {
 
     void registerToken(String tokenName, PlaceholderParser parser);
 
+    void registerToken(String tokenName, PlaceholderParser parser, boolean document);
+
     Map<String, PlaceholderMetadata> getNucleusParsers();
 }

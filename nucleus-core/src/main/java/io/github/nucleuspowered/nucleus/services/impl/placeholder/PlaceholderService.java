@@ -77,7 +77,7 @@ public class PlaceholderService implements IPlaceholderService, IInitService {
     @Override
     public void init(final INucleusServiceCollection serviceCollection) {
         // player, variables, map?
-        registerToken("empty", this.emptyParser);
+        registerToken("empty", this.emptyParser, false);
         NamePlaceholder normalName = new NamePlaceholder(
                 serviceCollection.playerDisplayNameService(),
                 IPlayerDisplayNameService::addCommandToName,
@@ -200,13 +200,18 @@ public class PlaceholderService implements IPlaceholderService, IInitService {
 
     @Override
     public void registerToken(String tokenName, PlaceholderParser parser) {
+        registerToken(tokenName, parser, true);
+    }
+
+    @Override
+    public void registerToken(String tokenName, PlaceholderParser parser, boolean document) {
         if (SEPARATOR.asPredicate().test(tokenName)) {
             // can't be registered.
             throw new IllegalArgumentException("Tokens must not contain |, :, _ or space characters.");
         }
         String token = tokenName.toLowerCase();
         if (!this.parsers.containsKey(token)) {
-            this.parsers.put(token, new PlaceholderMetadata(token, parser));
+            this.parsers.put(token, new PlaceholderMetadata(token, parser, document));
         } else {
             throw new IllegalStateException("Token " + tokenName.toLowerCase() + " has already been registered.");
         }

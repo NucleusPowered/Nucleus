@@ -266,10 +266,6 @@ public class NucleusBootstrap {
         HoconConfigurationLoader.Builder builder = HoconConfigurationLoader.builder().setPath(Paths.get(this.configDir.toString(), "main.conf"));
         try {
             CommentedConfigurationNode node = builder.build().load();
-            /*            if (!language.equalsIgnoreCase("default")) {
-                messageProvider.setDefaultLocale(language);
-            }
-*/
             String location = node.getNode("core", "data-file-location").getString("default");
             if (!location.equalsIgnoreCase("default")) {
                 this.dataFileLocation = Paths.get(location);

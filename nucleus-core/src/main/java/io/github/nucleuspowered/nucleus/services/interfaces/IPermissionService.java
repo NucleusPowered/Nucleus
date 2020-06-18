@@ -26,7 +26,7 @@ import java.util.OptionalLong;
 import java.util.UUID;
 
 @ImplementedBy(NucleusPermissionService.class)
-public interface IPermissionService extends ContextCalculator<Subject> {
+public interface IPermissionService {
 
     void assignUserRoleToDefault();
 

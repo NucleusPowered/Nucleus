@@ -42,7 +42,7 @@ public class JailModule extends ConfigurableModule<JailConfig, JailConfigAdapter
     @Override
     protected Map<String, PlaceholderParser> tokensToRegister() {
         return ImmutableMap.<String, PlaceholderParser>builder()
-                .put("muted",
+                .put("jailed",
                         PlaceholderParser.builder()
                                 .plugin(this.serviceCollection.pluginContainer())
                                 .id("jailed")
