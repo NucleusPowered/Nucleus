@@ -125,12 +125,15 @@ public class NucleusBootstrap {
     private static final ImmutableSet<String> requiredClasses = ImmutableSet.of("org.spongepowered.api.text.placeholder.PlaceholderParser");
 
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
-        for (String str : requiredClasses) {
-            try {
-                Class.forName(str);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(provider.getMessageString("startup.nostart.missingclass", str));
+        if (!requiredClasses.isEmpty()) {
+            for (String str : requiredClasses) {
+                try {
+                    Class.forName(str);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalStateException(provider.getMessageString("startup.nostart.missingclass", str));
+                }
             }
+            return true;
         }
 
         if (System.getProperty(NO_VERSION_CHECK) != null) {
