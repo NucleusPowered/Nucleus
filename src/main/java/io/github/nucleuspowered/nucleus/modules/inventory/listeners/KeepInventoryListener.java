@@ -21,7 +21,7 @@ public class KeepInventoryListener implements ListenerBase.Conditional {
     @Override
     public Map<String, PermissionInformation> getPermissions() {
         Map<String, PermissionInformation> perms = Maps.newHashMap();
-        perms.put("nucleus.inventory.keepondeath", PermissionInformation.getWithTranslation("permission.inventory.keep", SuggestedLevel.ADMIN));
+        perms.put("nucleus.inventory.keepondeath", PermissionInformation.getWithTranslation("permission.inventory.keep", SuggestedLevel.NONE));
         return perms;
     }
 
