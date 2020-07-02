@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.argumentparsers.BoundedIntegerArgument;
 import io.github.nucleuspowered.nucleus.argumentparsers.ImprovedCatalogTypeArgument;
+import io.github.nucleuspowered.nucleus.argumentparsers.NucleusRequirePermissionArgument;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.Permissions;
 import io.github.nucleuspowered.nucleus.internal.annotations.command.RegisterCommand;
 import io.github.nucleuspowered.nucleus.internal.command.AbstractCommand;
@@ -55,7 +56,8 @@ public class EnchantCommand extends AbstractCommand<Player> {
             new ImprovedCatalogTypeArgument(Text.of(this.enchantmentKey), EnchantmentType.class),
             new BoundedIntegerArgument(Text.of(this.levelKey), 0, Short.MAX_VALUE),
             GenericArguments.flags()
-                    .permissionFlag(this.permissions.getPermissionWithSuffix("unsafe"), "u", "-unsafe")
+                    .valueFlag(new NucleusRequirePermissionArgument(
+                            GenericArguments.none(), this.permissions.getPermissionWithSuffix("unsafe")), "u", "-unsafe")
                     .flag("o", "-overwrite")
                     .buildWith(GenericArguments.none())
         };
