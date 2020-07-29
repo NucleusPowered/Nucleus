@@ -58,7 +58,14 @@ public abstract class ModularDataService<S extends ModularDataService<S>> extend
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            this.loadTransientTimings.stopTimingIfSync();
+            try {
+                this.loadTransientTimings.stopTimingIfSync();
+            } catch (final IllegalStateException exception) {
+                if (!Thread.currentThread().getName().contains("Shutdown")) {
+                    Nucleus.getNucleus().getLogger()
+                            .warn("Could not stop timings - if you are shutting down the server you can ignore this message.");
+                }
+            }
         }
     }
 
