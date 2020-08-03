@@ -94,7 +94,7 @@ public class PlaceholderService implements IPlaceholderService, IInitService {
 
         NamePlaceholder displayName = new NamePlaceholder(
                 serviceCollection.playerDisplayNameService(),
-                IPlayerDisplayNameService::addCommandToName,
+                IPlayerDisplayNameService::getDisplayName,
                 "nucleus:displayname",
                 "Nucleus subject (including console) placeholder");
         registerToken("player", displayName);
