@@ -9,8 +9,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.github.nucleuspowered.nucleus.NucleusBootstrap;
-import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.module.nickname.NucleusNicknameService;
 import io.github.nucleuspowered.nucleus.api.module.nickname.exception.NicknameException;
 import io.github.nucleuspowered.nucleus.modules.nickname.NicknameKeys;
