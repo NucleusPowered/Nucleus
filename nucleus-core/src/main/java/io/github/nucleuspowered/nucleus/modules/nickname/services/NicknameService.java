@@ -88,8 +88,11 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         );
     }
 
-    public void updateCache(UUID player, Text text) {
+    public void markRead(UUID player) {
         this.cached.add(player);
+    }
+
+    public void updateCache(UUID player, Text text) {
         this.cache.put(player, text.toPlain());
         this.textCache.put(player, text);
     }

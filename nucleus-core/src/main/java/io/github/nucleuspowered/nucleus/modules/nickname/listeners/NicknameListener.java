@@ -31,6 +31,7 @@ public class NicknameListener implements ListenerBase {
     @Listener(order = Order.FIRST)
     public void onPlayerJoin(ClientConnectionEvent.Join event, @Root Player player) {
         Optional<Text> nickname = this.nicknameService.getNickname(player);
+        this.nicknameService.markRead(player.getUniqueId());
         nickname.ifPresent(text -> {
             this.nicknameService.updateCache(player.getUniqueId(), text);
         });
