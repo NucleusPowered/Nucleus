@@ -128,22 +128,29 @@ public class TeleportCommand extends AbstractCommand<CommandSource> implements R
         boolean beQuiet = args.<Boolean>getOne(this.quietKey).orElse(this.isDefaultQuiet);
         Optional<Player> oTo = args.getOne(this.playerToKey);
         User to;
+        User fromUser;
         Player from;
         if (oTo.isPresent()) { // Two player argument.
-            from = args.<User>getOne(NucleusParameters.Keys.PLAYER).map(x -> x.getPlayer().orElse(null))
-                .orElseThrow(() -> ReturnMessageException.fromKey("command.playeronly"));
+            fromUser = args.requireOne(NucleusParameters.Keys.PLAYER);
+            if (fromUser.isOnline()) {
+                from = fromUser.getPlayer().get();
+            } else {
+                from = null;
+            }
             to = oTo.get();
             if (to.equals(src)) {
                 throw ReturnMessageException.fromKey("command.teleport.player.noself");
             }
         } else if (src instanceof Player) {
             from = (Player) src;
-            to = args.<User>getOne(NucleusParameters.Keys.PLAYER).get();
+            fromUser = from;
+            to = args.requireOne(NucleusParameters.Keys.PLAYER);
         } else {
             throw ReturnMessageException.fromKey("command.playeronly");
         }
 
-        if (to.getPlayer().isPresent()) {
+        // both are online.
+        if (from != null && to.getPlayer().isPresent()) {
             if (this.handler.getBuilder().setSource(src).setFrom(from).setTo(to.getPlayer().get())
                     .setSafe(!args.hasAny("f"))
                     .setSilentTarget(beQuiet)
@@ -159,18 +166,32 @@ public class TeleportCommand extends AbstractCommand<CommandSource> implements R
 
         // Can we get a location?
         Supplier<ReturnMessageException> r = () -> ReturnMessageException.fromKey("command.teleport.nolastknown", to.getName());
-        Location<World> l = Nucleus.getNucleus().getUserDataManager().get(to.getUniqueId()).orElseThrow(r).get(CoreUserDataModule.class).getLogoutLocation()
-                .orElseThrow(r);
+        Location<World> l;
+        if (to.isOnline()) {
+            l = to.getPlayer().get().getLocation();
+        } else {
+            l = Nucleus.getNucleus().getUserDataManager().get(to.getUniqueId()).orElseThrow(r).get(CoreUserDataModule.class)
+                    .getLogoutLocation()
+                    .orElseThrow(r);
+        }
 
         MessageProvider provider = Nucleus.getNucleus().getMessageProvider();
-        if (CauseStackHelper.createFrameWithCausesWithReturn(c ->
-                Nucleus.getNucleus().getTeleportHandler().teleportPlayer(from, l, NucleusTeleportHandler.StandardTeleportMode.FLYING_THEN_SAFE, c).isSuccess(), src)) {
-            if (!(src instanceof Player && ((Player) src).getUniqueId().equals(from.getUniqueId()))) {
-                src.sendMessage(provider.getTextMessageWithFormat("command.teleport.offline.other", from.getName(), to.getName()));
+        if (from == null) {
+            boolean wasSet = fromUser.setLocation(l.getPosition(), l.getExtent().getUniqueId());
+            if (wasSet) {
+                src.sendMessage(provider.getTextMessageWithFormat("command.teleport.offline.other", fromUser.getName(), to.getName()));
             }
+        } else {
+            if (CauseStackHelper.createFrameWithCausesWithReturn(c ->
+                    Nucleus.getNucleus().getTeleportHandler().teleportPlayer(from, l, NucleusTeleportHandler.StandardTeleportMode.FLYING_THEN_SAFE, c)
+                            .isSuccess(), src)) {
+                if (!(src instanceof Player && ((Player) src).getUniqueId().equals(from.getUniqueId()))) {
+                    src.sendMessage(provider.getTextMessageWithFormat("command.teleport.offline.other", from.getName(), to.getName()));
+                }
 
-            from.sendMessage(provider.getTextMessageWithFormat("command.teleport.offline.self", to.getName()));
-            return CommandResult.success();
+                from.sendMessage(provider.getTextMessageWithFormat("command.teleport.offline.self", to.getName()));
+                return CommandResult.success();
+            }
         }
 
         throw ReturnMessageException.fromKey("command.teleport.error");
