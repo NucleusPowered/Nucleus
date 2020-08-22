@@ -6,6 +6,8 @@ package io.github.nucleuspowered.nucleus.services.impl.usercache;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.UserCacheDataNode;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.UserCacheVersionNode;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
@@ -30,9 +32,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 @Singleton
 public class UserCacheService implements IUserCacheService, IReloadableService.DataLocationReloadable {

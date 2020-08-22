@@ -10,7 +10,7 @@ group = "io.github.nucleuspowered"
 
 repositories {
     jcenter()
-    maven("https://repo.spongepowered.org/maven")
+    maven("https://repo-new.spongepowered.org/repository/maven-public")
     maven("https://repo.drnaylor.co.uk/artifactory/list/minecraft")
     maven("https://repo.drnaylor.co.uk/artifactory/list/quickstart")
     // maven("https://jitpack.io")
@@ -36,15 +36,30 @@ dependencies {
     annotationProcessor(project(":nucleus-ap"))
     implementation(project(":nucleus-ap"))
     implementation(project(":nucleus-api"))
+    implementation(project(":nucleus-electrolysis"))
 
 //    val dep = "org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"]
 //    annotationProcessor(dep)
 //    implementation(dep)
-
+    implementation("org.spongepowered:configurate-core:${rootProject.properties["configurateVersion"]?.toString()!!}") {
+        exclude(group = "com.google.inject", module = "guice")
+        exclude(group = "com.google.guava", module = "guava")
+    }
     implementation(rootProject.properties["qsmlDep"]?.toString()!!)
     implementation(rootProject.properties["neutrinoDep"]?.toString()!!) {
         exclude("org.spongepowered", "configurate-core")
     }
+    implementation("com.google.inject:guice:4.1.0") {
+        exclude(group = "javax.inject", module = "javax.inject")
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation("com.google.guava:guava:21.0") {
+        exclude(group ="com.google.code.findbugs", module = "jsr305")
+        exclude(group = "org.checkerframework", module = "checker-qual")
+        exclude(group = "com.google.j2objc", module = "j2objc-annotations")
+        exclude(group = "org.codehaus.mojo", module = "animal-sniffer-annotations")
+    }
+    implementation("com.google.code.gson:gson:2.8.0")
 
     testCompile("org.mockito:mockito-all:1.10.19")
     testCompile("org.powermock:powermock-module-junit4:1.6.4")

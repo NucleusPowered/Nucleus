@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class CooldownService implements ICooldownService {

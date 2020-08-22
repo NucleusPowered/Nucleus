@@ -12,7 +12,7 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import java.util.UUID;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 public class WorldMigrationSettingProcessor implements SettingProcessor {
 

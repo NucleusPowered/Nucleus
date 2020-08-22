@@ -18,8 +18,8 @@ import org.spongepowered.api.service.economy.transaction.TransactionResult;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class EconomyServiceProvider implements IEconomyServiceProvider {

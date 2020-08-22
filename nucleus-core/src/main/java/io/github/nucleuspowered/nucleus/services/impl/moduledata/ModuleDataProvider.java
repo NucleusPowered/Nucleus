@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class ModuleDataProvider implements IModuleDataProvider {

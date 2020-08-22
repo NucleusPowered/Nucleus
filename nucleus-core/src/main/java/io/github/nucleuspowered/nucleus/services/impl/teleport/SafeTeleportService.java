@@ -34,8 +34,8 @@ import org.spongepowered.api.world.teleport.TeleportHelperFilters;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class SafeTeleportService implements INucleusTeleportService, IReloadableService.Reloadable {

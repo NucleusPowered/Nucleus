@@ -10,7 +10,7 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class ReloadableService implements IReloadableService {

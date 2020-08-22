@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.services.impl;
 
 import com.google.inject.Injector;
+import io.github.nucleuspowered.electrolysis.IPlatform;
 import io.github.nucleuspowered.nucleus.guice.ConfigDirectory;
 import io.github.nucleuspowered.nucleus.guice.DataDirectory;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
@@ -16,6 +17,7 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IConfigurateHelper;
 import io.github.nucleuspowered.nucleus.services.interfaces.ICooldownService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IDocumentationGenerationService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IEconomyServiceProvider;
+import io.github.nucleuspowered.nucleus.services.interfaces.ILogger;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IModuleDataProvider;
 import io.github.nucleuspowered.nucleus.services.interfaces.INucleusTeleportService;
@@ -34,8 +36,6 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IUserCacheService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IUserPreferenceService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IWarmupService;
 import io.github.nucleuspowered.nucleus.util.LazyLoad;
-import org.slf4j.Logger;
-import org.spongepowered.api.plugin.PluginContainer;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -44,9 +44,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 @Singleton
 public class NucleusServiceCollection implements INucleusServiceCollection {
@@ -78,9 +78,9 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     private final Provider<IChatMessageFormatterService> chatMessageFormatterProvider;
     private final Provider<IPlaceholderService> placeholderServiceProvider;
     private final Provider<IDocumentationGenerationService> documentationGenerationServiceProvider;
+    private final Provider<IPlatform> platformProvider;
     private final Injector injector;
-    private final PluginContainer pluginContainer;
-    private final Logger logger;
+    private final ILogger logger;
     private final Provider<ITextStyleService> textStyleServiceProvider;
     private final Supplier<Path> dataDir;
     private final Path configPath;
@@ -88,8 +88,6 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     @Inject
     public NucleusServiceCollection(
             Injector injector,
-            PluginContainer pluginContainer,
-            Logger logger,
             @DataDirectory Supplier<Path> dataPath,
             @ConfigDirectory Path configPath) {
         this.messageProviderService = new LazyLoad<>(this, injector, IMessageProviderService.class);
@@ -117,9 +115,9 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
         this.chatMessageFormatterProvider = new LazyLoad<>(this, injector, IChatMessageFormatterService.class);
         this.placeholderServiceProvider = new LazyLoad<>(this, injector, IPlaceholderService.class);
         this.documentationGenerationServiceProvider = new LazyLoad<>(this, injector, IDocumentationGenerationService.class);
+        this.platformProvider = new LazyLoad<>(this, injector, IPlatform.class);
+        this.logger = injector.getInstance(ILogger.class);
         this.injector = injector;
-        this.pluginContainer = pluginContainer;
-        this.logger = logger;
         this.dataDir = dataPath;
         this.configPath = configPath;
     }
@@ -219,6 +217,10 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
         return this.userCacheServiceProvider.get();
     }
 
+    @Override public IPlatform platform() {
+        return this.platformProvider.get();
+    }
+
     @Override public IPlatformService platformService() {
         return this.platformServiceProvider.get();
     }
@@ -237,12 +239,7 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     }
 
     @Override
-    public PluginContainer pluginContainer() {
-        return this.pluginContainer;
-    }
-
-    @Override
-    public Logger logger() {
+    public ILogger logger() {
         return this.logger;
     }
 

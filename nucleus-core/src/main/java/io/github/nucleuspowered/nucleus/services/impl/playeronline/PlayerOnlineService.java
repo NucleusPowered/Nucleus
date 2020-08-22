@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class PlayerOnlineService implements IPlayerOnlineService {

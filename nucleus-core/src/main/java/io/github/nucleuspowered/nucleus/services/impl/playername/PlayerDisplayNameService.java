@@ -30,8 +30,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class PlayerDisplayNameService implements IPlayerDisplayNameService, IReloadableService.Reloadable {

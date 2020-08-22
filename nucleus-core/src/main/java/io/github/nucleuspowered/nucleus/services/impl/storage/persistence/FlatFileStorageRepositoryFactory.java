@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public final class FlatFileStorageRepositoryFactory implements IStorageRepositoryFactory<JsonObject> {

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class ChatMessageFormatterService implements IChatMessageFormatterService {

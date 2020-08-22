@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.services;
 
 import com.google.inject.ImplementedBy;
 import com.google.inject.Injector;
+import io.github.nucleuspowered.electrolysis.IPlatform;
 import io.github.nucleuspowered.nucleus.services.impl.NucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.services.interfaces.IChatMessageFormatterService;
 import io.github.nucleuspowered.nucleus.services.interfaces.ICommandElementSupplier;
@@ -15,6 +16,7 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IConfigurateHelper;
 import io.github.nucleuspowered.nucleus.services.interfaces.ICooldownService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IDocumentationGenerationService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IEconomyServiceProvider;
+import io.github.nucleuspowered.nucleus.services.interfaces.ILogger;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IModuleDataProvider;
 import io.github.nucleuspowered.nucleus.services.interfaces.INucleusTeleportService;
@@ -32,8 +34,6 @@ import io.github.nucleuspowered.nucleus.services.interfaces.ITextStyleService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IUserCacheService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IUserPreferenceService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IWarmupService;
-import org.slf4j.Logger;
-import org.spongepowered.api.plugin.PluginContainer;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -76,13 +76,13 @@ public interface INucleusServiceCollection {
 
     IUserCacheService userCacheService();
 
+    IPlatform platform();
+
     IPlatformService platformService();
 
     IDocumentationGenerationService documentationGenerationService();
 
     Injector injector();
-
-    PluginContainer pluginContainer();
 
     ITextStyleService textStyleService();
 
@@ -94,7 +94,7 @@ public interface INucleusServiceCollection {
 
     IPlaceholderService placeholderService();
 
-    Logger logger();
+    ILogger logger();
 
     <I, C extends I> void registerService(Class<I> key, C service, boolean rereg);
 

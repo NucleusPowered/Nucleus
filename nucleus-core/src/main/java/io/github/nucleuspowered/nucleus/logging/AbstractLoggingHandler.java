@@ -21,7 +21,7 @@ import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 public abstract class AbstractLoggingHandler implements IReloadableService.Reloadable {
 

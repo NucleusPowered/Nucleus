@@ -41,8 +41,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public final class StorageManager implements IStorageManager, IReloadableService.Reloadable {

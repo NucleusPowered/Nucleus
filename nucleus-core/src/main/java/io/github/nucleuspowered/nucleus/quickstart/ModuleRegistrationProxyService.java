@@ -17,7 +17,7 @@ import uk.co.drnaylor.quickstart.enums.ConstructionPhase;
 import uk.co.drnaylor.quickstart.exceptions.QuickStartModuleLoaderException;
 import uk.co.drnaylor.quickstart.exceptions.UndisableableModuleException;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 public class ModuleRegistrationProxyService {
 

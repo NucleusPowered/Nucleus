@@ -1,5 +1,6 @@
 plugins {
     java
+    `java-library`
     idea
     eclipse
     maven
@@ -17,11 +18,13 @@ defaultTasks.add("build")
 
 repositories {
     jcenter()
-    maven("http://repo.spongepowered.org/maven")
+    maven("https://repo-new.spongepowered.org/repository/maven-public/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 dependencies {
 //    implementation("org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"])
+    api("net.kyori:adventure-api:4.0.0-SNAPSHOT")
 }
 
 configure<nl.javadude.gradle.plugins.license.LicenseExtension> {

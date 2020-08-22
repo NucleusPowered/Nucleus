@@ -11,7 +11,7 @@ import org.spongepowered.api.Sponge;
 import java.time.Instant;
 import java.util.Optional;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class PlatformService implements IPlatformService {

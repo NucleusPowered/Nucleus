@@ -40,8 +40,8 @@ import java.util.UUID;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class MessageProviderService implements IMessageProviderService, IReloadableService.Reloadable {

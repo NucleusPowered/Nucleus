@@ -5,10 +5,9 @@
 package io.github.nucleuspowered.nucleus.util;
 
 import com.google.inject.Injector;
+import com.google.inject.Provider;
 import io.github.nucleuspowered.nucleus.services.IInitService;
 import io.github.nucleuspowered.nucleus.services.impl.NucleusServiceCollection;
-
-import javax.inject.Provider;
 
 public class LazyLoad<T> implements Provider<T> {
 

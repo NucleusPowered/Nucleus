@@ -8,7 +8,7 @@ import io.github.nucleuspowered.nucleus.scaffold.registry.NucleusRegistryModule;
 import io.github.nucleuspowered.nucleus.services.impl.storage.persistence.FlatFileStorageRepositoryFactory;
 import io.github.nucleuspowered.storage.persistence.IStorageRepositoryFactory;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class IStorageRepositoryFactoryRegistryModule extends NucleusRegistryModule<IStorageRepositoryFactory> {

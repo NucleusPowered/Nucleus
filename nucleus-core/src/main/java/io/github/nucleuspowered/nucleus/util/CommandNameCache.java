@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 @Singleton
 public class CommandNameCache {

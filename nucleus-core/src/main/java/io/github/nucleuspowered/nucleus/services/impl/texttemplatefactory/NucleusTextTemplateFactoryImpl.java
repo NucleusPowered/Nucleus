@@ -9,8 +9,8 @@ import io.github.nucleuspowered.nucleus.services.interfaces.INucleusTextTemplate
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.text.Text;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class NucleusTextTemplateFactoryImpl implements INucleusTextTemplateFactory {

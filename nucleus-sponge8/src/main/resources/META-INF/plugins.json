@@ -1,0 +1,29 @@
+{
+    "plugins": [
+        {
+            "id": "nucleus",
+            "name": "Nucleus",
+            "version": "3.0.0",
+            "main-class": "io.github.nucleuspowered.nucleus",
+            "description": "Nucleus",
+            "links": {
+                "homepage": "https://www.nucleuspowered.org",
+                "source": "https://github.com/NucleusPowered/Nucleus",
+                "issues": "https://github.com/NucleusPowered/Nucleus/issues"
+            },
+            "contributors": [
+                {
+                    "name": "dualspiral",
+                    "description": "Lead Developer"
+                }
+            ],
+            "dependencies": [
+                {
+                    "id": "spongeapi",
+                    "version": "8.0.0"
+                }
+            ],
+            "extra": {}
+        }
+    ]
+}
