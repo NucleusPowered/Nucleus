@@ -2,4 +2,6 @@ rootProject.name = 'Nucleus'
 include 'nucleus-api'
 include 'nucleus-core'
 include 'nucleus-ap'
+include 'nucleus-sponge8'
+include 'nucleus-modules'
 

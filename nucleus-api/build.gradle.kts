@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"])
+//    implementation("org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"])
 }
 
 configure<nl.javadude.gradle.plugins.license.LicenseExtension> {
@@ -41,19 +41,19 @@ configure<nl.javadude.gradle.plugins.license.LicenseExtension> {
     mapping("java", "SLASHSTAR_STYLE")
 }
 
-val filenameSuffix = "SpongeAPI${rootProject.properties["declaredApiVersion"]}"
+// val filenameSuffix = "SpongeAPI${rootProject.properties["declaredApiVersion"]}"
 
 val sourcesJar by tasks.registering(Jar::class) {
     dependsOn.add(JavaPlugin.CLASSES_TASK_NAME)
     archiveClassifier.set("sources")
-    archiveFileName.set("Nucleus-${rootProject.version}-$filenameSuffix-API-sources.jar")
+    archiveFileName.set("Nucleus-${rootProject.version}-API-sources.jar")
     from(sourceSets["main"].allSource)
 }
 
 val javadocJar by tasks.registering(Jar::class) {
     dependsOn.add(JavaPlugin.JAVADOC_TASK_NAME)
     archiveClassifier.set("javadoc")
-    archiveFileName.set("Nucleus-${rootProject.version}-$filenameSuffix-API-javadocs.jar")
+    archiveFileName.set("Nucleus-${rootProject.version}-API-javadocs.jar")
     from(tasks.javadoc)
 }
 
@@ -83,7 +83,7 @@ tasks {
         }
 
         archiveVersion.set("${rootProject.version}")
-        archiveFileName.set("Nucleus-${rootProject.version}-$filenameSuffix-API.jar")
+        archiveFileName.set("Nucleus-${rootProject.version}-API.jar")
     }
 
     build {

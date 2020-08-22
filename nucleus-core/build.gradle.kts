@@ -37,9 +37,9 @@ dependencies {
     implementation(project(":nucleus-ap"))
     implementation(project(":nucleus-api"))
 
-    val dep = "org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"]
-    annotationProcessor(dep)
-    implementation(dep)
+//    val dep = "org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"]
+//    annotationProcessor(dep)
+//    implementation(dep)
 
     implementation(rootProject.properties["qsmlDep"]?.toString()!!)
     implementation(rootProject.properties["neutrinoDep"]?.toString()!!) {
