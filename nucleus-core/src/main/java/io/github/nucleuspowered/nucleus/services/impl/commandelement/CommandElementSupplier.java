@@ -77,7 +77,7 @@ public class CommandElementSupplier implements ICommandElementSupplier {
     }
 
     @Override public User getUserFromParametersElseSelf(ICommandContext<? extends CommandSource> context) throws CommandException {
-        Optional<User> user = context.getOne(NucleusParameters.Keys.USER, User.class).filter(context::is);
+        Optional<User> user = context.getOne(NucleusParameters.Keys.USER, User.class).filter(context::isNot);
         if (!user.isPresent()) {
             return context.getIfPlayer();
         }

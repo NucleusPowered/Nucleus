@@ -160,6 +160,10 @@ public interface ICommandContext<C extends CommandSource> {
 
     boolean is(User x);
 
+    default boolean isNot(User x) {
+        return !this.is(x);
+    }
+
     boolean isUser();
 
     boolean isConsoleAndBypass();
