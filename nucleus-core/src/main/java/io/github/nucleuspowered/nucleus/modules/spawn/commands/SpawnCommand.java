@@ -64,10 +64,10 @@ public class SpawnCommand implements ICommandExecutor<Player>, IReloadableServic
         return new CommandElement[] {
             GenericArguments.flags().permissionFlag(
                     SpawnPermissions.SPAWN_FORCE, "f", "-force").buildWith(
-                            serviceCollection.commandElementSupplier()
+                            GenericArguments.optional(serviceCollection.commandElementSupplier()
                                 .createPermissionParameter(
                                         NucleusParameters.WORLD_PROPERTIES_ENABLED_ONLY.get(serviceCollection),
-                                        SpawnPermissions.SPAWN_OTHERWORLDS, true))
+                                        SpawnPermissions.SPAWN_OTHERWORLDS, true)))
         };
     }
 
