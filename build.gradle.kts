@@ -184,8 +184,8 @@ compileTestKotlin.kotlinOptions {
 
 val setupDocGen by tasks.registering(io.github.nucleuspowered.gradle.task.SetupServer::class) {
     dependsOn(shadowJar)
-    spongeVanillaDownload = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2.3-RC372/spongevanilla-1.12.2-7.2.3-RC372.jar")
-    spongeVanillaSHA1Hash = "e72ec4bc0368cd2fc604f412eed5fa8941d7580c"
+    spongeVanillaDownload = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.3.0/spongevanilla-1.12.2-7.3.0.jar")
+    spongeVanillaSHA1Hash = "6eba8472a0bd5eab46952ef04500aaaa1f8ff761"
     acceptEula = true
     fileProvider = shadowJar.archiveFile
 }

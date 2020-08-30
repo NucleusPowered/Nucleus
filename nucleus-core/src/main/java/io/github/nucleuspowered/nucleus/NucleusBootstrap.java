@@ -122,7 +122,7 @@ public class NucleusBootstrap {
     private final boolean docgenOnly;
     private final boolean shutdownAtLoadEnd;
 
-    private static final ImmutableSet<String> requiredClasses = ImmutableSet.of("org.spongepowered.api.text.placeholder.PlaceholderParser");
+    private static final ImmutableSet<String> requiredClasses = ImmutableSet.of();
 
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
         if (!requiredClasses.isEmpty()) {
