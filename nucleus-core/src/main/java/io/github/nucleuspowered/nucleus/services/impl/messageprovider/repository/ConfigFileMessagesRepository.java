@@ -72,7 +72,12 @@ public class ConfigFileMessagesRepository extends AbstractMessageRepository impl
     @Override
     String getEntry(String key) {
         if (!this.entryCache.containsKey(key)) {
-            this.entryCache.put(key, this.node.getNode((Object[]) key.split("\\.")).getString());
+            String val = this.node.getNode((Object[]) key.split("\\.")).getString();
+            if (val == null) {
+                // fallback if it is isn't specified.
+                val = this.messageRepositorySupplier.get().getEntry(key);
+            }
+            this.entryCache.put(key, val);
         }
         return this.entryCache.get(key);
     }
