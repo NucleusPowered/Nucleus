@@ -442,7 +442,7 @@ public abstract class CommandContextImpl<P extends CommandSource> implements ICo
         }
 
         @Override public boolean is(Class<?> other) {
-            return ConsoleSource.class.isAssignableFrom(other);
+            return other.isAssignableFrom(ConsoleSource.class);
         }
 
         @Override public boolean isUser() {
@@ -475,7 +475,7 @@ public abstract class CommandContextImpl<P extends CommandSource> implements ICo
 
         @Override
         public boolean is(Class<?> other) {
-            return Player.class.isAssignableFrom(other);
+            return other.isAssignableFrom(Player.class);
         }
 
         @Override
