@@ -57,14 +57,13 @@ public class KickCommand implements ICommandExecutor<CommandSource>, IReloadable
             return context.errorResult("command.kick.exempt", pl.getName());
         }
 
-        User user = context.requireOne(NucleusParameters.Keys.USER, User.class);
         if (this.levelConfig.isUseLevels() &&
-                !context.isPermissionLevelOkay(user,
+                !context.isPermissionLevelOkay(pl,
                         KickPermissions.LEVEL_KEY,
                         KickPermissions.BASE_KICK,
                         this.levelConfig.isCanAffectSameLevel())) {
             // Failure.
-            return context.errorResult("command.modifiers.level.insufficient", user.getName());
+            return context.errorResult("command.modifiers.level.insufficient", pl.getName());
         }
 
         pl.kick(TextSerializers.FORMATTING_CODE.deserialize(r));
