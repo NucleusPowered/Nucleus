@@ -54,7 +54,14 @@ extra["gitHash"] = getGitCommit()
 
 // Get the Level
 val nucVersion = project.properties["nucleusVersion"]?.toString()!!
-val nucSuffix : String? = project.properties["nucleusVersionSuffix"]?.toString()
+val nucSuffix : String? = {
+    val prop: String? = project.properties["nucleusVersionSuffix"]?.toString()
+    if (prop == null || prop == "RELEASE") {
+        null
+    } else {
+        prop
+    }
+}.invoke()
 
 var level = getLevel(nucVersion, nucSuffix)
 val spongeVersion: String = project.properties["declaredApiVersion"]!!.toString()
