@@ -15,16 +15,23 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
 
 import java.util.UUID;
 
 public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
 
+    private final Logger logger;
+
+    public NamedLocationSerialiser(Logger logger) {
+        this.logger = logger;
+    }
+
     @Nullable
     @Override
     public NamedLocation deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException {
         if (type.isSubtypeOf(TypeTokens.WARP)) {
-            return WarpSerialiser.INSTANCE.deserialize(type, value);
+            return new WarpSerialiser(this.logger).deserialize(type, value);
         }
 
         Vector3d pos = getPosition(value);
@@ -45,7 +52,7 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
         }
 
         if (obj instanceof Warp) {
-            WarpSerialiser.INSTANCE.serialize(type, (Warp) obj, value);
+            new WarpSerialiser(this.logger).serialize(type, (Warp) obj, value);
             return;
         }
 
