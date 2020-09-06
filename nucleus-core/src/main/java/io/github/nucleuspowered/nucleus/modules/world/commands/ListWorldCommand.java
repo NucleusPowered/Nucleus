@@ -17,6 +17,7 @@ import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.storage.WorldProperties;
 
@@ -57,9 +58,10 @@ public class ListWorldCommand implements ICommandExecutor<CommandSource> {
         listContent.add(context.getMessage("command.world.list.uuid", x.getUniqueId().toString()));
         if (x.isEnabled()) {
             boolean worldLoaded = Sponge.getServer().getWorld(x.getUniqueId()).isPresent();
-            String message =
-                (worldLoaded ? "&a" : "&c") + context.getMessageString(worldLoaded ? "standard.true" : "standard.false");
-            listContent.add(context.getMessage("command.world.list.enabled", message));
+            final Text loadedText =
+                    Text.of(worldLoaded ? TextColors.GREEN : TextColors.RED,
+                            context.getMessageString(worldLoaded ? "standard.true" : "standard.false"));
+            listContent.add(context.getMessage("command.world.list.enabled", loadedText));
         } else {
             listContent.add(context.getMessage("command.world.list.disabled"));
         }
