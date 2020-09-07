@@ -42,9 +42,11 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IModuleDataProvider;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.nucleus.util.ClientMessageReciever;
+import io.github.nucleuspowered.nucleus.util.PrettyPrinter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.GameState;
 import org.spongepowered.api.Platform;
@@ -81,6 +83,7 @@ import uk.co.drnaylor.quickstart.loaders.PhasedModuleEnabler;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,6 +126,29 @@ public class NucleusBootstrap {
     private final boolean shutdownAtLoadEnd;
 
     private static final ImmutableSet<String> requiredClasses = ImmutableSet.of();
+
+    private static void compatCheck(final Logger logger) throws IllegalStateException {
+        try {
+            // check for Configurate 3.7
+            CommentedConfigurationNode.class.getMethod("root");
+        } catch (final NoSuchMethodException e) {
+            new PrettyPrinter(80)
+                    .add("Configurate 3.7 has not been detected. Nucleus cannot start.")
+                    .hr('-')
+                    .add("Nucleus relies upon Configurate 3.7 which was included in SpongeAPI 7.3")
+                    .add("However, some other mod/plugin has included an older version of Configurate")
+                    .add("and that has been loaded first. Nucleus is unable to start.")
+                    .add()
+                    .add("To fix this, rename your Sponge jar to start with '__aaa' and start the server")
+                    .add("again.")
+                    .add()
+                    .hr('-')
+                    .add("Offending class location (this should include the Jar location):")
+                    .add(CommentedConfigurationNode.class.getResource(CommentedConfigurationNode.class.getSimpleName() + ".class").toString())
+                    .log(logger, Level.ERROR);
+            throw new IllegalStateException("Cannot start - Configurate 3.7 not detected. Rename the Sponge jar to start with __aaa");
+       }
+    }
 
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
         if (!requiredClasses.isEmpty()) {
@@ -272,6 +298,14 @@ public class NucleusBootstrap {
             }
         } catch (IOException e) {
             // don't worry about it
+        }
+
+        try {
+            NucleusBootstrap.compatCheck(this.logger);
+        } catch (final IllegalStateException e) {
+            this.isErrored = e;
+            disable();
+            return;
         }
 
         try {
