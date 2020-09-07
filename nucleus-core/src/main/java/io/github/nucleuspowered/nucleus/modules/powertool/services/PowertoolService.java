@@ -43,7 +43,7 @@ public class PowertoolService implements ServiceBase {
             this.powertools.put(uuid, m);
         }
 
-        return ImmutableMap.copyOf(m);
+        return new HashMap<>(m);
     }
 
     public Optional<List<String>> getPowertoolForItem(UUID uuid, ItemType item) {
