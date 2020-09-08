@@ -223,11 +223,6 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
         return message;
     }
 
-    @Override public Collection<String> wouldStrip(String permissionPrefixColour, String permissionPrefixColor, String permissionPrefixStyle,
-            Subject source, String text) {
-        return wouldStrip(Arrays.asList(permissionPrefixColour, permissionPrefixColor), permissionPrefixStyle, source, text);
-    }
-
     @Override public Collection<String> wouldStrip(String permissionPrefixColour, String permissionPrefixStyle, Subject source, String text) {
         return wouldStrip(Collections.singletonList(permissionPrefixColour), permissionPrefixStyle, source, text);
     }
@@ -279,7 +274,10 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
     private String getKeys(Subject subject, List<String> permissionPrefixColour, String stylePrefix) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<TextColor, String> suffix : this.colourToPermissionSuffix.entrySet()) {
-            if (permissionPrefixColour.stream().noneMatch(prefix -> this.permissionService.hasPermission(subject, prefix + suffix.getValue()))) {
+            if (permissionPrefixColour.stream().noneMatch(prefix -> {
+                final String p = prefix.endsWith(".") ? prefix : prefix + ".";
+                return this.permissionService.hasPermission(subject, p + suffix.getValue());
+            })) {
                 Character c = this.idToColour.inverse().get(suffix.getKey());
                 if (c != null) {
                     stringBuilder.append(c);
@@ -287,8 +285,15 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
             }
         }
 
+        final String p;
+        if (stylePrefix.endsWith(".")) {
+            p = stylePrefix;
+        } else {
+            p = stylePrefix + ".";
+        }
+
         for (Map.Entry<TextStyle, String> suffix : this.styleToPerms.entrySet()) {
-            if (!this.permissionService.hasPermission(subject, stylePrefix + suffix.getValue())) {
+            if (!this.permissionService.hasPermission(subject, p + suffix.getValue())) {
                 Character c = this.idToStyle.inverse().get(suffix.getKey());
                 if (c != null) {
                     stringBuilder.append(c);
