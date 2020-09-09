@@ -6,11 +6,21 @@ package io.github.nucleuspowered.nucleus.api.module.staffchat;
 
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageReceiver;
+
+import java.util.Collection;
 
 /**
  * Provides a way to get the Staff Chat message channel instance.
  */
 public interface NucleusStaffChatService {
+
+    /**
+     * Gets the memebers of the Staff Chat channel.
+     *
+     * @return The {@link CommandSource}s who are members of the channel.
+     */
+    Collection<MessageReceiver> getStaffChannelMembers();
 
     /**
      * Sends a message to the Staff Chat channel.

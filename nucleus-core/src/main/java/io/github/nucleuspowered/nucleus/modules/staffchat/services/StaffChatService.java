@@ -15,6 +15,9 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IUserPreferenceServi
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageReceiver;
+
+import java.util.Collection;
 
 import javax.inject.Inject;
 
@@ -33,6 +36,11 @@ public class StaffChatService implements NucleusStaffChatService, ServiceBase {
     @Override
     public void sendMessageFrom(CommandSource source, Text message) {
         StaffChatMessageChannel.getInstance().sendMessageFrom(source, message);
+    }
+
+    @Override
+    public Collection<MessageReceiver> getStaffChannelMembers() {
+        return StaffChatMessageChannel.getInstance().receivers();
     }
 
     public boolean isToggledChat(Player player) {
