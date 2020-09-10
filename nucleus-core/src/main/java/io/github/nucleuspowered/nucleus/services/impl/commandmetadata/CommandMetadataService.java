@@ -374,6 +374,10 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
         return this.controlToAliases.keySet();
     }
 
+    @Override public Collection<CommandControl> getCommandsAndSubcommands() {
+        return this.controlToExecutorClass.values();
+    }
+
     @Override public void registerInterceptor(ICommandInterceptor impl) {
         this.interceptors.add(impl);
     }
