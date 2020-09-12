@@ -494,7 +494,7 @@ public abstract class CommandContextImpl<P extends CommandSource> implements ICo
                 return Optional.of(this.getCommandSourceAsPlayerUnchecked().getWorld().getProperties());
             }
 
-            return Optional.empty();
+            return worldProperties;
         }
 
         @Override
