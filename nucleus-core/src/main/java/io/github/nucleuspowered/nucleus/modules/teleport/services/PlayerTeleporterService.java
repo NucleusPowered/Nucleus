@@ -286,7 +286,8 @@ public class PlayerTeleporterService implements ServiceBase, IReloadableService.
             this.warmupService.executeAfter(
                     playerToTeleport.get(),
                     Duration.of(target.warmup, ChronoUnit.SECONDS),
-                    target::run);
+                    target::run,
+                    true);
         }
         this.messageProviderService.sendMessageTo(player, "command.tpaccept.success");
         return true;

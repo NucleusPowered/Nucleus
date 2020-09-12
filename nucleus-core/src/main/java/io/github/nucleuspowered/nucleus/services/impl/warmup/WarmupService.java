@@ -8,6 +8,11 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
+import io.github.nucleuspowered.nucleus.modules.core.config.WarmupConfig;
+import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
+import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
+import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IWarmupService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -20,11 +25,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Singleton
-public class WarmupService implements IWarmupService {
+public class WarmupService implements IWarmupService, IReloadableService.Reloadable {
 
     private final Object lockingObject = new Object();
 
     private final PluginContainer pluginContainer;
+    private final IMessageProviderService messageProviderService;
+    private WarmupConfig warmupConfig = new WarmupConfig();
 
     // player to task
     private final BiMap<UUID, UUID> tasks = HashBiMap.create();
@@ -33,21 +40,43 @@ public class WarmupService implements IWarmupService {
     private final BiMap<UUID, WarmupTask> uuidToWarmup = HashBiMap.create();
 
     @Inject
-    public WarmupService(PluginContainer pluginContainer) {
+    public WarmupService(PluginContainer pluginContainer, IMessageProviderService messageProviderService, IReloadableService reloadableService) {
         this.pluginContainer = pluginContainer;
+        this.messageProviderService = messageProviderService;
+        reloadableService.registerReloadable(this);
     }
 
     @Override public void executeAfter(Player target, Duration duration, WarmupTask runnable) {
-        execute(target, duration, runnable, false);
+        execute(target, duration, runnable, false, false);
+    }
+
+    @Override public void executeAfter(Player target, Duration duration, WarmupTask runnable, boolean sendMessage) {
+        execute(target, duration, runnable, false, sendMessage);
     }
 
     @Override public void executeAfterAsync(Player target, Duration duration, WarmupTask runnable) {
-        execute(target, duration, runnable, true);
+        execute(target, duration, runnable, true, false);
     }
 
-    private void execute(Player target, Duration duration, WarmupTask runnable, boolean async) {
+    @Override public void executeAfterAsync(Player target, Duration duration, WarmupTask runnable, boolean sendMessage) {
+        execute(target, duration, runnable, true, sendMessage);
+    }
+
+    private void execute(Player target, Duration duration, WarmupTask runnable, boolean async, boolean sendMessage) {
         synchronized (this.lockingObject) {
             cancelInternal(target);
+
+            if (sendMessage) {
+                this.messageProviderService.sendMessageTo(target, "warmup.start",
+                        this.messageProviderService.getTimeString(target.getLocale(), duration));
+                if (this.warmupConfig.isOnCommand() && this.warmupConfig.isOnMove()) {
+                    this.messageProviderService.sendMessageTo(target, "warmup.both");
+                } else if (this.warmupConfig.isOnCommand()) {
+                    this.messageProviderService.sendMessageTo(target, "warmup.onCommand");
+                } else if (this.warmupConfig.isOnMove()) {
+                    this.messageProviderService.sendMessageTo(target, "warmup.onMove");
+                }
+            }
 
             // build the task
             final UUID playerTarget = target.getUniqueId();
@@ -110,5 +139,10 @@ public class WarmupService implements IWarmupService {
             this.tasks.remove(player.getUniqueId());
             return false;
         }
+    }
+
+    @Override
+    public void onReload(INucleusServiceCollection serviceCollection) {
+        this.warmupConfig = serviceCollection.moduleDataProvider().getModuleConfig(CoreConfig.class).getWarmupConfig();
     }
 }

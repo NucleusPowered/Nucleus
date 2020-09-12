@@ -28,11 +28,9 @@ import java.time.Duration;
 import java.util.Optional;
 
 @NonnullByDefault
-public class WarmupModifier implements ICommandModifier, IReloadableService.Reloadable {
+public class WarmupModifier implements ICommandModifier {
 
     private static final String WARMUP = "warmup";
-
-    private WarmupConfig warmupConfig = new WarmupConfig();
 
     @Override public String getId() {
         return CommandModifiers.HAS_WARMUP;
@@ -72,15 +70,6 @@ public class WarmupModifier implements ICommandModifier, IReloadableService.Relo
             serviceCollection.warmupService().cancel(player);
 
             // Send a message.
-            serviceCollection.messageProvider().sendMessageTo(player, "warmup.start",
-                    serviceCollection.messageProvider().getTimeString(player.getLocale(), source.getWarmup()));
-            if (this.warmupConfig.isOnCommand() && this.warmupConfig.isOnMove()) {
-                serviceCollection.messageProvider().sendMessageTo(player, "warmup.both");
-            } else if (this.warmupConfig.isOnCommand()) {
-                serviceCollection.messageProvider().sendMessageTo(player, "warmup.onCommand");
-            } else if (this.warmupConfig.isOnMove()) {
-                serviceCollection.messageProvider().sendMessageTo(player, "warmup.onMove");
-            }
             serviceCollection.warmupService().executeAfter(player, Duration.ofSeconds(source.getWarmup()), new IWarmupService.WarmupTask() {
                 @Override public void run() {
                     serviceCollection.messageProvider().sendMessageTo(player, "warmup.end");
@@ -90,7 +79,7 @@ public class WarmupModifier implements ICommandModifier, IReloadableService.Relo
                 @Override public void onCancel() {
                     control.onFail(source, null); // the message is handled elsewhere
                 }
-            });
+            }, true);
 
             return Optional.of(ICommandResult.willContinueLater());
         }
@@ -98,8 +87,4 @@ public class WarmupModifier implements ICommandModifier, IReloadableService.Relo
         return Optional.empty();
     }
 
-
-    @Override public void onReload(INucleusServiceCollection serviceCollection) {
-        this.warmupConfig = serviceCollection.moduleDataProvider().getModuleConfig(CoreConfig.class).getWarmupConfig();
-    }
 }
