@@ -52,13 +52,13 @@ public class WarmupService implements IWarmupService {
             // build the task
             final UUID playerTarget = target.getUniqueId();
             Consumer<Task> taskToSubmit = task -> {
+                this.tasks.remove(playerTarget);
+                this.uuidToWarmup.remove(task.getUniqueId());
+
                 if (Sponge.getServer().getPlayer(playerTarget).isPresent()) {
                     // Only run if the player is still on the server.
                     runnable.run();
                 }
-
-                this.tasks.remove(playerTarget);
-                this.uuidToWarmup.remove(task.getUniqueId());
             };
 
             Task.Builder builder = Task.builder()

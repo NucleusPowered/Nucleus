@@ -88,7 +88,7 @@ public class WarmupModifier implements ICommandModifier, IReloadableService.Relo
                 }
 
                 @Override public void onCancel() {
-                    control.onFail(source, serviceCollection.messageProvider().getMessage("warmup.cancel"));
+                    control.onFail(source, null); // the message is handled elsewhere
                 }
             });
 
