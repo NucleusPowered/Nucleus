@@ -177,7 +177,7 @@ public class PlayerTeleporterService implements ServiceBase, IReloadableService.
             this.activeTeleportRequests.put(toRequest.getUniqueId(), request);
 
             this.messageProviderService.sendMessageTo(toRequest, messageKey, src.getName());
-            getAcceptDenyMessage(toRequest, request).ifPresent(src::sendMessage);
+            getAcceptDenyMessage(toRequest, request).ifPresent(toRequest::sendMessage);
 
             if (!silentSource) {
                 this.messageProviderService.sendMessageTo(src, "command.tpask.sent", toRequest.getName());
