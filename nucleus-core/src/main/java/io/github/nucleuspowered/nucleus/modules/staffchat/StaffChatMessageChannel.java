@@ -22,6 +22,7 @@ import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.channel.MutableMessageChannel;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.serializer.TextSerializers;
@@ -65,9 +66,12 @@ public class StaffChatMessageChannel implements
     }
 
     public APIChannel createChannel(MessageChannel delegated) {
+        final MutableMessageChannel mutableMessageChannel = delegated.asMutable();
+        mutableMessageChannel.clearMembers();
+        this.receivers().stream().filter(x -> delegated.getMembers().contains(x)).forEach(mutableMessageChannel::addMember);
         return new APIChannel(
-                delegated,
-                receivers().stream().filter(x -> delegated.getMembers().contains(x)).collect(Collectors.toList())
+                mutableMessageChannel,
+                mutableMessageChannel.getMembers()
         );
     }
 
