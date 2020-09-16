@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.nickname.services;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -334,7 +335,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
 
     private void stripPermissionless(Subject source, Text message) throws NicknameException {
         Collection<String> strings = this.textStyleService.wouldStrip(
-                NicknamePermissions.NICKNAME_COLOUR,
+                ImmutableList.of(NicknamePermissions.NICKNAME_COLOUR, NicknamePermissions.NICKNAME_COLOR),
                 NicknamePermissions.NICKNAME_STYLE,
                 source,
                 TextSerializers.FORMATTING_CODE.serialize(message));

@@ -10,6 +10,7 @@ import io.github.nucleuspowered.nucleus.services.interfaces.data.SuggestedLevel;
 
 @RegisterPermissions
 public class NicknamePermissions {
+
     private NicknamePermissions() {
         throw new AssertionError("Nope");
     }
@@ -34,6 +35,9 @@ public class NicknamePermissions {
 
     @PermissionMetadata(descriptionKey = "permission.nick.colour", level = SuggestedLevel.ADMIN, isPrefix = true)
     public static final String NICKNAME_COLOUR = "nucleus.nick.colour";
+
+    @PermissionMetadata(descriptionKey = "permission.nick.colour", level = SuggestedLevel.ADMIN, isPrefix = true)
+    public static final String NICKNAME_COLOR = "nucleus.nick.colour";
 
     @PermissionMetadata(descriptionKey = "permission.nick.style", level = SuggestedLevel.ADMIN, isPrefix = true)
     public static final String NICKNAME_STYLE = "nucleus.nick.style";
