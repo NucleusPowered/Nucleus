@@ -93,7 +93,7 @@ public class JailCommand implements ICommandExecutor<CommandSource>, IReloadable
             return context.errorResult("command.jail.alreadyjailed", pl.getName());
         }
 
-        if (!context.isConsoleAndBypass() && context.testPermission(JailPermissions.JAIL_EXEMPT_TARGET)) {
+        if (!context.isConsoleAndBypass() && context.testPermissionFor(pl, JailPermissions.JAIL_EXEMPT_TARGET)) {
             return context.errorResult("command.jail.exempt", pl.getName());
         }
 
