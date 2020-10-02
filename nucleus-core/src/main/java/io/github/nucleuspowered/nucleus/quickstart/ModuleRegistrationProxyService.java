@@ -12,26 +12,28 @@ import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
 import org.slf4j.Logger;
 import org.spongepowered.api.plugin.PluginContainer;
-import uk.co.drnaylor.quickstart.ModuleHolder;
 import uk.co.drnaylor.quickstart.enums.ConstructionPhase;
 import uk.co.drnaylor.quickstart.exceptions.QuickStartModuleLoaderException;
 import uk.co.drnaylor.quickstart.exceptions.UndisableableModuleException;
+import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
+
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
 public class ModuleRegistrationProxyService {
 
     private final INucleusServiceCollection serviceCollection;
-    private final ModuleHolder<?, ?> moduleHolder;
+    private final Supplier<DiscoveryModuleHolder<?, ?>> moduleHolder;
 
     @Inject
-    public ModuleRegistrationProxyService(INucleusServiceCollection serviceCollection, ModuleHolder<?, ?> holder) {
+    public ModuleRegistrationProxyService(INucleusServiceCollection serviceCollection, Supplier<DiscoveryModuleHolder<?, ?>> holder) {
         this.serviceCollection = serviceCollection;
         this.moduleHolder = holder;
     }
 
     public boolean canDisableModules() {
-        return this.moduleHolder.getCurrentPhase() == ConstructionPhase.DISCOVERED;
+        return this.moduleHolder.get().getCurrentPhase() == ConstructionPhase.DISCOVERED;
     }
 
     public void removeModule(String module, PluginContainer plugin) throws ModulesLoadedException, UnremovableModuleException, NoModuleException {
@@ -44,7 +46,7 @@ public class ModuleRegistrationProxyService {
         Logger logger = this.serviceCollection.logger();
         IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
         try {
-            this.moduleHolder.disableModule(module);
+            this.moduleHolder.get().disableModule(module);
             logger.info(messageProviderService.getMessageString("nucleus.module.disabled.modulerequest",
                     plugin.getName(), plugin.getId(), module));
         } catch (IllegalStateException e) {

@@ -347,7 +347,7 @@ public class NucleusBootstrap {
         }
 
         game.getServiceManager().setProvider(this.pluginContainer, ModuleRegistrationProxyService.class, new ModuleRegistrationProxyService(this.serviceCollection,
-                this.moduleContainer));
+                () -> this.moduleContainer));
         game.getServiceManager().setProvider(this.pluginContainer, NucleusWarmupManagerService.class, this.serviceCollection.warmupService());
         game.getServiceManager().setProvider(this.pluginContainer, NucleusUserPreferenceService.class, this.serviceCollection.userPreferenceService());
         game.getServiceManager().setProvider(this.pluginContainer, NucleusSafeTeleportService.class, this.serviceCollection.teleportService());
