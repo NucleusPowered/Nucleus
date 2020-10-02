@@ -74,12 +74,22 @@ public class GenerateChunksCommand implements ICommandExecutor<CommandSource> {
                 .orElseThrow(() -> context.createException("command.world.gen.notloaded", wp.getWorldName()));
         worldHelper.startPregenningForWorld(w,
                 level,
-                context.getOne(GenerateChunksCommand.saveTimeKey, Long.class).orElse(20L) * 1000L,
+                context.getOne(GenerateChunksCommand.saveTimeKey, Long.class).orElseGet(() -> this.getDefaultSaveTime(level)) * 1000L,
                 context.getOne(ticksKey, Integer.class).orElse(null),
                 context.getOne(tickFrequency, Integer.class).orElse(null),
                 context.hasAny("r"));
 
         context.sendMessage("command.world.gen.started", wp.getWorldName());
         return context.successResult();
+    }
+
+    private long getDefaultSaveTime(final int aggressionLevel) {
+        if (aggressionLevel == 2) {
+            return 120L;
+        } else if (aggressionLevel == 1) {
+            return 30L;
+        } else {
+            return 20L;
+        }
     }
 }
