@@ -65,7 +65,7 @@ public class WorldGenListener implements ListenerBase {
                                     boolean act = worldDataObject.get(WorldKeys.WORLD_PREGEN_START).orElse(false);
                                     if (act && worldHelper.startPregenningForWorld(
                                             world,
-                                            worldDataObject.getOrDefault(WorldKeys.WORLD_PREGEN_AGGRESSIVE),
+                                            worldDataObject.getOrDefault(WorldKeys.WORLD_PREGEN_AGGRESSIVE_LEVEL),
                                             worldDataObject.getOrDefault(WorldKeys.WORLD_PREGEN_SAVE_FREQUENCY),
                                             worldDataObject.getOrDefault(WorldKeys.WORLD_PREGEN_TICK_PERCENT),
                                             worldDataObject.getOrDefault(WorldKeys.WORLD_PREGEN_TICK_FREQUENCY),
