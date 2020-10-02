@@ -61,33 +61,40 @@ public class WorldHelper implements IReloadableService.Reloadable, ServiceBase {
         this.timeToNotify = config.getNotificationInterval() * 1000L;
     }
 
-    public boolean startPregenningForWorld(World world, boolean aggressive, long saveTime, @Nullable Integer tickPercent,
+    public boolean startPregenningForWorld(World world, int aggressiveLevel, long saveTime, @Nullable Integer tickPercent,
             @Nullable Integer tickFrequency, boolean onRestart) {
         cleanup();
         if (!isPregenRunningForWorld(world.getUniqueId())) {
             WorldProperties wp = world.getProperties();
             ChunkPreGenerate.Builder wbcp = world.newChunkPreGenerate(wp.getWorldBorderCenter(), wp.getWorldBorderDiameter())
                 .owner(this.serviceCollection.pluginContainer()).addListener(new Listener(this.serviceCollection,
-                            aggressive,
+                            aggressiveLevel,
                             saveTime,
                             this.notify,
                             this.display,
                             this.timeToNotify));
-            if (aggressive) {
-                wbcp.tickPercentLimit(0.9f).tickInterval(3);
-            }
+
 
             if (tickPercent != null) {
                 wbcp.tickPercentLimit(Math.max(0f, Math.min(tickPercent / 100.0f, 1f)));
+            } else if (aggressiveLevel == 2) {
+                wbcp.tickPercentLimit(0.95f);
+            } else if (aggressiveLevel == 1) {
+                wbcp.tickPercentLimit(0.9f);
             } else {
-                tickPercent = aggressive ? 90 : 80;
+                wbcp.tickPercentLimit(0.8f);
             }
 
             if (tickFrequency != null) {
-                wbcp.tickInterval(Math.max(1, tickFrequency));
+                tickFrequency = Math.max(1, tickFrequency);
+            } else if (aggressiveLevel == 2) {
+                tickFrequency = 1;
+            } else if (aggressiveLevel == 1) {
+                tickFrequency = 3;
             } else {
                 tickFrequency = 4;
             }
+            wbcp.tickInterval(tickFrequency);
 
             if (onRestart) {
                 IWorldDataObject service = this.serviceCollection
@@ -96,7 +103,7 @@ public class WorldHelper implements IReloadableService.Reloadable, ServiceBase {
                         .getOrNewOnThread(world.getUniqueId());
 
                 service.set(WorldKeys.WORLD_PREGEN_START, true);
-                service.set(WorldKeys.WORLD_PREGEN_AGGRESSIVE, aggressive);
+                service.set(WorldKeys.WORLD_PREGEN_AGGRESSIVE_LEVEL, aggressiveLevel);
                 service.set(WorldKeys.WORLD_PREGEN_SAVE_FREQUENCY, saveTime);
                 service.set(WorldKeys.WORLD_PREGEN_TICK_FREQUENCY, tickFrequency);
                 service.set(WorldKeys.WORLD_PREGEN_TICK_PERCENT, tickPercent);
@@ -140,7 +147,7 @@ public class WorldHelper implements IReloadableService.Reloadable, ServiceBase {
 
     private static class Listener implements Consumer<ChunkPreGenerationEvent> {
 
-        private final boolean aggressive;
+        private final int aggressiveLevel;
         private final long timeToSave;
         private final INucleusServiceCollection serviceCollection;
         private final boolean notify;
@@ -152,13 +159,13 @@ public class WorldHelper implements IReloadableService.Reloadable, ServiceBase {
         private long lastNotifyTime;
 
         Listener(INucleusServiceCollection serviceCollection,
-                boolean aggressive,
+                int aggressiveLevel,
                 long timeToSave,
                 boolean notify,
                 boolean display,
                 long timeToNotify) {
             this.serviceCollection = serviceCollection;
-            this.aggressive = aggressive;
+            this.aggressiveLevel = aggressiveLevel;
             this.lastSaveTime = System.currentTimeMillis();
             this.timeToSave = timeToSave;
             this.notify = notify;
@@ -169,7 +176,7 @@ public class WorldHelper implements IReloadableService.Reloadable, ServiceBase {
         @Override public void accept(ChunkPreGenerationEvent event) {
             ChunkPreGenerate cpg = event.getChunkPreGenerate();
             if (event instanceof ChunkPreGenerationEvent.Pre) {
-                if (!this.aggressive) {
+                if (this.aggressiveLevel == 0) {
                     long percent = getMemPercent();
                     if (percent >= 90) {
                         if (!this.highMemTriggered) {
