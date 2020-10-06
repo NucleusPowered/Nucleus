@@ -30,7 +30,7 @@ public class WarpCategoryData implements WarpCategory {
 
     @Override
     public Text getDisplayName() {
-        return this.displayName;
+        return this.displayName == null ? Text.of(this.id) : this.displayName;
     }
 
     @Override
