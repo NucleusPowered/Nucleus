@@ -14,7 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-public class WarpCategorySerializer implements TypeSerializer<WarpCategory>  {
+public class WarpCategorySerialiser implements TypeSerializer<WarpCategory>  {
 
     private static final String DESCRIPTION_ID = "description";
     private static final String DISPLAY_NAME_ID = "displayName";

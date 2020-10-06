@@ -22,7 +22,7 @@ import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NamedLocatio
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NucleusItemStackSnapshotSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.NucleusTextTemplateTypeSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.Vector3dTypeSerialiser;
-import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarpCategorySerializer;
+import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarpCategorySerialiser;
 import io.github.nucleuspowered.nucleus.configurate.typeserialisers.WarpSerialiser;
 import io.github.nucleuspowered.nucleus.configurate.wrappers.NucleusItemStackSnapshot;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
@@ -121,7 +121,7 @@ public class ConfigurateHelper implements IConfigurateHelper {
 
         typeSerializerCollection.register(x -> x.isSubtypeOf(ABSTRACT_DATA_OBJECT_TYPE_TOKEN), DataObjectTranslator.INSTANCE);
         typeSerializerCollection.register(TypeTokens.WARP, new WarpSerialiser(serviceCollection.logger()));
-        typeSerializerCollection.register(TypeTokens.WARP_CATEGORY, new WarpCategorySerializer());
+        typeSerializerCollection.register(TypeTokens.WARP_CATEGORY, new WarpCategorySerialiser());
         typeSerializerCollection.register(TypeTokens.NAMEDLOCATION, new NamedLocationSerialiser(serviceCollection.logger()));
         typeSerializerCollection.register(TypeTokens.MAIL_MESSAGE, new MailMessageSerialiser());
         typeSerializerCollection.register(TypeTokens.LOCALE, new LocaleSerialiser());
