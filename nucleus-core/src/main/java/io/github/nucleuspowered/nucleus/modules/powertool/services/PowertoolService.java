@@ -31,7 +31,6 @@ public class PowertoolService implements ServiceBase {
         this.storageManager = serviceCollection.storageManager();
     }
 
-
     public Map<String, List<String>> getPowertools(UUID uuid) {
         Map<String, List<String>> m = this.powertools.get(uuid);
         if (m == null) {
@@ -43,7 +42,7 @@ public class PowertoolService implements ServiceBase {
             this.powertools.put(uuid, m);
         }
 
-        return new HashMap<>(m);
+        return m;
     }
 
     public Optional<List<String>> getPowertoolForItem(UUID uuid, ItemType item) {
