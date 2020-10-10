@@ -76,7 +76,7 @@ public class ConnectionMessagesListener implements IReloadableService.Reloadable
     @Listener
     public void onPlayerFirstJoin(NucleusFirstJoinEvent event, @Getter("getTargetEntity") Player pl) {
         if (this.cmc.isShowFirstTimeMessage() && !this.cmc.getFirstTimeMessage().isEmpty()) {
-            event.getChannel().orElse(MessageChannel.TO_ALL).send(this.pluginContainer, this.cmc.getFirstTimeMessage().getForCommandSource(pl));
+            MessageChannel.TO_ALL.send(this.pluginContainer, this.cmc.getFirstTimeMessage().getForCommandSource(pl));
         }
     }
 
