@@ -215,11 +215,13 @@ public class DisplayNameArgument extends CommandElement {
                         .forEach(names::addAll);
 
                 if (USER_LIMIT > 0 && this.target == Target.USER) {
-                    uss.match(parse).stream()
-                            .map(x -> uss.get(x).map(User::getName).orElse(null))
-                            .filter(Objects::nonNull)
-                            .limit(USER_LIMIT)
-                            .forEach(names::add);
+                    if (!parse.isEmpty()) {
+                        uss.match(parse).stream()
+                                .map(x -> uss.get(x).map(User::getName).orElse(null))
+                                .filter(Objects::nonNull)
+                                .limit(USER_LIMIT)
+                                .forEach(names::add);
+                    }
                 }
             }
 

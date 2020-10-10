@@ -215,7 +215,7 @@ public class TeleportCommand implements ICommandExecutor<CommandSource>, IReload
                                 from,
                                 l,
                                 false,
-                                true,
+                                !context.hasAny("f"),
                                 TeleportScanners.NO_SCAN.get()
                         ).isSuccessful();
                 if (result) {
