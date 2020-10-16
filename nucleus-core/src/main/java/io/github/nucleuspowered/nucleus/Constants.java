@@ -8,6 +8,8 @@ public final class Constants {
 
     private Constants() {}
 
+    public static final int USER_DATA_VERSION = 2;
+
     public static final String INTERCEPTOR = "command-interceptor";
     public static final String LISTENER = "listener";
     public static final String COMMAND = "command";

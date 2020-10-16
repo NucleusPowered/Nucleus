@@ -43,6 +43,14 @@ public interface NucleusPlayerMetadataService {
     interface Result {
 
         /**
+         * Gets whether Nucleus will perform first join actions for this player on the next login.
+         * This may be affected by server configuration.
+         *
+         * @return if first join actions may be run on this player's next login.
+         */
+        boolean hasFirstJoinBeenProcessed();
+
+        /**
          * The {@link Instant} that the player last logged in. This does not get updated on logout,
          * see {@link #getLastLogout()}.
          *

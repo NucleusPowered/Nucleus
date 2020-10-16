@@ -84,5 +84,10 @@ public class CorePermissions {
     @PermissionMetadata(descriptionKey = "permission.base", replacements = { "docgen" }, level = SuggestedLevel.NONE)
     public static final String BASE_DOCGEN = "nucleus.nucleus.docgen.base";
 
+    @PermissionMetadata(descriptionKey = "permission.base", replacements = { "resetfirstjoin" }, level = SuggestedLevel.NONE)
+    public static final String BASE_RESET_FIRST_JOIN = "nucleus.nucleus.resetfirstjoin.base";
+
+    @PermissionMetadata(descriptionKey = "permission.core.firstjoin", level = SuggestedLevel.NONE)
+    public static final String EXEMPT_FIRST_JOIN = "nucleus.nucleus.firstjoin.exempt";
 
 }

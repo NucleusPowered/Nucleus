@@ -60,7 +60,7 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
         UUID pl = loginEvent.getProfile().getUniqueId();
         IStorageManager storageManager = this.serviceCollection.storageManager();
         IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
-        boolean first = storageManager.getOrCreateUserOnThread(pl).get(CoreKeys.FIRST_JOIN).isPresent();
+        boolean first = storageManager.getOrCreateUserOnThread(pl).get(CoreKeys.FIRST_JOIN_PROCESSED).orElse(false);
         IGeneralDataObject generalDataObject = storageManager.getGeneralService().getOrNew().join();
 
         try {

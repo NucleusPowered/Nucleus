@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.services.impl.storage.services;
 
 import com.google.gson.JsonObject;
+import io.github.nucleuspowered.nucleus.services.interfaces.IDataVersioning;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.dataobjects.IDataObject;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
@@ -14,6 +15,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -24,16 +26,24 @@ public class SingleCachedService<O extends IDataObject> implements IStorageServi
     private final Supplier<IStorageRepository.Single<JsonObject>> repositorySupplier;
     private final Supplier<IDataTranslator<O, JsonObject>> dataAccessSupplier;
     private final PluginContainer pluginContainer;
+    private final Consumer<O> dataMigrator;
     private O cached = null;
 
     public SingleCachedService(
             final Supplier<IStorageRepository.Single<JsonObject>> repositorySupplier,
             final Supplier<IDataTranslator<O, JsonObject>> dataAccessSupplier,
-            final PluginContainer pluginContainer) {
+            final PluginContainer pluginContainer,
+            final Consumer<O> createVersion,
+            final Consumer<O> dataMigrator) {
         this.pluginContainer = pluginContainer;
         this.repositorySupplier = repositorySupplier;
         this.dataAccessSupplier = dataAccessSupplier;
-        this.createNew = () -> this.dataAccessSupplier.get().createNew();
+        this.dataMigrator = dataMigrator;
+        this.createNew = () -> {
+            final O create = this.dataAccessSupplier.get().createNew();
+            createVersion.accept(create);
+            return create;
+        };
     }
 
     @Override
@@ -90,7 +100,10 @@ public class SingleCachedService<O extends IDataObject> implements IStorageServi
 
     private Optional<O> getFromRepo() throws Exception {
         Optional<O> gdo = this.repositorySupplier.get().get().map(x -> this.dataAccessSupplier.get().fromDataAccessObject(x));
-        gdo.ifPresent(x -> this.cached = x);
+        gdo.ifPresent(x -> {
+            this.dataMigrator.accept(x);
+            this.cached = x;
+        });
         return gdo;
     }
 

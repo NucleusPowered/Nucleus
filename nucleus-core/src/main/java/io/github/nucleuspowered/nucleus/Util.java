@@ -51,9 +51,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -327,4 +329,11 @@ public class Util {
     private static Optional<Player> checkSimulated(Event event) {
         return event.getContext().get(EventContextKeys.PLAYER_SIMULATED).map(x -> Sponge.getServer().getPlayer(x.getUniqueId()).orElse(null));
     }
+
+    public static boolean hasPlayedBeforeSponge(final User player) {
+        final Instant instant = player.get(Keys.FIRST_DATE_PLAYED).orElseGet(Instant::now);
+        final Instant next = Instant.now().plus(5, ChronoUnit.SECONDS);
+        return instant.isBefore(next);
+    }
+
 }
