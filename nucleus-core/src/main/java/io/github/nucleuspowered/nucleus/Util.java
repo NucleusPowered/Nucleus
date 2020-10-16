@@ -122,7 +122,7 @@ public class Util {
 
     public static String getNameOrUnkown(ICommandContext<? extends CommandSource> context, GameProfile profile) {
         return profile.getName().orElse(
-                context.getServiceCollection().messageProvider().getMessageString(context.getCommandKey(), "standard.unknown"));
+                context.getServiceCollection().messageProvider().getMessageString("standard.unknown"));
     }
 
     public static String getTimeFromTicks(IMessageProviderService messageProviderService, long ticks) {
