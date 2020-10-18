@@ -72,7 +72,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
         return Optional.empty();
     }
 
-    void save(Path file, JsonObject object) throws DataSaveException {
+    synchronized void save(Path file, JsonObject object) throws DataSaveException {
         try {
             // Backup the file
             if (Files.exists(file)) {

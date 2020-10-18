@@ -241,11 +241,11 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             try {
                 lock.lock();
                 this.cache.put(key, value);
+                this.save.apply(key, value);
+                this.dirty.remove(key);
             } finally {
                 lock.unlock();
             }
-            this.save.apply(key, value);
-            this.dirty.remove(key);
             return null;
         }, this.pluginContainer);
     }
