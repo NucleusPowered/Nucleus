@@ -171,7 +171,6 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
                     .thenAccept(x -> {
                         x.set(CoreKeys.FIRST_JOIN, x.get(CoreKeys.LAST_LOGIN).orElseGet(Instant::now));
                         x.set(CoreKeys.FIRST_JOIN_PROCESSED, true);
-                        userService.save(uuid, x);
                     });
         }
 
