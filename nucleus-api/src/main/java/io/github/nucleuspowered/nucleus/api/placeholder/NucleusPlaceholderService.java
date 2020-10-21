@@ -41,6 +41,8 @@ public interface NucleusPlaceholderService {
      * Creates a {@link PlaceholderText} for displaying a {@link Subject}s
      * option.
      *
+     * @param subject The {@link Subject}
+     * @param option The option to display
      * @return The {@link PlaceholderText}
      */
     PlaceholderText textForSubjectAndOption(Subject subject, String option);
