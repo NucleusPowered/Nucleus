@@ -23,7 +23,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
 
 @Command(
-        aliases = { "mute" },
+        aliases = { "unmute" },
         basePermission = MutePermissions.BASE_UNMUTE,
         commandDescriptionKey = "unmute",
         associatedPermissionLevelKeys = MutePermissions.MUTE_LEVEL_KEY
