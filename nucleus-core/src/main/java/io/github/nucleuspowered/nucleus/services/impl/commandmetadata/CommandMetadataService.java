@@ -251,21 +251,15 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
         if (parentControl == null) {
             for (Map.Entry<CommandControl, List<String>> aliases : this.controlToAliases.entrySet()) {
                 // Ensure that the first entry in the list is the one specified first
-                CommandControl control = aliases.getKey();
-                List<String> orderedAliases = new ArrayList<>();
-                List<String> aliasesToAdd = new ArrayList<>(aliases.getValue());
-                for (String a : control.getMetadata().getRootAliases()) {
-                    if (aliases.getValue().contains(a)) {
-                        orderedAliases.add(a);
-                        aliasesToAdd.remove(a);
+                for (final String alias : new HashSet<>(aliases.getValue())) {
+                    try {
+                        Sponge.getCommandManager().register(collection.pluginContainer(), aliases.getKey(), alias)
+                                .ifPresent(x -> this.registeredAliases.addAll(x.getAllAliases()));
+                    } catch (final IllegalArgumentException ex) {
+                        collection.logger().error("Could not register command {}, alias already in use by another Nucleus command.", alias);
                     }
                 }
 
-                // Additions
-                orderedAliases.addAll(aliasesToAdd);
-
-                Sponge.getCommandManager().register(collection.pluginContainer(), aliases.getKey(), orderedAliases)
-                    .ifPresent(x -> this.registeredAliases.addAll(x.getAllAliases()));
             }
 
             commands.values().forEach(x -> x.completeRegistration(collection));
@@ -378,6 +372,10 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
 
     @Override public Collection<CommandControl> getCommands() {
         return this.controlToAliases.keySet();
+    }
+
+    @Override public Collection<CommandControl> getCommandsAndSubcommands() {
+        return this.controlToExecutorClass.values();
     }
 
     @Override public void registerInterceptor(ICommandInterceptor impl) {

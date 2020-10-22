@@ -47,6 +47,8 @@ public interface ICommandMetadataService {
 
     Collection<CommandControl> getCommands();
 
+    Collection<CommandControl> getCommandsAndSubcommands();
+
     void registerInterceptor(ICommandInterceptor impl);
 
     Collection<ICommandInterceptor> interceptors();

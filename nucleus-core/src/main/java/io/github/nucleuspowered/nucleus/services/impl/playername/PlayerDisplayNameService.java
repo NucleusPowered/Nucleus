@@ -5,21 +5,27 @@
 package io.github.nucleuspowered.nucleus.services.impl.playername;
 
 import com.google.common.collect.Lists;
+import io.github.nucleuspowered.nucleus.Constants;
 import io.github.nucleuspowered.nucleus.Util;
+import io.github.nucleuspowered.nucleus.modules.chat.config.ChatTemplateConfig;
+import io.github.nucleuspowered.nucleus.modules.chat.services.ChatService;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
+import io.github.nucleuspowered.nucleus.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IPlayerDisplayNameService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
+import io.github.nucleuspowered.nucleus.services.interfaces.ITextStyleService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextElement;
 import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.api.text.format.TextColor;
-import org.spongepowered.api.text.format.TextStyle;
+import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -40,12 +46,18 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
     private final LinkedHashSet<DisplayNameQuery> queries = new LinkedHashSet<>();
 
     private final IMessageProviderService messageProviderService;
+    private final IPermissionService permissionService;
+    private final INucleusServiceCollection serviceCollection;
+    private final ITextStyleService textStyleService;
 
     private String commandNameOnClick = null;
 
     @Inject
     public PlayerDisplayNameService(INucleusServiceCollection serviceCollection) {
         this.messageProviderService = serviceCollection.messageProvider();
+        this.permissionService = serviceCollection.permissionService();
+        this.textStyleService = serviceCollection.textStyleService();
+        this.serviceCollection = serviceCollection;
     }
 
     @Override
@@ -92,70 +104,71 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
 
     @Override
     public Optional<User> getUser(Text displayName) {
-        return getUser(displayName.toPlain());
+        return this.getUser(displayName.toPlain());
     }
 
     @Override
     public Text getDisplayName(final UUID playerUUID) {
+        final Text.Builder builder;
         if (playerUUID == Util.CONSOLE_FAKE_UUID) {
-            return getDisplayName(Sponge.getServer().getConsole());
+            return this.getName(Sponge.getServer().getConsole());
         }
-
-        final User user = Sponge.getServiceManager()
-                .provideUnchecked(UserStorageService.class)
-                .get(playerUUID)
-                .orElseThrow(() -> new IllegalArgumentException("UUID does not map to a player"));
+        User user = Sponge.getServiceManager()
+                    .provideUnchecked(UserStorageService.class)
+                    .get(playerUUID)
+                    .orElseThrow(() -> new IllegalArgumentException("UUID does not map to a player"));
+        Text userName = null;
         for (DisplayNameResolver resolver : this.resolvers) {
-            Optional<Text> userName = resolver.resolve(playerUUID);
-            if (userName.isPresent()) {
-                return userName
-                        .map(x -> this.addHover(x, user))
-                        .get();
+            Optional<Text> optionalUserName = resolver.resolve(playerUUID);
+            if (optionalUserName.isPresent()) {
+                userName = optionalUserName.get();
+                break;
             }
         }
 
-        // Set name colours
+        if (userName == null) {
+            builder = Text.builder(user.getName());
+        } else {
+            builder = Text.builder().append(userName);
+        }
 
-        return addHover(user.get(Keys.DISPLAY_NAME).orElseGet(() -> Text.of(user.getName())), user);
+        // Set name colours
+        this.addCommandToNameInternal(builder, user);
+        this.applyStyle(user, builder);
+        return builder.build();
     }
 
     @Override
     public Text getDisplayName(CommandSource source) {
         if (source instanceof User) {
-            return getDisplayName(((User) source).getUniqueId());
+            return this.getDisplayName(((User) source).getUniqueId());
         }
 
-        return Text.of(source.getName());
+        return this.getName(source);
     }
 
     @Override
     public Text getName(CommandSource user) {
+        final Text.Builder builder = Text.builder(user.getName());
+        this.applyStyle(user, builder);
         if (user instanceof User) {
-            return addHover(Text.of(user.getName()), (User) user, null, null);
+            this.addCommandToNameInternal(builder, (User) user);
         }
 
-        return Text.of(user.getName());
+        return builder.build();
     }
 
-    public Text addHover(Text text, User user) {
-        return addHover(text, user, null, null);
-    }
-
-    private Text addHover(Text text, User user, @Nullable TextColor colour, @Nullable TextStyle style) {
-        Text.Builder builder = text.toBuilder();
-        if (colour != null) {
-            builder.color(colour);
-        }
-        if (style != null) {
-            builder.style(style);
-        }
-        return addCommandToNameInternal(builder, user);
+    private void applyStyle(final Subject subject, final Text.Builder builder) {
+        builder.color(getStyle(subject, this.textStyleService::getColourFromString, ChatTemplateConfig::getChatcolour, TextColors.NONE,
+                Constants.NAMECOLOUR, Constants.NAMECOLOR))
+                .style(getStyle(subject, this.textStyleService::getTextStyleFromString, ChatTemplateConfig::getChatstyle, TextStyles.NONE,
+                        Constants.NAMESTYLE));
     }
 
     @Override public Text addCommandToName(CommandSource p) {
         Text.Builder text = Text.builder(p.getName());
         if (p instanceof User) {
-            return addCommandToNameInternal(text, (User)p);
+            addCommandToNameInternal(text, (User) p);
         }
 
         return text.build();
@@ -164,15 +177,16 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
     @Override public Text addCommandToDisplayName(CommandSource p) {
         Text.Builder name = getName(p).toBuilder();
         if (p instanceof User) {
-            return addCommandToNameInternal(name, (User)p);
+            addCommandToNameInternal(name, (User)p);
         }
 
         return name.build();
     }
 
-    private Text addCommandToNameInternal(Text.Builder name, User user) {
+    private void addCommandToNameInternal(Text.Builder name, User user) {
         if (this.commandNameOnClick == null) {
-            return name.onHover(TextActions.showText(this.messageProviderService.getMessage("name.hover.ign", user.getName()))).build();
+            name.onHover(TextActions.showText(this.messageProviderService.getMessage("name.hover.ign", user.getName()))).build();
+            return;
         }
 
         final String commandToRun = this.commandNameOnClick.replace("{{subject}}", user.getName()).replace("{{player}}", user.getName());
@@ -181,7 +195,7 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
                     .append(this.messageProviderService.getMessage("name.hover.ign", user.getName()))
                     .append(Text.NEW_LINE)
                     .append(this.messageProviderService.getMessage("name.hover.command", commandToRun));
-        return name.onClick(TextActions.suggestCommand(commandToRun)).onHover(TextActions.showText(hoverAction.toText())).build();
+        name.onClick(TextActions.suggestCommand(commandToRun)).onHover(TextActions.showText(hoverAction.toText())).build();
     }
 
     @Override
@@ -200,10 +214,9 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
         }
     }
 
-    /*
-    private <T extends TextElement> T getStyle(User player,
+    private <T extends TextElement> T getStyle(Subject player,
             Function<String, T> returnIfAvailable,
-            Function<ChatTemplateConfig, T> fromTemplate,
+            Function<ChatTemplateConfig, String> fromTemplate,
             T def,
             String... options) {
         Optional<String> os = this.permissionService.getOptionFromSubject(player, options);
@@ -211,9 +224,10 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
             return returnIfAvailable.apply(os.get());
         }
 
-        return getService(ChatService.class).map(templateUtil -> fromTemplate.apply(templateUtil.getTemplateNow(player))).orElse(def);
+        return this.serviceCollection.getService(ChatService.class)
+                .map(templateUtil -> returnIfAvailable.apply(fromTemplate.apply(templateUtil.getTemplateNow(player))))
+                .orElse(def);
 
     }
-     */
 
 }

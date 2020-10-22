@@ -69,7 +69,7 @@ public class GetPosCommand implements ICommandExecutor<CommandSource> {
                             String.valueOf(blockPos.getZ())
             );
         } else {
-            context.getMessage(
+            context.sendMessageText(context.getMessage(
                             "command.getpos.location.other",
                             context.getDisplayName(user.getUniqueId()),
                             location.getExtent().getName(),
@@ -84,7 +84,7 @@ public class GetPosCommand implements ICommandExecutor<CommandSource> {
                         String.valueOf(blockPos.getZ()))))
                         .onHover(TextActions.showText(
                                 context.getMessage("command.getpos.hover")))
-                        .build();
+                        .build());
         }
 
         return context.successResult();

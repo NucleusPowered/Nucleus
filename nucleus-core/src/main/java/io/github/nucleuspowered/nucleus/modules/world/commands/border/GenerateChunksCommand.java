@@ -42,8 +42,9 @@ public class GenerateChunksCommand implements ICommandExecutor<CommandSource> {
     public CommandElement[] parameters(INucleusServiceCollection serviceCollection) {
         return new CommandElement[] {
                 GenericArguments.flags()
-                    .flag("a")
-                    .flag("r")
+                    .flag("a", "-aggressive")
+                    .flag("u", "-ultra-aggressive")
+                    .flag("r", "-restart")
                     .valueFlag(new TimespanArgument(Text.of(saveTimeKey), serviceCollection), "-save")
                     .valueFlag(new BoundedIntegerArgument(Text.of(ticksKey), 0, 100, serviceCollection), "t", "-tickpercent")
                     .valueFlag(new BoundedIntegerArgument(Text.of(tickFrequency), 1, 100, serviceCollection), "f", "-frequency")
@@ -60,16 +61,35 @@ public class GenerateChunksCommand implements ICommandExecutor<CommandSource> {
             return context.errorResult("command.world.gen.alreadyrunning", wp.getWorldName());
         }
 
+        final int level;
+        if (context.hasAny("u")) {
+            level = 2;
+        } else if (context.hasAny("a")) {
+            level = 1;
+        } else {
+            level = 0;
+        }
+
         World w = Sponge.getServer().getWorld(wp.getUniqueId())
                 .orElseThrow(() -> context.createException("command.world.gen.notloaded", wp.getWorldName()));
         worldHelper.startPregenningForWorld(w,
-                context.hasAny("a"),
-                context.getOne(GenerateChunksCommand.saveTimeKey, Long.class).orElse(20L) * 1000L,
+                level,
+                context.getOne(GenerateChunksCommand.saveTimeKey, Long.class).orElseGet(() -> this.getDefaultSaveTime(level)) * 1000L,
                 context.getOne(ticksKey, Integer.class).orElse(null),
                 context.getOne(tickFrequency, Integer.class).orElse(null),
                 context.hasAny("r"));
 
         context.sendMessage("command.world.gen.started", wp.getWorldName());
         return context.successResult();
+    }
+
+    private long getDefaultSaveTime(final int aggressionLevel) {
+        if (aggressionLevel == 2) {
+            return 120L;
+        } else if (aggressionLevel == 1) {
+            return 30L;
+        } else {
+            return 20L;
+        }
     }
 }

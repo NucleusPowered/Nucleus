@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.configurate.typeserialisers;
 
 import com.google.common.reflect.TypeToken;
+import com.google.gson.stream.MalformedJsonException;
 import io.github.nucleuspowered.nucleus.api.module.warp.data.Warp;
 import io.github.nucleuspowered.nucleus.modules.warp.data.WarpData;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -12,14 +13,17 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 public class WarpSerialiser implements TypeSerializer<Warp> {
 
-    public static final WarpSerialiser INSTANCE = new WarpSerialiser();
+    private final Logger logger;
 
-    private WarpSerialiser() {}
+    public WarpSerialiser(final Logger logger) {
+        this.logger = logger;
+    }
 
     @Nullable
     @Override
@@ -27,7 +31,11 @@ public class WarpSerialiser implements TypeSerializer<Warp> {
         String desc = value.getNode("description").getString();
         Text res = null;
         if (desc != null) {
-            res = TextSerializers.JSON.deserialize(desc);
+            try {
+                res = TextSerializers.JSON.deserialize(desc);
+            } catch (final RuntimeException ex) {
+                this.logger.error("Could not deserialise description for warp {}, skipping description...", value.getKey(), ex);
+            }
         }
 
         return new WarpData(

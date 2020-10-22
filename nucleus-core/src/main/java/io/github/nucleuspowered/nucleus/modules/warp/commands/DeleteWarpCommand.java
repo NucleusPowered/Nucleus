@@ -26,7 +26,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @NonnullByDefault
 @Command(
         aliases = {"delete", "del", "#delwarp", "#remwarp", "#rmwarp"},
-        basePermission = WarpPermissions.BASE_WARP_LIST,
+        basePermission = WarpPermissions.BASE_WARP_DELETE,
         commandDescriptionKey = "warp.list",
         async = true,
         parentCommand = WarpCommand.class

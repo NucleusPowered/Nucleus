@@ -31,7 +31,7 @@ public class NoCheckFilter implements TeleportHelperFilter {
 
     @Override
     public String getId() {
-        return "nucleus:no_check_id";
+        return "nucleus:no_check";
     }
 
     @Override

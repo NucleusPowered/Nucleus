@@ -6,7 +6,7 @@ Please report any issues to Github Issues (https://github.com/NucleusPowered/Nuc
 
 This was built from Nucleus commit: {{hash}}
 
-## Release Notes
+# Release Notes
 
 If you're having trouble, visit our Discord channel: https://discord.gg/A9QHG5H
 
@@ -16,7 +16,7 @@ If you're having trouble, visit our Discord channel: https://discord.gg/A9QHG5H
 
 ---
 
-## Known Issues
+# General Notes
 
 * This is an ALPHA version. It is likely to be unstable and incomplete.
-* Some plugins and mods are known to be incompatible with Nucleus. See https://nucleuspowered.org/docs/compatibility.html for more information.
+* Some plugins and mods are known to be incompatible with Nucleus. See https://v2.nucleuspowered.org/docs/compatibility.html for more information.

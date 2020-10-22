@@ -39,7 +39,6 @@ import javax.inject.Inject;
         aliases = { "helpop" },
         basePermission = MessagePermissions.BASE_HELPOP,
         commandDescriptionKey = "helpop",
-        async = true,
         modifiers = {
                 @CommandModifier(value = CommandModifiers.HAS_COOLDOWN, exemptPermission = MessagePermissions.EXEMPT_COOLDOWN_HELPOP),
                 @CommandModifier(value = CommandModifiers.HAS_WARMUP, exemptPermission = MessagePermissions.EXEMPT_WARMUP_HELPOP),

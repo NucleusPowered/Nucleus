@@ -35,7 +35,7 @@ public class WallCheckFilter extends FilterBase {
 
     @Override
     public String getId() {
-        return "nucleus:wall_check_id";
+        return "nucleus:wall_check";
     }
 
     @Override

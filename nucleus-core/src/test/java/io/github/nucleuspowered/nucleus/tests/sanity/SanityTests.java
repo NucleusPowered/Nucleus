@@ -20,7 +20,10 @@ import uk.co.drnaylor.quickstart.config.AbstractConfigAdapter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +48,53 @@ public class SanityTests {
         if (!moduleList.isEmpty()) {
             StringBuilder sb = new StringBuilder("Some modules do not have the ModuleData annotation: ");
             moduleList.forEach(x -> sb.append(x.getName()).append(System.lineSeparator()));
+            Assert.fail(sb.toString());
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testThatIHaventMessedUpWithMultipleCommandsWithSameAlias() throws IOException {
+        Set<ClassPath.ClassInfo> ci = ClassPath.from(this.getClass().getClassLoader())
+                .getTopLevelClassesRecursive("io.github.nucleuspowered.nucleus.modules");
+        Set<Class<? extends ICommandExecutor<?>>> sc = ci.stream().map(ClassPath.ClassInfo::load)
+                .filter(ICommandExecutor.class::isAssignableFrom)
+                .map(x -> (Class<? extends ICommandExecutor<?>>)x)
+                .collect(Collectors.toSet());
+
+        final Map<String, List<Class<? extends ICommandExecutor<?>>>> map = new HashMap<>();
+        for (final Class<? extends ICommandExecutor<?>> c : sc) {
+            if (c.isAnnotationPresent(Command.class)) {
+                final Command command = c.getAnnotation(Command.class);
+                if (command.parentCommand() != ICommandExecutor.class) {
+                    Arrays.stream(command.aliases()).filter(x -> x.startsWith("#")).map(x -> x.substring(1)).forEach(x ->
+                            map.computeIfAbsent(x, y -> new ArrayList<>()).add(c));
+                } else {
+                    Arrays.stream(command.aliases())
+                            .map(x -> {
+                                if (x.startsWith("#") || x.startsWith("$")) {
+                                    return x.substring(1);
+                                }
+                                return x;
+                            })
+                            .forEach(x -> map.computeIfAbsent(x, y -> new ArrayList<>()).add(c));
+                }
+            }
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        for (final Map.Entry<String, List<Class<? extends ICommandExecutor<?>>>> entry : map.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                // nope
+                if (sb.length() == 0) {
+                    sb.append("Some commands are defined more than once.").append(System.lineSeparator()).append(System.lineSeparator());
+                }
+                sb.append(entry.getKey()).append(" -> ").append(entry.getValue().stream().map(Class::getName).collect(Collectors.joining(", ")));
+            }
+        }
+
+        final String s = sb.toString();
+        if (!s.isEmpty()) {
             Assert.fail(sb.toString());
         }
     }

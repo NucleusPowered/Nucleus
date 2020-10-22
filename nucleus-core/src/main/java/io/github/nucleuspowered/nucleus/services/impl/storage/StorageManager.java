@@ -24,6 +24,7 @@ import io.github.nucleuspowered.nucleus.services.impl.storage.services.SingleCac
 import io.github.nucleuspowered.nucleus.services.impl.storage.services.UserService;
 import io.github.nucleuspowered.nucleus.services.impl.storage.services.WorldService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IConfigurateHelper;
+import io.github.nucleuspowered.nucleus.services.interfaces.IDataVersioning;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
@@ -58,20 +59,25 @@ public final class StorageManager implements IStorageManager, IReloadableService
     public StorageManager(@DataDirectory Supplier<Path> dataDirectory,
             Logger logger,
             IConfigurateHelper configurateHelper,
-            PluginContainer pluginContainer) {
+            PluginContainer pluginContainer,
+            IDataVersioning dataVersioning) {
         this.flatFileStorageRepositoryFactory = new FlatFileStorageRepositoryFactory(dataDirectory, logger);
         new IStorageRepositoryFactoryRegistryModule(this.flatFileStorageRepositoryFactory);
         this.configurateHelper = configurateHelper;
-        this.userService = new UserService(this, pluginContainer);
-        this.worldService = new WorldService(this, pluginContainer);
+        this.userService = new UserService(this, pluginContainer, dataVersioning);
+        this.worldService = new WorldService(this, pluginContainer, dataVersioning);
         this.generalService = new SingleCachedService<>(
                 this::getGeneralRepository,
                 this::getGeneralDataAccess,
-                pluginContainer);
+                pluginContainer,
+                dataVersioning::setVersion,
+                dataVersioning::migrate);
         this.kitsService = new SingleCachedService<>(
                 this::getKitsRepository,
                 this::getKitsDataAccess,
-                pluginContainer);
+                pluginContainer,
+                x -> {},
+                x -> {});
     }
 
     @Nullable

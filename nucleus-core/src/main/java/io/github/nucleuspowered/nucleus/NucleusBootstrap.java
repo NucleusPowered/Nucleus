@@ -19,6 +19,7 @@ import io.github.nucleuspowered.nucleus.api.core.NucleusUserPreferenceService;
 import io.github.nucleuspowered.nucleus.api.core.NucleusWarmupManagerService;
 import io.github.nucleuspowered.nucleus.api.placeholder.NucleusPlaceholderService;
 import io.github.nucleuspowered.nucleus.api.teleport.NucleusSafeTeleportService;
+import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplateFactory;
 import io.github.nucleuspowered.nucleus.guice.NucleusInjectorModule;
 import io.github.nucleuspowered.nucleus.modules.core.CoreModule;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
@@ -42,9 +43,11 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IModuleDataProvider;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.nucleus.util.ClientMessageReciever;
+import io.github.nucleuspowered.nucleus.util.PrettyPrinter;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.GameState;
 import org.spongepowered.api.Platform;
@@ -81,6 +84,7 @@ import uk.co.drnaylor.quickstart.loaders.PhasedModuleEnabler;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -122,7 +126,30 @@ public class NucleusBootstrap {
     private final boolean docgenOnly;
     private final boolean shutdownAtLoadEnd;
 
-    private static final ImmutableSet<String> requiredClasses = ImmutableSet.of("org.spongepowered.api.text.placeholder.PlaceholderParser");
+    private static final ImmutableSet<String> requiredClasses = ImmutableSet.of();
+
+    private static void compatCheck(final Logger logger) throws IllegalStateException {
+        try {
+            // check for Configurate 3.7
+            CommentedConfigurationNode.class.getMethod("root");
+        } catch (final NoSuchMethodException e) {
+            new PrettyPrinter(80)
+                    .add("Configurate 3.7 has not been detected. Nucleus cannot start.")
+                    .hr('-')
+                    .add("Nucleus relies upon Configurate 3.7 which was included in SpongeAPI 7.3")
+                    .add("However, some other mod/plugin has included an older version of Configurate")
+                    .add("and that has been loaded first. Nucleus is unable to start.")
+                    .add()
+                    .add("To fix this, rename your Sponge jar to start with '__aaa' and start the server")
+                    .add("again.")
+                    .add()
+                    .hr('-')
+                    .add("Offending class location (this should include the Jar location):")
+                    .add(CommentedConfigurationNode.class.getResource(CommentedConfigurationNode.class.getSimpleName() + ".class").toString())
+                    .log(logger, Level.ERROR);
+            throw new IllegalStateException("Cannot start - Configurate 3.7 not detected. Rename the Sponge jar to start with __aaa");
+       }
+    }
 
     private static boolean versionCheck(IMessageProviderService provider) throws IllegalStateException {
         if (!requiredClasses.isEmpty()) {
@@ -275,6 +302,14 @@ public class NucleusBootstrap {
         }
 
         try {
+            NucleusBootstrap.compatCheck(this.logger);
+        } catch (final IllegalStateException e) {
+            this.isErrored = e;
+            disable();
+            return;
+        }
+
+        try {
             if (!versionCheck(messageProvider)) {
                 s.sendMessage(
                         messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
@@ -313,11 +348,12 @@ public class NucleusBootstrap {
         }
 
         game.getServiceManager().setProvider(this.pluginContainer, ModuleRegistrationProxyService.class, new ModuleRegistrationProxyService(this.serviceCollection,
-                this.moduleContainer));
+                () -> this.moduleContainer));
         game.getServiceManager().setProvider(this.pluginContainer, NucleusWarmupManagerService.class, this.serviceCollection.warmupService());
         game.getServiceManager().setProvider(this.pluginContainer, NucleusUserPreferenceService.class, this.serviceCollection.userPreferenceService());
         game.getServiceManager().setProvider(this.pluginContainer, NucleusSafeTeleportService.class, this.serviceCollection.teleportService());
         game.getServiceManager().setProvider(this.pluginContainer, NucleusPlaceholderService.class, this.serviceCollection.placeholderService());
+        game.getServiceManager().setProvider(this.pluginContainer, NucleusTextTemplateFactory.class, this.serviceCollection.textTemplateFactory());
 
         try {
             final String he = this.serviceCollection.messageProvider().getMessageString("config.main-header", NucleusPluginInfo.VERSION);

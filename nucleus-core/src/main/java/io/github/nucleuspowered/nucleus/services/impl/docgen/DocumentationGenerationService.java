@@ -72,7 +72,7 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
         ICommandMetadataService commandMetadataService = this.serviceCollection.commandMetadataService();
         IPermissionService permissionService = this.serviceCollection.permissionService();
         IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
-        Collection<CommandControl> commands = commandMetadataService.getCommands();
+        Collection<CommandControl> commands = commandMetadataService.getCommandsAndSubcommands();
 
         final List<EssentialsDoc> essentialsDocs = new ArrayList<>();
         List<CommandDoc> lcd = getAndSort(

@@ -30,6 +30,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -223,13 +224,9 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
         return message;
     }
 
-    @Override public Collection<String> wouldStrip(String permissionPrefixColour, String permissionPrefixColor, String permissionPrefixStyle,
-            Subject source, String text) {
-        return wouldStrip(Arrays.asList(permissionPrefixColour, permissionPrefixColor), permissionPrefixStyle, source, text);
-    }
-
-    @Override public Collection<String> wouldStrip(String permissionPrefixColour, String permissionPrefixStyle, Subject source, String text) {
-        return wouldStrip(Collections.singletonList(permissionPrefixColour), permissionPrefixStyle, source, text);
+    @Override public Collection<String> wouldStrip(Collection<String> permissionPrefixColour, String permissionPrefixStyle, Subject source,
+            String text) {
+        return wouldStrip(new ArrayList<>(permissionPrefixColour), permissionPrefixStyle, source, text);
     }
 
     private Collection<String> wouldStrip(List<String> permissionPrefixColour,
@@ -238,25 +235,32 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
             final String oldMessage) {
         if (oldMessage.contains("&")) {
             // Find the next
-            String p = getKeys(source, permissionPrefixColour, permissionPrefixStyle);
+            final String p = getRegexForPermissionless(source, permissionPrefixColour, permissionPrefixStyle);
             if (p != null) {
-                ImmutableList.Builder<String> name = ImmutableList.builder();
-                // We don't support these.
-                for (char a : p.toCharArray()) {
-                    TextColor textColor = this.idToColour.get(a);
-                    if (textColor != null) {
-                        name.add(textColor.getName());
-                    } else {
-                        //noinspection ConstantConditions
-                        name.add(this.styleToPerms.get(this.idToStyle.get(a)));
+                // Scan the message for any of these tokens.
+                final Pattern pattern = Pattern.compile(p);
+                if (pattern.matcher(oldMessage).find()) {
+                    ImmutableList.Builder<String> name = ImmutableList.builder();
+                    // We don't support these.
+                    for (char a : p.toCharArray()) {
+                        if (a == '&' || a == '[' || a == ']') {
+                            continue;
+                        }
+                        TextColor textColor = this.idToColour.get(a);
+                        if (textColor != null) {
+                            name.add(textColor.getName());
+                        } else {
+                            //noinspection ConstantConditions
+                            name.add(this.styleToPerms.get(this.idToStyle.get(a)));
+                        }
                     }
-                }
 
-                return name.build();
+                    return name.build();
+                }
             }
         }
 
-        return ImmutableList.of();
+        return Collections.emptyList();
     }
 
     private static void addStylePermIf(boolean condition, String prefix, String suffix, ImmutableList.Builder<String> builder) {
@@ -279,7 +283,10 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
     private String getKeys(Subject subject, List<String> permissionPrefixColour, String stylePrefix) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<TextColor, String> suffix : this.colourToPermissionSuffix.entrySet()) {
-            if (permissionPrefixColour.stream().noneMatch(prefix -> this.permissionService.hasPermission(subject, prefix + suffix.getValue()))) {
+            if (permissionPrefixColour.stream().noneMatch(prefix -> {
+                final String p = prefix.endsWith(".") ? prefix : prefix + ".";
+                return this.permissionService.hasPermission(subject, p + suffix.getValue());
+            })) {
                 Character c = this.idToColour.inverse().get(suffix.getKey());
                 if (c != null) {
                     stringBuilder.append(c);
@@ -287,8 +294,15 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
             }
         }
 
+        final String p;
+        if (stylePrefix.endsWith(".")) {
+            p = stylePrefix;
+        } else {
+            p = stylePrefix + ".";
+        }
+
         for (Map.Entry<TextStyle, String> suffix : this.styleToPerms.entrySet()) {
-            if (!this.permissionService.hasPermission(subject, stylePrefix + suffix.getValue())) {
+            if (!this.permissionService.hasPermission(subject, p + suffix.getValue())) {
                 Character c = this.idToStyle.inverse().get(suffix.getKey());
                 if (c != null) {
                     stringBuilder.append(c);

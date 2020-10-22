@@ -62,7 +62,7 @@ public class EnderChestCommand implements ICommandExecutor<Player> {
     }
 
     @Override public ICommandResult execute(ICommandContext<? extends Player> context) throws CommandException {
-        User target = context.getUserFromArgs();
+        User target = context.getUserFromArgs(NucleusParameters.Keys.PLAYER);
 
         if (!context.is(target)) {
             if (context.testPermissionFor(target, InventoryPermissions.ENDERCHEST_EXEMPT_INSPECT)) {

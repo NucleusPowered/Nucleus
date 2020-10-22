@@ -122,7 +122,7 @@ public class PlaceholderService implements IPlaceholderService, IInitService {
                 .plugin(this.pluginContainer)
                 .id("currentworld")
                 .name("Nucleus Current World parser")
-                .parser(placeholder -> Text.of(getWorld(placeholder)))
+                .parser(placeholder -> Text.of(getWorld(placeholder).getName()))
                 .build());
         registerToken("time",
                 PlaceholderParser.builder()

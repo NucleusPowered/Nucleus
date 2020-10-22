@@ -2,6 +2,7 @@ package io.github.nucleuspowered.gradle.task
 
 import io.github.nucleuspowered.gradle.enums.ReleaseLevel
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -10,17 +11,12 @@ import javax.inject.Inject
 open class RelNotesTask @Inject constructor() : DefaultTask() {
     var relNotes: String? = null
     private var versionStringProvider: () -> String = { -> "" }
-    private var spongeVersionProvider: () -> String = { -> "" }
     private var gitHashProvider: () -> String = { -> "" }
     private var gitCommitProvider: () -> String = { -> "" }
     private var releaseLevelProvider: () -> ReleaseLevel = { -> ReleaseLevel.SNAPSHOT }
 
     fun versionString(provider: () -> String) {
         this.versionStringProvider = provider
-    }
-
-    fun spongeVersion(provider: () -> String) {
-        this.spongeVersionProvider = provider
     }
 
     fun gitHash(provider: () -> String) {
@@ -38,7 +34,6 @@ open class RelNotesTask @Inject constructor() : DefaultTask() {
     @TaskAction
     fun doTask() {
         val versionString = this.versionStringProvider.invoke()
-        val spongeVersion = this.spongeVersionProvider.invoke()
         val level = this.releaseLevelProvider.invoke()
         val templatePath = project.projectDir.toPath()
                 .resolve("changelogs")
@@ -54,7 +49,7 @@ open class RelNotesTask @Inject constructor() : DefaultTask() {
         val notes = if (Files.exists(notesFull)) {
             notesFull
         } else {
-            notesDir.resolve("${versionString.substringBefore("-")}-S$spongeVersion.md")
+            notesDir.resolve("${versionString.substringBefore("-")}.md")
         }
 
         val templateText: String = if (Files.exists(templatePath)) {

@@ -1,0 +1,35 @@
+# Comment that will be sent if an issue is judged to be closed.
+comment: >
+  Hello.
+  
+  Your issue has been automatically closed because you did not include the template
+  on your issue report. It is important that you give us the information that we ask
+  for. Please resubmit your issue by following the correct template.
+  
+  You can open a new issue at https://github.com/NucleusPowered/Nucleus/issues/new/choose
+issueConfigs:
+# There can be several configs for different kind of issues.
+- content:
+# Example 1: bug report
+  - "What is the bug?"
+  - "What version of Nucleus are you running?"
+  - "What version of Sponge are you running?"
+  - "To Reproduce"
+- content:
+# Example 2: feature request
+  - "What are you trying to do?"
+  - "Describe the solution you'd like"
+  - "Describe alternatives you've considered"
+# Optional configuration:
+#
+# whether the keywords are case-insensitive
+# default value is false, which means keywords are case-sensitive
+caseInsensitive: false
+# the label that will be added when the bot close an issue
+# The bot will only add a label if this property is set.
+label: "invalid template"
+# The bot will ignore any issues that are opened or reopened by the user names in exception
+exception:
+  - "dualspiral"
+# The issue is judged to be legal if it includes all keywords from any of these two configs.
+# Or it will be closed by the app.

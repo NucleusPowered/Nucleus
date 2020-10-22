@@ -34,9 +34,9 @@ public class WorldKeys {
             IWorldDataObject.class,
             "tick-freq");
 
-    public static DataKey<Boolean, IWorldDataObject> WORLD_PREGEN_AGGRESSIVE = DataKey.of(
-            false,
-            TypeToken.of(Boolean.class),
+    public static DataKey<Integer, IWorldDataObject> WORLD_PREGEN_AGGRESSIVE_LEVEL = DataKey.of(
+            0,
+            TypeToken.of(Integer.class),
             IWorldDataObject.class,
-            "aggressive");
+            "aggressive-level");
 }

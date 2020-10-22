@@ -173,7 +173,7 @@ public class RandomTeleportCommand implements ICommandExecutor<CommandSource>, I
             this.targetWorld = target;
             this.source = source;
             this.target = target1;
-            this.isSelf = source instanceof Player && ((Player) source).getUniqueId().equals(target1.getUniqueId());
+            this.isSelf = source.getCommandSourceUnchecked() instanceof Player && source.getCommandSourceAsPlayerUnchecked().getUniqueId().equals(target1.getUniqueId());
             this.maxCount = maxCount;
             this.count = maxCount;
             this.options = options;

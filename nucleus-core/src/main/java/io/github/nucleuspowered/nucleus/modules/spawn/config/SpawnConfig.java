@@ -32,6 +32,9 @@ public class SpawnConfig {
     @Setting(value = "spawn-on-login-exempt-worlds", comment = "config.spawn.onloginsameworld")
     private List<String> spawnOnLoginExemptWorld = Lists.newArrayList();
 
+    @Setting(value = "per-world-permissions", comment = "config.spawn.worlds")
+    private boolean perWorldPerms = false;
+
     public boolean isSpawnOnLogin() {
         return this.spawnOnLogin;
     }
@@ -54,5 +57,9 @@ public class SpawnConfig {
 
     public List<String> getOnLoginExemptWorlds() {
         return this.spawnOnLoginExemptWorld == null ? ImmutableList.of() : this.spawnOnLoginExemptWorld;
+    }
+
+    public boolean isPerWorldPerms() {
+        return this.perWorldPerms;
     }
 }

@@ -5,11 +5,13 @@
 package io.github.nucleuspowered.nucleus.modules.spawn.listeners;
 
 import com.flowpowered.math.vector.Vector3d;
+import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.api.teleport.data.NucleusTeleportHelperFilters;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
 import io.github.nucleuspowered.nucleus.configurate.datatypes.LocationNode;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
+import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.spawn.SpawnKeys;
 import io.github.nucleuspowered.nucleus.modules.spawn.SpawnPermissions;
 import io.github.nucleuspowered.nucleus.modules.spawn.config.GlobalSpawnConfig;
@@ -47,6 +49,7 @@ import javax.inject.Inject;
 public class SpawnListener implements IReloadableService.Reloadable, ListenerBase {
 
     private SpawnConfig spawnConfig;
+    private boolean checkSponge;
 
     private final INucleusServiceCollection serviceCollection;
 
@@ -60,7 +63,12 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
         UUID pl = loginEvent.getProfile().getUniqueId();
         IStorageManager storageManager = this.serviceCollection.storageManager();
         IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
-        boolean first = storageManager.getOrCreateUserOnThread(pl).get(CoreKeys.FIRST_JOIN).isPresent();
+        final boolean first;
+        if (!storageManager.getOrCreateUserOnThread(pl).get(CoreKeys.FIRST_JOIN_PROCESSED).orElse(false)) {
+            first = !this.checkSponge || !Util.hasPlayedBeforeSponge(loginEvent.getTargetUser());
+        } else {
+            first = false;
+        }
         IGeneralDataObject generalDataObject = storageManager.getGeneralService().getOrNew().join();
 
         try {
@@ -206,6 +214,7 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
 
     @Override public void onReload(INucleusServiceCollection serviceCollection) {
         this.spawnConfig = serviceCollection.moduleDataProvider().getModuleConfig(SpawnConfig.class);
+        this.checkSponge = serviceCollection.moduleDataProvider().getModuleConfig(CoreConfig.class).isCheckFirstDatePlayed();
     }
 
     private static Location<World> process(Location<World> v3d) {

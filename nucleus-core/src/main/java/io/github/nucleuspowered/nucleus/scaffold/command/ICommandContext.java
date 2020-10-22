@@ -74,6 +74,10 @@ public interface ICommandContext<C extends CommandSource> {
         return getUserFromArgs(NucleusParameters.Keys.USER, "command.playeronly");
     }
 
+    default User getUserFromArgs(String key) throws CommandException {
+        return this.getUserFromArgs(key, "command.playeronly");
+    }
+
     User getUserFromArgs(String key, String errorKey) throws CommandException;
 
     boolean hasAny(String name);
@@ -159,6 +163,10 @@ public interface ICommandContext<C extends CommandSource> {
     boolean is(Class<?> other);
 
     boolean is(User x);
+
+    default boolean isNot(User x) {
+        return !this.is(x);
+    }
 
     boolean isUser();
 

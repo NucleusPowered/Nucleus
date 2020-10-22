@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.core.listeners;
 
 import com.google.common.collect.Lists;
+import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.core.event.NucleusFirstJoinEvent;
 import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
 import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
@@ -16,10 +17,14 @@ import io.github.nucleuspowered.nucleus.modules.core.services.UniqueUserService;
 import io.github.nucleuspowered.nucleus.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.services.impl.storage.queryobjects.IUserQueryObject;
+import io.github.nucleuspowered.nucleus.services.impl.storage.services.UserService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
+import io.github.nucleuspowered.storage.services.IStorageService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
@@ -40,7 +45,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -52,6 +60,7 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
     @Nullable private NucleusTextTemplate getKickOnStopMessage = null;
     @Nullable private final URL url;
     private boolean warnOnWildcard = true;
+    private boolean checkSponge = false;
 
     @Inject
     public CoreListener(INucleusServiceCollection serviceCollection) {
@@ -74,7 +83,7 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
 
         // Create user data if required, and place into cache.
         // As this is already async, load on thread.
-        IUserDataObject dataObject = this.serviceCollection.storageManager().getUserService().getOrNewOnThread(userId);
+        final IUserDataObject dataObject = this.serviceCollection.storageManager().getUserService().getOrNewOnThread(userId);
 
         // Fire the event, which will be async too, perhaps unsurprisingly.
         // The main use for this will be migrations.
@@ -138,20 +147,31 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
     @Listener
     public void onPlayerJoinLast(final ClientConnectionEvent.Join event, @Getter("getTargetEntity") final Player player) {
         // created before
-        if (!this.serviceCollection.storageManager().getUserService().getOnThread(player.getUniqueId())
-                .map(x -> x.get(CoreKeys.FIRST_JOIN)).isPresent()) {
-            this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
+        final UUID uuid = player.getUniqueId();
+        final IStorageService.Keyed.KeyedData<UUID, IUserQueryObject, IUserDataObject> userService =
+                this.serviceCollection.storageManager().getUserService();
+        if (!userService
+                .getOnThread(uuid)
+                .flatMap(x -> x.get(CoreKeys.FIRST_JOIN_PROCESSED))
+                .orElse(false)) {
 
-            NucleusFirstJoinEvent firstJoinEvent = new OnFirstLoginEvent(
-                event.getCause(), player, event.getOriginalChannel(), event.getChannel().orElse(null), event.getOriginalMessage(),
-                    event.isMessageCancelled(), event.getFormatter());
+            if (!this.checkSponge || !Util.hasPlayedBeforeSponge(player)) {
+                this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
 
-            Sponge.getEventManager().post(firstJoinEvent);
-            event.setChannel(firstJoinEvent.getChannel().get());
-            event.setMessageCancelled(firstJoinEvent.isMessageCancelled());
-            this.serviceCollection.storageManager().getUserService()
-                    .getOrNew(player.getUniqueId())
-                    .thenAccept(x -> x.set(CoreKeys.FIRST_JOIN, x.get(CoreKeys.LAST_LOGIN).orElseGet(Instant::now)));
+                NucleusFirstJoinEvent firstJoinEvent = new OnFirstLoginEvent(
+                        event.getCause(), player, event.getOriginalChannel(), event.getChannel().orElse(null), event.getOriginalMessage(),
+                        event.isMessageCancelled(), event.getFormatter());
+
+                Sponge.getEventManager().post(firstJoinEvent);
+                event.setChannel(firstJoinEvent.getChannel().get());
+                event.setMessageCancelled(firstJoinEvent.isMessageCancelled());
+            }
+
+            userService.getOrNew(player.getUniqueId())
+                    .thenAccept(x -> {
+                        x.set(CoreKeys.FIRST_JOIN, x.get(CoreKeys.LAST_LOGIN).orElseGet(Instant::now));
+                        x.set(CoreKeys.FIRST_JOIN_PROCESSED, true);
+                    });
         }
 
         // Warn about wildcard.
@@ -211,6 +231,7 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
         CoreConfig c = this.serviceCollection.moduleDataProvider().getModuleConfig(CoreConfig.class);
         this.getKickOnStopMessage = c.isKickOnStop() ? c.getKickOnStopMessage() : null;
         this.warnOnWildcard = c.isCheckForWildcard();
+        this.checkSponge = c.isCheckFirstDatePlayed();
     }
 
     @Listener

@@ -79,6 +79,9 @@ public class CoreConfig {
     @Setting(value = "give-default-group-user-permissions", comment = "config.core.defaultperms")
     private boolean giveDefaultsUserPermissions = false;
 
+    @Setting(value = "check-first-date-played-on-first-joined", comment = "config.core.firstdateplayed")
+    private boolean checkFirstDatePlayed = true;
+
     public boolean isDebugmode() {
         return this.debugmode;
     }
@@ -157,5 +160,9 @@ public class CoreConfig {
 
     public boolean isGiveDefaultsUserPermissions() {
         return this.giveDefaultsUserPermissions;
+    }
+
+    public boolean isCheckFirstDatePlayed() {
+        return this.checkFirstDatePlayed;
     }
 }

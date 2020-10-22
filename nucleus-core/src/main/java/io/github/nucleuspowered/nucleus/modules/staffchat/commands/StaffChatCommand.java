@@ -76,9 +76,14 @@ public class StaffChatCommand implements ICommandExecutor<CommandSource> {
                             .userPreferenceService()
                             .setPreferenceFor(pl, NucleusKeysProvider.VIEW_STAFF_CHAT, true);
                 } else {
-                    StaffChatMessageChannel.getInstance()
-                            .sendMessageFrom(context.getCommandSource(),
-                                    context.getServiceCollection().textStyleService().addUrls(toSend.get()));
+                    frame.pushCause(context.getCommandSourceUnchecked());
+                    // mostly to allow plugins to know that's what we're doing.
+                    try (NoExceptionAutoClosable c = this.chatMessageFormatterService
+                            .setCommandSourceNucleusChannelTemporarily(context.getCommandSource(), StaffChatMessageChannel.getInstance())) {
+                        StaffChatMessageChannel.getInstance()
+                                .sendMessageFrom(context.getCommandSource(),
+                                        context.getServiceCollection().textStyleService().addUrls(toSend.get()));
+                    }
                 }
 
                 return context.successResult();

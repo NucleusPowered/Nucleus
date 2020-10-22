@@ -21,9 +21,13 @@ import java.util.UUID;
 @ImplementedBy(ChatMessageFormatterService.class)
 public interface IChatMessageFormatterService {
 
+    Optional<Channel> getNucleusChannel(CommandSource source);
+
     Optional<Channel> getNucleusChannel(UUID uuid);
 
     void setPlayerNucleusChannel(UUID uuid, @Nullable Channel channel);
+
+    NoExceptionAutoClosable setCommandSourceNucleusChannelTemporarily(CommandSource source, Channel channel);
 
     NoExceptionAutoClosable setPlayerNucleusChannelTemporarily(UUID uuid, Channel channel);
 

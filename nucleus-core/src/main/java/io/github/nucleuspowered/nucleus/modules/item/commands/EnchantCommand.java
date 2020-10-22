@@ -49,6 +49,7 @@ public class EnchantCommand implements ICommandExecutor<Player> {
 
     private final String enchantmentKey = "enchantment";
     private final String levelKey = "level";
+    private final String unsafeKey = "unsafe";
 
     @Override
     public CommandElement[] parameters(INucleusServiceCollection serviceCollection) {
@@ -57,7 +58,8 @@ public class EnchantCommand implements ICommandExecutor<Player> {
             new BoundedIntegerArgument(Text.of(this.levelKey), 0, Short.MAX_VALUE, serviceCollection),
             GenericArguments.flags()
                     .valueFlag(serviceCollection.commandElementSupplier()
-                            .createPermissionParameter(GenericArguments.none(), ItemPermissions.ENCHANT_UNSAFE, false), "u", "-unsafe")
+                            .createPermissionParameter(
+                                    GenericArguments.markTrue(Text.of(this.unsafeKey)), ItemPermissions.ENCHANT_UNSAFE, false), "u", "-unsafe")
                     .flag("o", "-overwrite")
                     .buildWith(GenericArguments.none())
         };
@@ -74,7 +76,7 @@ public class EnchantCommand implements ICommandExecutor<Player> {
         ItemStack itemInHand = src.getItemInHand(HandTypes.MAIN_HAND).get();
         EnchantmentType enchantment = context.requireOne(this.enchantmentKey, EnchantmentType.class);
         int level = context.requireOne(this.levelKey, Integer.class);
-        boolean allowUnsafe = context.hasAny("u");
+        boolean allowUnsafe = context.hasAny(this.unsafeKey);
         boolean allowOverwrite = context.hasAny("o");
 
         // Can we apply the enchantment?

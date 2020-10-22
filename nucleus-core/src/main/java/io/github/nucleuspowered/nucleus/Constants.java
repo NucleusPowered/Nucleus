@@ -8,6 +8,8 @@ public final class Constants {
 
     private Constants() {}
 
+    public static final int USER_DATA_VERSION = 2;
+
     public static final String INTERCEPTOR = "command-interceptor";
     public static final String LISTENER = "listener";
     public static final String COMMAND = "command";
@@ -17,5 +19,12 @@ public final class Constants {
     public static final String REGISTRY = "registry";
     public static final String SERVICE = "service";
     public static final String PERMISSIONS = "permission";
+
+    public static final String CHATCOLOR = "chatcolor";
+    public static final String CHATCOLOUR = "chatcolour";
+    public static final String NAMECOLOR = "namecolor";
+    public static final String NAMECOLOUR = "namecolour";
+    public static final String CHATSTYLE = "chatstyle";
+    public static final String NAMESTYLE = "namestyle";
 
 }

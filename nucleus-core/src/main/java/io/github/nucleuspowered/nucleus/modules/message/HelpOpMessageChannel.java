@@ -15,6 +15,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +40,17 @@ public class HelpOpMessageChannel implements IChatMessageFormatterService.Channe
     @Override
     public void formatMessageEvent(CommandSource source, MessageEvent.MessageFormatter formatters) {
         if (this.prefix != null) {
-            formatters.setHeader(Text.of(formatters.getHeader(), this.prefix.getForCommandSource(source)));
+            if (TextSerializers.PLAIN.serialize(formatters.getHeader().toText()).contains("<" + source.getName() + ">")) {
+                // Remove it.
+                Text p = formatters.getHeader().toText().replace("<" + source.getName() + ">", Text.of(), true);
+                if (p.toPlain().trim().isEmpty()) {
+                    formatters.setHeader(this.prefix.getForCommandSource(source));
+                } else {
+                    formatters.setHeader(Text.of(p, this.prefix.getForCommandSource(source)));
+                }
+            } else {
+                formatters.setHeader(Text.of(formatters.getHeader(), this.prefix.getForCommandSource(source)));
+            }
         }
 
         ITextStyleService.TextFormat format = this.textStyleService.getLastColourAndStyle(formatters.getHeader(), null);

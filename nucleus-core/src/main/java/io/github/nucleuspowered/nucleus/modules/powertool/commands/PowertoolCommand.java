@@ -25,6 +25,8 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,7 +80,7 @@ public class PowertoolCommand implements ICommandExecutor<Player> {
             command = command.substring(1);
         }
 
-        context.getServiceCollection().getServiceUnchecked(PowertoolService.class).setPowertool(src.getUniqueId(), item, Lists.newArrayList(command));
+        context.getServiceCollection().getServiceUnchecked(PowertoolService.class).setPowertool(src.getUniqueId(), item, Collections.singletonList(command));
         context.sendMessage("command.powertool.set", item.getId(), command);
         return context.successResult();
     }

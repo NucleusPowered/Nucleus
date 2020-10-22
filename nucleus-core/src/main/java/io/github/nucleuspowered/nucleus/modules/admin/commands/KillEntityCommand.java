@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Command(aliases = "kill", basePermission = AdminPermissions.BASE_KILL, commandDescriptionKey = "kill",
+@Command(aliases = "killentity", basePermission = AdminPermissions.BASE_KILLENTITY, commandDescriptionKey = "killentity",
         modifiers = {
                 @CommandModifier(value = CommandModifiers.HAS_WARMUP, exemptPermission = AdminPermissions.EXEMPT_WARMUP_KILLENTITY),
                 @CommandModifier(value = CommandModifiers.HAS_COOLDOWN, exemptPermission = AdminPermissions.EXEMPT_COOLDOWN_KILLENTITY),
@@ -101,8 +101,10 @@ public class KillEntityCommand implements ICommandExecutor<CommandSource> {
             WorldProperties worldProperties;
             if (context.hasAny(world)) {
                 worldProperties = context.requireOne(world, WorldProperties.class);
-            } else {
+            } else if (src instanceof Locatable) {
                 worldProperties = ((Locatable) src).getWorld().getProperties();
+            } else {
+                worldProperties = Sponge.getServer().getDefaultWorld().get();
             }
             currentEntities = Sets.newHashSet(Sponge.getServer().getWorld(worldProperties.getUniqueId()).get().getEntities());
         }

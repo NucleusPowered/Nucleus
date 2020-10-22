@@ -57,7 +57,7 @@ public class HomeOtherArgument extends HomeArgument {
         }
 
         User user = (User) users.iterator().next();
-        if (this.permissionService.hasPermission(source, HomePermissions.HOME_OTHER_EXEMPT_TARGET)) {
+        if (this.permissionService.hasPermission(user, HomePermissions.HOME_OTHER_EXEMPT_TARGET)) {
             throw args.createError(this.messageProviderService.getMessageFor(source.getLocale(), "args.homeother.exempt"));
         }
 

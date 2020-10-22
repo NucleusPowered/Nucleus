@@ -22,6 +22,7 @@ import io.github.nucleuspowered.nucleus.scaffold.command.annotation.CommandModif
 import io.github.nucleuspowered.nucleus.scaffold.command.config.CommandModifiersConfig;
 import io.github.nucleuspowered.nucleus.scaffold.command.impl.CommandContextImpl;
 import io.github.nucleuspowered.nucleus.scaffold.command.modifier.CommandModifierFactory;
+import io.github.nucleuspowered.nucleus.scaffold.command.modifier.CommandModifiers;
 import io.github.nucleuspowered.nucleus.scaffold.command.modifier.ICommandModifier;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
@@ -91,6 +92,7 @@ public class CommandControl implements CommandCallable {
     private final List<String> aliases;
     private final boolean hasHelpCommand;
     private final ImmutableMap<CommandModifier, ICommandModifier> modifiers;
+    private final Map<String, String> exemptionPermissions;
     private final CommandModifiersConfig commandModifiersConfig = new CommandModifiersConfig();
 
     private final String command;
@@ -140,6 +142,7 @@ public class CommandControl implements CommandCallable {
 
         // this must be last.
         this.modifiers = validateModifiers(this, serviceCollection.logger(), meta.getCommandAnnotation());
+        this.exemptionPermissions = this.modifiers.keySet().stream().collect(Collectors.toMap(CommandModifier::value, CommandModifier::exemptPermission));
     }
 
     public void attach(String alias, CommandControl commandControl) {
@@ -635,7 +638,6 @@ public class CommandControl implements CommandCallable {
         return this.executor != null;
     }
 
-
     private CommandException getExceptionFromKey(CommandSource source, String key, String... subs) {
         return new CommandException(this.serviceCollection.messageProvider().getMessageFor(source, key, subs));
     }
@@ -671,6 +673,10 @@ public class CommandControl implements CommandCallable {
     }
 
     public int getCooldown(Subject subject) {
+        final String exemptionPermission = this.exemptionPermissions.get(CommandModifiers.HAS_COOLDOWN);
+        if (exemptionPermission != null && this.serviceCollection.permissionService().hasPermission(subject, exemptionPermission)) {
+            return 0;
+        }
         return this.serviceCollection.permissionService()
                 .getIntOptionFromSubject(subject, String.format("nucleus.%s.cooldown", this.command.replace(" ", ".")))
                 .orElseGet(this::getCooldown);
@@ -681,6 +687,10 @@ public class CommandControl implements CommandCallable {
     }
 
     public int getWarmup(Subject subject) {
+        final String exemptionPermission = this.exemptionPermissions.get(CommandModifiers.HAS_WARMUP);
+        if (exemptionPermission != null && this.serviceCollection.permissionService().hasPermission(subject, exemptionPermission)) {
+            return 0;
+        }
         return this.serviceCollection.permissionService()
                 .getIntOptionFromSubject(subject, String.format("nucleus.%s.warmup", this.command.replace(" ", ".")))
                 .orElseGet(this::getWarmup);
@@ -691,6 +701,10 @@ public class CommandControl implements CommandCallable {
     }
 
     public double getCost(Subject subject) {
+        final String exemptionPermission = this.exemptionPermissions.get(CommandModifiers.HAS_COST);
+        if (exemptionPermission != null && this.serviceCollection.permissionService().hasPermission(subject, exemptionPermission)) {
+            return 0;
+        }
         return this.serviceCollection.permissionService()
                 .getDoubleOptionFromSubject(subject, String.format("nucleus.%s.cost", this.command.replace(" ", ".")))
                 .orElseGet(this::getCost);

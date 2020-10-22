@@ -10,6 +10,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
 import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -56,10 +58,14 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     private final ThrownFunction<Q, Optional<KeyedObject<UUID, D>>, Exception> getQuery;
     private final ThrownFunction<UUID, Optional<D>, Exception> get;
     private final PluginContainer pluginContainer;
+    private final Consumer<D> upgrader;
+    private final Consumer<D> versionSetter;
 
     public <O> AbstractKeyedService(
         Supplier<IDataTranslator<D, O>> dts,
         Supplier<IStorageRepository.Keyed<UUID, Q, O>> srs,
+        Consumer<D> upgrader,
+        Consumer<D> versionSetter,
         PluginContainer pluginContainer
     ) {
         this(
@@ -81,6 +87,8 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
                 uuid -> srs.get().get(uuid).map(dts.get()::fromDataAccessObject),
                 query -> srs.get().get(query).map(x -> x.mapValue(dts.get()::fromDataAccessObject)),
                 srs::get,
+                upgrader,
+                versionSetter,
                 pluginContainer);
     }
 
@@ -91,6 +99,8 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             ThrownFunction<UUID, Optional<D>, Exception> get,
             ThrownFunction<Q, Optional<KeyedObject<UUID, D>>, Exception> getQuery,
             Supplier<IStorageRepository.Keyed<UUID, Q, ?>> storageRepositorySupplier,
+            Consumer<D> upgrader,
+            Consumer<D> versionSetter,
             PluginContainer pluginContainer
     ) {
         this.pluginContainer = pluginContainer;
@@ -99,11 +109,15 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
         this.getAll = getAll;
         this.get = get;
         this.getQuery = getQuery;
+        this.upgrader = upgrader;
+        this.versionSetter = versionSetter;
         this.storageRepositorySupplier = storageRepositorySupplier;
     }
 
     public D createNew() {
-        return this.createNew.get();
+        final D data = this.createNew.get();
+        this.versionSetter.accept(data);
+        return data;
     }
 
     @Override
@@ -160,7 +174,10 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
         try {
             lock.lock();
             Optional<D> r = this.get.apply(key);
-            r.ifPresent(d -> this.cache.put(key, d));
+            r.ifPresent(d -> {
+                this.upgrader.accept(d);
+                this.cache.put(key, d);
+            });
             return r;
         } finally {
             lock.unlock();
@@ -224,11 +241,11 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             try {
                 lock.lock();
                 this.cache.put(key, value);
+                this.save.apply(key, value);
+                this.dirty.remove(key);
             } finally {
                 lock.unlock();
             }
-            this.save.apply(key, value);
-            this.dirty.remove(key);
             return null;
         }, this.pluginContainer);
     }

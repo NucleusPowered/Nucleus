@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -32,7 +34,8 @@ public class ConfigFileMessagesRepository extends AbstractMessageRepository impl
     private final Path file;
     private final Logger logger;
     private final Supplier<PropertiesMessageRepository> messageRepositorySupplier;
-    private CommentedConfigurationNode node = SimpleCommentedConfigurationNode.root();
+    private final Map<String, String> entryCache = new HashMap<>();
+    private CommentedConfigurationNode node = CommentedConfigurationNode.root();
 
     public ConfigFileMessagesRepository(
             ITextStyleService textStyleService,
@@ -61,16 +64,26 @@ public class ConfigFileMessagesRepository extends AbstractMessageRepository impl
         this.load(firstLoad);
     }
 
-    @Override public boolean hasEntry(String key) {
-        return false;
+    @Override
+    public boolean hasEntry(String key) {
+        return this.entryCache.containsKey(key) || !this.node.getNode((Object[]) key.split("\\.")).isVirtual();
     }
 
-    @Override String getEntry(String key) {
-        return null;
+    @Override
+    String getEntry(String key) {
+        if (!this.entryCache.containsKey(key)) {
+            String val = this.node.getNode((Object[]) key.split("\\.")).getString();
+            if (val == null) {
+                // fallback if it is isn't specified.
+                val = this.messageRepositorySupplier.get().getEntry(key);
+            }
+            this.entryCache.put(key, val);
+        }
+        return this.entryCache.get(key);
     }
 
     protected CommentedConfigurationNode getDefaults() {
-        CommentedConfigurationNode ccn = SimpleCommentedConfigurationNode.root();
+        CommentedConfigurationNode ccn = CommentedConfigurationNode.root();
         PropertiesMessageRepository repository = this.messageRepositorySupplier.get();
 
         repository.getKeys()
@@ -133,7 +146,8 @@ public class ConfigFileMessagesRepository extends AbstractMessageRepository impl
 
     private void load(boolean firstLoad) {
         try {
-            this.node = getLoader(this.file).load();
+            this.node = this.getLoader(this.file).load();
+            this.entryCache.clear();
             this.isFailed = false;
         } catch (IOException e) {
             this.isFailed = true;
