@@ -302,15 +302,7 @@ public class NucleusBootstrap {
         }
 
         try {
-            NucleusBootstrap.compatCheck(this.logger);
-        } catch (final IllegalStateException e) {
-            this.isErrored = e;
-            disable();
-            return;
-        }
-
-        try {
-            if (!versionCheck(messageProvider)) {
+            if (!NucleusBootstrap.versionCheck(messageProvider)) {
                 s.sendMessage(
                         messageProvider.getMessage("startup.nostart.nodetect", NucleusPluginInfo.NAME, NucleusPluginInfo.SPONGE_API_VERSION));
             }
@@ -321,6 +313,14 @@ public class NucleusBootstrap {
             s.sendMessage(messageProvider.getMessage("startup.nostart.compat2", e.getMessage()));
             s.sendMessage(messageProvider.getMessage("startup.nostart.compat3", NucleusPluginInfo.NAME));
             this.versionFail = e.getMessage();
+            disable();
+            return;
+        }
+
+        try {
+            NucleusBootstrap.compatCheck(this.logger);
+        } catch (final IllegalStateException e) {
+            this.isErrored = e;
             disable();
             return;
         }
