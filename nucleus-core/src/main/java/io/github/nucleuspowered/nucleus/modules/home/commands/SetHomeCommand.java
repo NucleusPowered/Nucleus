@@ -103,7 +103,6 @@ public class SetHomeCommand implements ICommandExecutor<Player>, IReloadableServ
                 homeService.createHomeInternal(context.getCause(), src, home, src.getLocation(), src.getRotation());
             }
         } catch (HomeException e) {
-            e.printStackTrace();
             return context.errorResultLiteral(e.getText());
         }
 
