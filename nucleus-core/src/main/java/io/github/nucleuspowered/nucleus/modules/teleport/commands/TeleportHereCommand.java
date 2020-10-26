@@ -76,7 +76,7 @@ public class TeleportHereCommand implements ICommandExecutor<Player>, IReloadabl
                     context.getIfPlayer(),
                     false,
                     beQuiet,
-                    false
+                    beQuiet
             );
             return result.isSuccessful() ? context.successResult() : context.failResult();
         } else {
