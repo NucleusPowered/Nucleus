@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.module.rtp.kernel;
 
 import io.github.nucleuspowered.nucleus.api.module.rtp.NucleusRTPService;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.util.generator.dummy.DummyObjectProvider;
 
 /**
@@ -35,7 +36,7 @@ public final class RTPKernels {
      *
      * <p>This has an ID of {@code nucleus:around_player}</p>
      */
-    public final static RTPKernel AROUND_PLAYER = DummyObjectProvider.createFor(RTPKernel.class, "AROUND_PLAYER");
+    public final static RTPKernel AROUND_PLAYER = Sponge.getRegistry().getType(RTPKernel.class, Identifiers.AROUND_PLAYER).get();
 
     /**
      * The default Nucleus RTP kernel, adjusted to centre around the player,
@@ -43,20 +44,20 @@ public final class RTPKernels {
      *
      * <p>This has an ID of {@code nucleus:around_player_surface}</p>
      */
-    public final static RTPKernel AROUND_PLAYER_SURFACE = DummyObjectProvider.createFor(RTPKernel.class, "AROUND_PLAYER_SURFACE");
+    public final static RTPKernel AROUND_PLAYER_SURFACE = Sponge.getRegistry().getType(RTPKernel.class, Identifiers.AROUND_PLAYER_SURFACE).get();
 
     /**
      * The default Nucleus RTP kernel.
      *
      * <p>This has an ID of {@code nucleus:default}</p>
      */
-    public final static RTPKernel DEFAULT = DummyObjectProvider.createFor(RTPKernel.class, "DEFAULT");
+    public final static RTPKernel DEFAULT = Sponge.getRegistry().getType(RTPKernel.class, Identifiers.DEFAULT).get();
 
     /**
      * The default Nucleus RTP kernel, adjusted to ensure locations are surface only.
      *
      * <p>This has an ID of {@code nucleus:surface_only}</p>
      */
-    public final static RTPKernel SURFACE_ONLY = DummyObjectProvider.createFor(RTPKernel.class, "SURFACE_ONLY");
+    public final static RTPKernel SURFACE_ONLY = Sponge.getRegistry().getType(RTPKernel.class, Identifiers.SURFACE_ONLY).get();
 
 }
