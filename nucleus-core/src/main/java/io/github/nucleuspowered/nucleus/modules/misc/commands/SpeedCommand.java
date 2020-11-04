@@ -77,7 +77,7 @@ public class SpeedCommand implements ICommandExecutor<CommandSource>, IReloadabl
                 GenericArguments.optionalWeak(GenericArguments.onlyOne(GenericArguments.choices(Text.of(this.typeKey), keysMap, true))),
                 GenericArguments.optional(
                         GenericArguments.firstParsing(
-                            GenericArguments.integer(Text.of(this.speedKey)),
+                            GenericArguments.doubleNum(Text.of(this.speedKey)),
                             GenericArguments.literal(Text.of(this.resetKey), this.resetKey)
                         )
             )
@@ -89,9 +89,9 @@ public class SpeedCommand implements ICommandExecutor<CommandSource>, IReloadabl
         Player pl = context.getPlayerFromArgs();
         SpeedType key = context.getOne(this.typeKey, SpeedType.class)
                 .orElseGet(() -> pl.get(Keys.IS_FLYING).orElse(false) ? SpeedType.FLYING : SpeedType.WALKING);
-        Integer speed = context.getOne(this.speedKey, Integer.class).orElseGet(() -> {
+        Double speed = context.getOne(this.speedKey, Double.class).orElseGet(() -> {
             if (context.hasAny(this.resetKey)) {
-                return key == SpeedType.WALKING ? 2 : 1;
+                return key == SpeedType.WALKING ? 2.0d : 1.0d;
             }
 
             return null;
@@ -99,10 +99,10 @@ public class SpeedCommand implements ICommandExecutor<CommandSource>, IReloadabl
 
         if (speed == null) {
             Text t = Text.builder().append(context.getMessage("command.speed.walk")).append(Text.of(" "))
-                    .append(Text.of(TextColors.YELLOW, Math.round(pl.get(Keys.WALKING_SPEED).orElse(0.1d) * 20)))
+                    .append(Text.of(TextColors.YELLOW, pl.get(Keys.WALKING_SPEED).orElse(0.1d) * multiplier))
                     .append(Text.builder().append(Text.of(TextColors.GREEN, ", "))
                             .append(context.getMessage("command.speed.flying")).build())
-                    .append(Text.of(" ")).append(Text.of(TextColors.YELLOW, Math.round(pl.get(Keys.FLYING_SPEED).orElse(0.05d) * 20)))
+                    .append(Text.of(" ")).append(Text.of(TextColors.YELLOW, pl.get(Keys.FLYING_SPEED).orElse(0.05d) * multiplier))
                     .append(Text.of(TextColors.GREEN, ".")).build();
 
             context.sendMessageText(t);
@@ -119,7 +119,7 @@ public class SpeedCommand implements ICommandExecutor<CommandSource>, IReloadabl
             return context.errorResult("command.speed.max", String.valueOf(this.maxSpeed));
         }
 
-        DataTransactionResult dtr = pl.offer(key.speedKey, (double) speed / (double) multiplier);
+        DataTransactionResult dtr = pl.offer(key.speedKey, speed / (double) multiplier);
 
         if (dtr.isSuccessful()) {
             context.sendMessage("command.speed.success.base", key.name, String.valueOf(speed));
