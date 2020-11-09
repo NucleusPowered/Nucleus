@@ -10,7 +10,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
 import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
@@ -33,8 +32,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
 public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D extends IKeyedDataObject<D>>
         implements IStorageService.Keyed.KeyedData<UUID, Q, D> {
 
@@ -42,7 +39,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             Caffeine.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<UUID, ReentrantReadWriteLock>() {
                 @NonNull
                 @Override
-                public ReentrantReadWriteLock load(@Nonnull UUID key) {
+                public ReentrantReadWriteLock load(@NonNull UUID key) {
                     return new ReentrantReadWriteLock();
                 }
             });
@@ -130,7 +127,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public CompletableFuture<Optional<D>> get(@Nonnull final UUID key) {
+    public CompletableFuture<Optional<D>> get(@NonNull final UUID key) {
         ReentrantReadWriteLock.ReadLock lock = this.dataLocks.get(key).readLock();
         try {
             lock.lock();
@@ -147,7 +144,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public Optional<D> getOnThread(@Nonnull UUID key) {
+    public Optional<D> getOnThread(@NonNull UUID key) {
         // Read lock for the cache
         ReentrantReadWriteLock.ReadLock lock = this.dataLocks.get(key).readLock();
         try {
@@ -168,7 +165,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
         }
     }
 
-    private Optional<D> getFromRepo(@Nonnull UUID key) throws Exception {
+    private Optional<D> getFromRepo(@NonNull UUID key) throws Exception {
         // Write lock because of the cache
         ReentrantReadWriteLock.WriteLock lock = this.dataLocks.get(key).writeLock();
         try {
@@ -185,7 +182,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public CompletableFuture<Optional<KeyedObject<UUID, D>>> get(@Nonnull final Q query) {
+    public CompletableFuture<Optional<KeyedObject<UUID, D>>> get(@NonNull final Q query) {
         return ServicesUtil.run(() -> {
             Optional<KeyedObject<UUID, D>> r = this.getQuery.apply(query);
             r.ifPresent(d -> {
@@ -201,7 +198,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public CompletableFuture<Map<UUID, D>> getAll(@Nonnull Q query) {
+    public CompletableFuture<Map<UUID, D>> getAll(@NonNull Q query) {
         return ServicesUtil.run(() -> {
             Map<UUID, D> res = this.getAll.apply(query);
             /* Map<UUID, D> res = r.entrySet().stream()
@@ -216,17 +213,17 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public CompletableFuture<Boolean> exists(@Nonnull UUID key) {
+    public CompletableFuture<Boolean> exists(@NonNull UUID key) {
         return ServicesUtil.run(() -> this.storageRepositorySupplier.get().exists(key), this.pluginContainer);
     }
 
     @Override
-    public CompletableFuture<Integer> count(@Nonnull Q query) {
+    public CompletableFuture<Integer> count(@NonNull Q query) {
         return ServicesUtil.run(() -> this.storageRepositorySupplier.get().count(query), this.pluginContainer);
     }
 
     @Override
-    public <T2> CompletableFuture<Void> setAndSave(@Nonnull final UUID key, final DataKey<T2, ? extends D> dataKey, final T2 data) {
+    public <T2> CompletableFuture<Void> setAndSave(@NonNull final UUID key, final DataKey<T2, ? extends D> dataKey, final T2 data) {
         return getOrNew(key).thenAccept(x -> {
             x.set(dataKey, data);
             save(key, x);
@@ -234,24 +231,41 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
-    public CompletableFuture<Void> save(@Nonnull final UUID key, @Nonnull final D value) {
-        return ServicesUtil.run(() -> {
-            ReentrantReadWriteLock reentrantReadWriteLock = this.dataLocks.get(key);
-            ReentrantReadWriteLock.WriteLock lock = reentrantReadWriteLock.writeLock();
+    public <T2> CompletableFuture<Void> removeAndSave(@NonNull UUID key, DataKey<T2, ? extends D> dataKey) {
+        return this.getOrNew(key).handle((x, ex) -> {
+            x.remove(dataKey);
             try {
-                lock.lock();
-                this.cache.put(key, value);
-                this.save.apply(key, value);
-                this.dirty.remove(key);
-            } finally {
-                lock.unlock();
+                this.saveOnThread(key, x);
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
             }
+            return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> save(@NonNull final UUID key, @NonNull final D value) {
+        return ServicesUtil.run(() -> {
+            this.saveOnThread(key, value);
             return null;
         }, this.pluginContainer);
     }
 
+    private void saveOnThread(@NonNull final UUID key, @NonNull final D value) throws Exception {
+        ReentrantReadWriteLock reentrantReadWriteLock = this.dataLocks.get(key);
+        ReentrantReadWriteLock.WriteLock lock = reentrantReadWriteLock.writeLock();
+        try {
+            lock.lock();
+            this.cache.put(key, value);
+            this.save.apply(key, value);
+            this.dirty.remove(key);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     @Override
-    public CompletableFuture<Void> delete(@Nonnull UUID key) {
+    public CompletableFuture<Void> delete(@NonNull UUID key) {
         return ServicesUtil.run(() -> {
             ReentrantReadWriteLock reentrantReadWriteLock = this.dataLocks.get(key);
             ReentrantReadWriteLock.WriteLock lock = reentrantReadWriteLock.writeLock();

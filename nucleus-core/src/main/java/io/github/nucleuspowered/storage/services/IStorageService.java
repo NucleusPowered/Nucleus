@@ -284,6 +284,8 @@ public interface IStorageService<D extends IDataObject> {
              * @return A {@link CompletableFuture} that will contain an exception if there was a failure
              */
             <T2> CompletableFuture<Void> setAndSave(@Nonnull K key, DataKey<T2, ? extends D> dataKey, T2 data);
+
+            <T2> CompletableFuture<Void> removeAndSave(@Nonnull K key, DataKey<T2, ? extends D> dataKey);
         }
     }
 

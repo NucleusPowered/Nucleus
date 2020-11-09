@@ -313,8 +313,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
             );
         }
 
-        IUserDataObject userDataObject = this.storageManager.getUserService().getOrNewOnThread(pl.getUniqueId());
-        userDataObject.set(NicknameKeys.USER_NICKNAME_JSON, TextSerializers.JSON.serialize(nickname));
+        this.storageManager.getUserService().setAndSave(pl.getUniqueId(), NicknameKeys.USER_NICKNAME_JSON, TextSerializers.JSON.serialize(nickname));
         this.updateCache(pl.getUniqueId(), nickname);
 
         Sponge.getEventManager().post(new ChangeNicknameEventPost(cause, currentNickname, nickname, pl));
