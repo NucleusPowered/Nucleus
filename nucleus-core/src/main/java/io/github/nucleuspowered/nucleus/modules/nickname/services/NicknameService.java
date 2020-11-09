@@ -220,14 +220,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
             );
         }
 
-        IUserDataObject mus = this.storageManager.getUserService()
-                .getOnThread(user.getUniqueId())
-                .orElseThrow(() -> new NicknameException(
-                        this.messageProviderService.getMessage("standard.error.nouser"),
-                        NicknameException.Type.NO_USER
-                ));
-
-        mus.remove(NicknameKeys.USER_NICKNAME_JSON);
+        this.storageManager.getUserService().removeAndSave(user.getUniqueId(), NicknameKeys.USER_NICKNAME_JSON);
         removeFromCache(user.getUniqueId());
         Sponge.getEventManager().post(new ChangeNicknameEventPost(cause, currentNickname, null, user));
 
