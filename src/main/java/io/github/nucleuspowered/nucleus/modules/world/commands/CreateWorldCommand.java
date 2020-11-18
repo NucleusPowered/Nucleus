@@ -55,8 +55,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -237,7 +235,7 @@ public class CreateWorldCommand extends AbstractCommand<CommandSource> implement
                 }
 
                 Files.copy(level, world.resolve("level.dat.nbak"), StandardCopyOption.REPLACE_EXISTING);
-                dc.set(this.levelName, name);
+                dc.remove(this.levelName);
                 try (OutputStream os = getOutput(gz, level)) {
                     DataFormats.NBT.writeTo(os, dc);
                     os.flush();
@@ -273,23 +271,9 @@ public class CreateWorldCommand extends AbstractCommand<CommandSource> implement
                 return;
             }
 
-            // For each world, get the dim ID.
-            Set<Integer> si = Sponge.getServer().getAllWorldProperties().stream()
-                    .map(x -> x.getAdditionalProperties().getInt(this.toId).orElse(0))
-                    .collect(Collectors.toSet());
-
-            if (!dc.getInt(this.toId).map(si::contains).orElse(false)) {
-                for (int i = 2; i < Integer.MAX_VALUE; i++) {
-                    if (!si.contains(i)) {
-                        dc.set(this.toId, i);
-                        break;
-                    }
-                }
-            }
-
-            UUID uuid = UUID.randomUUID();
-            dc.set(this.uuidLeast, uuid.getLeastSignificantBits());
-            dc.set(this.uuidMost, uuid.getMostSignificantBits());
+            dc.remove(this.toId);
+            dc.remove(this.uuidLeast);
+            dc.remove(this.uuidMost);
 
             try {
                 Files.copy(levelSponge, world.resolve("level_sponge.dat.nbak"), StandardCopyOption.REPLACE_EXISTING);
