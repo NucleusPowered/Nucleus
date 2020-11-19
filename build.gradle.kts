@@ -29,6 +29,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("org.spongepowered.gradle.plugin") version "0.11.0-SNAPSHOT"
     kotlin("jvm") version "1.3.61"
+    id("org.sonarqube") version "2.7"
 }
 apply {
     plugin("kotlin")
