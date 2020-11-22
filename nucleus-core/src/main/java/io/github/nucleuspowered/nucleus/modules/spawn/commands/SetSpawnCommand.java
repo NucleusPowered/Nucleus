@@ -32,7 +32,7 @@ public class SetSpawnCommand implements ICommandExecutor<Player> {
         context.getServiceCollection()
                 .storageManager()
                 .getWorldService()
-                .getOrNew(src.getUniqueId())
+                .getOrNew(src.getWorld().getUniqueId())
                 .thenAccept(x -> x.set(SpawnKeys.WORLD_SPAWN_ROTATION, rotation));
 
         src.getWorld().getProperties().setSpawnPosition(src.getLocation().getBlockPosition());
