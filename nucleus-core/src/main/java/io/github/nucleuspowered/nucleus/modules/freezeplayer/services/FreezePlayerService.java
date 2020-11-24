@@ -50,11 +50,8 @@ public class FreezePlayerService implements ServiceBase, NucleusFreezePlayerServ
 
     @Override
     public void setFrozen(UUID uuid, boolean freeze) {
-        IUserDataObject x = this.serviceCollection.storageManager().getUserService().getOrNewOnThread(uuid);
-        try (IKeyedDataObject.Value<Boolean> v = x.getAndSet(FreezePlayerKeys.FREEZE_PLAYER)) {
-            v.setValue(freeze);
-            this.cache.put(uuid, freeze);
-        }
+        this.serviceCollection.storageManager().getUserService().setAndSave(uuid, FreezePlayerKeys.FREEZE_PLAYER, freeze);
+        this.cache.put(uuid, freeze);
     }
 
 }
