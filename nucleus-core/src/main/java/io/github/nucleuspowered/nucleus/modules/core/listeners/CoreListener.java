@@ -221,7 +221,7 @@ public class CoreListener implements IReloadableService.Reloadable, ListenerBase
         try {
             udo.set(CoreKeys.IP_ADDRESS, address.toString());
             this.serviceCollection.userCacheService().updateCacheForPlayer(player.getUniqueId(), udo);
-            this.serviceCollection.storageManager().saveUser(player.getUniqueId(), udo);
+            this.serviceCollection.storageManager().getUserService().save(player.getUniqueId(), udo);
         } catch (Exception e) {
             e.printStackTrace();
         }
