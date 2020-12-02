@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
@@ -32,6 +33,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D extends IKeyedDataObject<D>>
         implements IStorageService.Keyed.KeyedData<UUID, Q, D> {
 
@@ -44,6 +48,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
                 }
             });
     private final Cache<UUID, D> cache = Caffeine.newBuilder()
+            .removalListener(this::onRemoval)
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .build();
     private final Set<UUID> dirty = new HashSet<>();
@@ -297,5 +302,12 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             }
             return null;
         }, this.pluginContainer);
+    }
+
+    void onRemoval(@Nullable UUID uuid, @Nullable D dataObject, @Nonnull RemovalCause removalCause) {
+        // If evicted normally, make sure it's saved.
+        if (removalCause.wasEvicted() && uuid != null && dataObject != null) {
+            this.save(uuid, dataObject);
+        }
     }
 }
