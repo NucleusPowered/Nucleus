@@ -94,7 +94,7 @@ public final class StorageManager implements IStorageManager, IReloadableService
 
     private final IConfigurateBackedDataTranslator<IUserDataObject> userDataAccess = new IConfigurateBackedDataTranslator<IUserDataObject>() {
         @Override public ConfigurationNode createNewNode() {
-            return SimpleConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
+            return ConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
         }
 
         @Override public IUserDataObject createNew() {
@@ -105,7 +105,7 @@ public final class StorageManager implements IStorageManager, IReloadableService
     };
     private final IConfigurateBackedDataTranslator<IWorldDataObject> worldDataAccess = new IConfigurateBackedDataTranslator<IWorldDataObject>() {
         @Override public ConfigurationNode createNewNode() {
-            return SimpleConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
+            return ConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
         }
 
         @Override public IWorldDataObject createNew() {
@@ -116,7 +116,7 @@ public final class StorageManager implements IStorageManager, IReloadableService
     };
     private final IConfigurateBackedDataTranslator<IGeneralDataObject> generalDataAccess = new IConfigurateBackedDataTranslator<IGeneralDataObject>() {
         @Override public ConfigurationNode createNewNode() {
-            return SimpleConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
+            return ConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
         }
 
         @Override public IGeneralDataObject createNew() {
@@ -127,7 +127,7 @@ public final class StorageManager implements IStorageManager, IReloadableService
     };
     private final IConfigurateBackedDataTranslator<IKitDataObject> kitsDataAccess = new IConfigurateBackedDataTranslator<IKitDataObject>() {
         @Override public ConfigurationNode createNewNode() {
-            return SimpleConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
+            return ConfigurationNode.root(configurateHelper.setOptions(ConfigurationOptions.defaults()));
         }
 
         @Override public IKitDataObject createNew() {

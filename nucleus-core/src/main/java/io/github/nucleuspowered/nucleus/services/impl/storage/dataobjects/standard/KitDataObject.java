@@ -9,28 +9,32 @@ import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
 import io.github.nucleuspowered.nucleus.modules.kit.serialiser.SingleKitTypeSerilaiser;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.gson.GsonConfigurationLoader;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Sponge;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class KitDataObject extends AbstractConfigurateBackedDataObject implements IKitDataObject {
 
-    private ImmutableMap<String, Kit> cached;
+    private Map<String, Kit> cached;
 
     @Override
-    public ImmutableMap<String, Kit> getKitMap() {
+    public Map<String, Kit> getKitMap() {
         if (this.cached == null) {
             try {
                 Map<String, Kit> map = SingleKitTypeSerilaiser.INSTANCE.deserialize(this.backingNode);
                 if (map == null) {
-                    this.cached = ImmutableMap.of();
+                    this.cached = Collections.emptyMap();
                 } else {
-                    this.cached = ImmutableMap.copyOf(map);
+                    this.cached = Collections.unmodifiableMap(map);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                return ImmutableMap.of();
+                return Collections.emptyMap();
             }
         }
         return this.cached;
@@ -38,7 +42,12 @@ public class KitDataObject extends AbstractConfigurateBackedDataObject implement
 
     @Override
     public void setKitMap(Map<String, Kit> map) throws Exception {
+        final ConfigurationNode node = this.backingNode.getNode("kits");
+        this.backingNode.setValue(null); // clear for this serialisation
         SingleKitTypeSerilaiser.INSTANCE.serialize(map, this.backingNode);
+        if (!node.isVirtual()) {
+            this.backingNode.getNode("kits").setValue(node);
+        }
         this.cached = ImmutableMap.copyOf(map);
     }
 

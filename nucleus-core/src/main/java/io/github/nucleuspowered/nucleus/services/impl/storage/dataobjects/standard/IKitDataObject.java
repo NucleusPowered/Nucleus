@@ -4,7 +4,6 @@
  */
 package io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.standard;
 
-import com.google.common.collect.ImmutableMap;
 import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.configurate.IConfigurateBackedDataObject;
 
@@ -13,7 +12,7 @@ import java.util.Optional;
 
 public interface IKitDataObject extends IConfigurateBackedDataObject {
 
-    ImmutableMap<String, Kit> getKitMap();
+    Map<String, Kit> getKitMap();
 
     void setKitMap(Map<String, Kit> map) throws Exception;
 

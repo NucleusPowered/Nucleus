@@ -13,6 +13,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
@@ -39,14 +40,39 @@ public class SingleKitTypeSerilaiser {
 
     private SingleKitTypeSerilaiser() {}
 
-    @Nullable public Map<String, Kit> deserialize(@NonNull ConfigurationNode value)
+    public Map<String, Kit> deserialize(@NonNull ConfigurationNode value)
             throws ObjectMappingException {
         Map<String, Kit> kits = new HashMap<>();
+        if (value.getChildrenMap().size() == 1) {
+            final ConfigurationNode node = value.getChildrenMap().get("kits");
+            if (node != null) {
+                // Special case.
+                try {
+                    kits.putAll(this.deserialize(node));
+                    Sponge.getPluginManager().getPlugin("nucleus").get().getLogger().info("Migrated v1 kits to v2.");
+                    value.getNode("kits").setValue(null);
+                    serialize(kits, value);
+                    return kits;
+                } catch (final Exception e) {
+                    // if it's a normal kit, it'll get checked out below;
+                }
+            }
+        }
+
         for (Map.Entry<Object, ? extends ConfigurationNode> entry : value.getChildrenMap().entrySet()) {
             String kitName = entry.getKey().toString().toLowerCase();
 
             ConfigurationNode node = entry.getValue();
             if (!node.isVirtual()) {
+                if (node.getNode(INTERVAL).isVirtual()) {
+                    if (kitName.equals("kits")) {
+                        Sponge.getPluginManager().getPlugin("nucleus").get().getLogger().warn("v1 kits entry detected. It will be ignored.");
+                        continue;
+                    } else {
+                        // error
+                        throw new IllegalStateException("Kits file is malformed");
+                    }
+                }
                 List<ItemStackSnapshot> itemStackSnapshots =
                         node.getNode(STACKS)
                                 .getList(TypeToken.of(NucleusItemStackSnapshot.class))
