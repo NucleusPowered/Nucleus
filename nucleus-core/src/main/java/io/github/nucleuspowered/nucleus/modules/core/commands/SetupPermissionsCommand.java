@@ -53,17 +53,11 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
 
     private final String roleKey = "Nucleus Role";
     private final String groupKey = "Permission Group";
-    private final String withGroupsKey = "-g";
-    private final String acceptGroupKey = "-y";
 
     @Override
     public CommandElement[] parameters(INucleusServiceCollection serviceCollection) {
         return new CommandElement[] {
                 GenericArguments.firstParsing(
-                        GenericArguments.seq(
-                                GenericArguments.literal(Text.of(this.withGroupsKey), this.withGroupsKey),
-                                GenericArguments.optional(
-                                        GenericArguments.literal(Text.of(this.acceptGroupKey), this.acceptGroupKey))),
                         GenericArguments.flags()
                                 .flag("r", "-reset")
                                 .flag("i", "-inherit")
@@ -75,29 +69,6 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
 
     @Override
     public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
-        IPermissionService permissionService = context.getServiceCollection().permissionService();
-        if (context.hasAny(this.withGroupsKey)) {
-            if (permissionService.isOpOnly()) {
-                // Fail
-                return context.errorResult("args.permissiongroup.noservice");
-            }
-
-            if (context.hasAny(this.acceptGroupKey)) {
-                setupGroups(context);
-            } else {
-                context.sendMessage("command.nucleus.permission.groups.info");
-                context.getCommandSource().sendMessage(
-                        context.getServiceCollection().messageProvider().getMessageFor(
-                                context.getCommandSource(), "command.nucleus.permission.groups.info2")
-                            .toBuilder().onClick(TextActions.runCommand("/nucleus:nucleus setupperms -g -y"))
-                            .onHover(TextActions.showText(Text.of("/nucleus:nucleus setupperms -g -y")))
-                            .build()
-                );
-            }
-
-            return context.successResult();
-        }
-
         // The GroupArgument should have already checked for this.
         SuggestedLevel sl = context.requireOne(this.roleKey, SuggestedLevel.class);
         Subject group = context.requireOne(this.groupKey, Subject.class);
@@ -107,58 +78,6 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
         setupPerms(context, group, sl, reset, inherit);
 
         return context.successResult();
-    }
-
-    private void setupGroups(ICommandContext<? extends CommandSource> context) throws CommandException {
-        IMessageProviderService messageProvider = context.getServiceCollection().messageProvider();
-        String ownerGroup = "owner";
-        String adminGroup = "admin";
-        String modGroup = "mod";
-        String defaultGroup = "default";
-
-        // Create groups
-        PermissionService permissionService = Sponge.getServiceManager().provide(PermissionService.class)
-                .orElseThrow(() -> context.createException("args.permissiongroup.noservice"));
-
-        // check for admin
-        Subject owner = getSubject(ownerGroup, context, permissionService);
-        Subject admin = getSubject(adminGroup, context, permissionService);
-        Subject mod = getSubject(modGroup, context, permissionService);
-        Subject defaults = getSubject(defaultGroup, context, permissionService);
-
-        BiFunction<String, String, CommandException> biFunction = (key, group) -> new CommandException(
-                messageProvider.getMessageFor(context.getCommandSourceUnchecked(), key, group)
-        );
-
-        context.sendMessage("command.nucleus.permission.inherit", adminGroup, ownerGroup);
-        addParent(owner, admin, biFunction);
-
-        context.sendMessage("command.nucleus.permission.inherit", modGroup, adminGroup);
-        addParent(admin, mod, biFunction);
-
-        context.sendMessage("command.nucleus.permission.inherit", defaultGroup, modGroup);
-        addParent(mod, defaults, biFunction);
-
-        context.sendMessage("command.nucleus.permission.perms");
-        setupPerms(context, owner, SuggestedLevel.OWNER, false, false);
-        setupPerms(context, admin, SuggestedLevel.ADMIN, false, false);
-        setupPerms(context, mod, SuggestedLevel.MOD, false, false);
-        setupPerms(context, defaults, SuggestedLevel.USER, false, false);
-        context.sendMessage("command.nucleus.permission.completegroups");
-    }
-
-    private void addParent(Subject parent, Subject target, BiFunction<String, String, CommandException> exceptionBiFunction) throws CommandException {
-        if (!target.getSubjectData().addParent(ImmutableSet.of(), parent.asSubjectReference()).join()) {
-            // there's a problem
-            throw exceptionBiFunction.apply("command.nucleus.permission.group.fail", target.getIdentifier());
-        }
-    }
-
-    private Subject getSubject(String group, ICommandContext<? extends CommandSource> src, PermissionService service) {
-        return service.getGroupSubjects().getSubject(group).orElseGet(() -> {
-            src.sendMessage("command.nucleus.permission.create", group);
-            return service.getGroupSubjects().loadSubject(group).join();
-        });
     }
 
     private void setupPerms(ICommandContext<? extends CommandSource> src, Subject group, SuggestedLevel level, boolean reset, boolean inherit) {
