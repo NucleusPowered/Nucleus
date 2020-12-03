@@ -75,12 +75,16 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
         boolean reset = context.hasAny("r");
         boolean inherit = context.hasAny("i");
 
-        setupPerms(context, group, sl, reset, inherit);
-
-        return context.successResult();
+        return this.setupPerms(context, group, sl, reset, inherit);
     }
 
-    private void setupPerms(ICommandContext<? extends CommandSource> src, Subject group, SuggestedLevel level, boolean reset, boolean inherit) {
+    private ICommandResult setupPerms(ICommandContext<? extends CommandSource> src, Subject group, SuggestedLevel level, boolean reset, boolean inherit) {
+        final PermissionService ps = Sponge.getServiceManager().provideUnchecked(PermissionService.class);
+        if (ps.getClass().getPackage().getName().startsWith("org.spongepowered.common")) {
+            // nope the f out of here.
+            return src.errorResult("command.nucleus.permission.noperms");
+        }
+
         if (inherit && level.getLowerLevel() != null) {
             setupPerms(src, group, level.getLowerLevel(), reset, inherit);
         }
@@ -102,6 +106,7 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
                 });
 
         src.sendMessage("command.nucleus.permission.complete", level.toString().toLowerCase(), group.getIdentifier());
+        return src.successResult();
     }
 
     private static class GroupArgument extends CommandElement {
@@ -142,7 +147,12 @@ public class SetupPermissionsCommand implements ICommandExecutor<CommandSource> 
                 throw args.createError(this.messageProviderService.getMessageFor(source, "args.permissiongroup.noservice"));
             }
 
-            PermissionService ps = ops.get();
+            final PermissionService ps = ops.get();
+            if (ps.getClass().getPackage().getName().startsWith("org.spongepowered.common")) {
+                // nope the f out of here.
+                throw args.createError(this.messageProviderService.getMessageFor(source,  "command.nucleus.permission.noperms"));
+            }
+
             try {
                 return Sets.newHashSet(ps.getGroupSubjects().getAllIdentifiers().get());
             } catch (Exception e) {
