@@ -75,7 +75,7 @@ public class CommandDoc {
     }
 
     public void setAliases(String aliases) {
-        this.aliases = aliases;
+        this.aliases = " " + aliases; // this forces a quote to appear in the YAML parser
     }
 
     public void setDefaultLevel(String defaultLevel) {

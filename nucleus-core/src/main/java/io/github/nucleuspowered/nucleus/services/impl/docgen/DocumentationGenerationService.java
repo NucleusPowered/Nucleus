@@ -221,20 +221,21 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
         // Generate command file.
         YAMLConfigurationLoader configurationLoader = YAMLConfigurationLoader.builder()
                 .setPath(directory.resolve("commands.yml"))
-                .setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
-        ConfigurationNode commandConfigurationNode = SimpleConfigurationNode.root().setValue(COMMAND_DOC_LIST_TYPE_TOKEN, lcd);
+                .setFlowStyle(DumperOptions.FlowStyle.BLOCK)
+                .build();
+        ConfigurationNode commandConfigurationNode = ConfigurationNode.root().setValue(COMMAND_DOC_LIST_TYPE_TOKEN, lcd);
         configurationLoader.save(commandConfigurationNode);
 
         YAMLConfigurationLoader permissionsConfigurationLoader = YAMLConfigurationLoader.builder()
                 .setPath(directory.resolve("permissions.yml"))
                 .setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
-        ConfigurationNode permissionConfiguationNode = SimpleConfigurationNode.root().setValue(PERMISSION_DOC_LIST_TYPE_TOKEN, permdocs);
+        ConfigurationNode permissionConfiguationNode = ConfigurationNode.root().setValue(PERMISSION_DOC_LIST_TYPE_TOKEN, permdocs);
         permissionsConfigurationLoader.save(permissionConfiguationNode);
 
         YAMLConfigurationLoader essentialsConfigurationLoader = YAMLConfigurationLoader.builder()
                 .setPath(directory.resolve("essentials.yml"))
                 .setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
-        ConfigurationNode essentialsConfigurationNode = SimpleConfigurationNode.root().setValue(ESSENTIALS_DOC_LIST_TYPE_TOKEN, essentialsDocs);
+        ConfigurationNode essentialsConfigurationNode = ConfigurationNode.root().setValue(ESSENTIALS_DOC_LIST_TYPE_TOKEN, essentialsDocs);
         essentialsConfigurationLoader.save(essentialsConfigurationNode);
 
         YAMLConfigurationLoader configurationConfigurationLoader = YAMLConfigurationLoader.builder()
@@ -245,7 +246,7 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
         YAMLConfigurationLoader tokensConfigurationLoader = YAMLConfigurationLoader.builder()
                 .setPath(directory.resolve("tokens.yml"))
                 .setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
-        ConfigurationNode tokensConfigNode = SimpleConfigurationNode.root().setValue(TOKEN_DOC_LIST_TYPE_TOKEN, tokenDocs);
+        ConfigurationNode tokensConfigNode = ConfigurationNode.root().setValue(TOKEN_DOC_LIST_TYPE_TOKEN, tokenDocs);
         tokensConfigurationLoader.save(tokensConfigNode);
 
     }
