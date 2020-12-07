@@ -12,8 +12,8 @@ public enum SuggestedLevel {
     USER(null, "nucleus.user", PermissionDescription.ROLE_USER),
     MOD(USER, "nucleus.mod", PermissionDescription.ROLE_STAFF),
     ADMIN(MOD, "nucleus.admin", PermissionDescription.ROLE_ADMIN),
-    OWNER(ADMIN, "nucleus.owner", PermissionDescription.ROLE_ADMIN),
-    NONE(OWNER, null, null);
+    OWNER(ADMIN, "nucleus.owner", "OWNER"),
+    NONE(OWNER, null, "SPECIAL");
 
     @Nullable private final SuggestedLevel level;
     @Nullable private final String permission;
@@ -36,7 +36,7 @@ public enum SuggestedLevel {
     }
 
     @Nullable
-    public String getRole() {
+    public String getSpongeRole() {
         return this.role;
     }
 }

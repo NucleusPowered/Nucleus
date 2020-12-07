@@ -151,9 +151,9 @@ public class NucleusPermissionService implements IPermissionService, IReloadable
 
         for (Map.Entry<String, IPermissionService.Metadata> entry : this.metadataMap.entrySet()) {
             SuggestedLevel level = entry.getValue().getSuggestedLevel();
-            if (isPresent && level.getRole() != null) {
+            if (isPresent && level.getSpongeRole() != null) {
                 ps.newDescriptionBuilder(this.serviceCollection.pluginContainer())
-                        .assign(level.getRole(), true)
+                        .assign(level.getSpongeRole(), true)
                         .description(Text.of(entry.getValue().getDescription(this.messageProviderService)))
                         .id(entry.getKey()).register();
             }

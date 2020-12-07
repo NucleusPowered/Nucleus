@@ -73,6 +73,7 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
         IPermissionService permissionService = this.serviceCollection.permissionService();
         IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
         Collection<CommandControl> commands = commandMetadataService.getCommandsAndSubcommands();
+        final Set<PermissionDoc> allPermissionDocs = new HashSet<>();
 
         final List<EssentialsDoc> essentialsDocs = new ArrayList<>();
         List<CommandDoc> lcd = getAndSort(
@@ -121,11 +122,11 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
                                 commandDoc.setWarmup(true);
                                 break;
                         }
-                        getPermissionDoc(modifier.exemptPermission()).ifPresent(permissionDocs::add);
+                        this.getPermissionDoc(modifier.exemptPermission()).ifPresent(permissionDocs::add);
                     }
 
                     for (String perm : metadata.getCommandAnnotation().associatedPermissions()) {
-                        getPermissionDoc(perm).ifPresent(permissionDocs::add);
+                        this.getPermissionDoc(perm).ifPresent(permissionDocs::add);
                     }
 
                     EssentialsEquivalent essentialsEquivalent = metadata.getEssentialsEquivalent();
@@ -158,7 +159,7 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
                         }
                     }
 
-                    commandDoc.setDefaultLevel(level.getRole());
+                    commandDoc.setDefaultLevel(level.name());
                     commandDoc.setOneLineDescription(control.getShortDescription(Sponge.getServer().getConsole())
                             .map(Text::toPlain).orElse("No description provided"));
                     commandDoc.setExtendedDescription(control.getExtendedDescription(Sponge.getServer().getConsole())
@@ -168,14 +169,19 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
                     commandDoc.setPermissions(new ArrayList<>(permissionDocs));
                     commandDoc.setSimpleUsage(control.getUsageText(Sponge.getServer().getConsole()).toPlain());
                     commandDoc.setContext(control.getContext().getValue());
+                    allPermissionDocs.addAll(permissionDocs);
 
                     return commandDoc;
                 });
 
-        List<PermissionDoc> permdocs = permissionService.getAllMetadata()
+        final Set<String> permissions = allPermissionDocs.stream().map(PermissionDoc::getPermission).collect(Collectors.toSet());
+        permissionService.getAllMetadata()
                 .stream()
+                .filter(x -> !permissions.contains(x.getPermission()))
                 .map(this::getFor)
                 .filter(x -> x.getPermission() != null)
+                .forEach(allPermissionDocs::add);
+        List<PermissionDoc> permdocs = allPermissionDocs.stream()
                 .sorted(Comparator.comparing(PermissionDoc::getPermission))
                 .collect(Collectors.toList());
 
@@ -257,7 +263,7 @@ public class DocumentationGenerationService implements IDocumentationGenerationS
 
     private PermissionDoc getFor(IPermissionService.Metadata metadata) {
         return new PermissionDoc()
-                .setDefaultLevel(metadata.getSuggestedLevel().getRole())
+                .setDefaultLevel(metadata.getSuggestedLevel().name())
                 .setDescription(metadata.getDescription(this.serviceCollection.messageProvider()))
                 .setPermission(metadata.getPermission())
                 .setModule(metadata.getModuleId());
