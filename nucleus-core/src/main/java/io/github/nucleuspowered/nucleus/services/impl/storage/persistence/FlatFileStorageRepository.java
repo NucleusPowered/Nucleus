@@ -149,6 +149,11 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
         }
 
         @Override
+        public void clearCache(Iterable<UUID> keys) {
+            // no-op
+        }
+
+        @Override
         public boolean exists(Q query) {
             try {
                 return existsInternal(query) != null;

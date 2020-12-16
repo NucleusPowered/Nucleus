@@ -27,6 +27,10 @@ public interface IPlayerDisplayNameService {
 
     Optional<User> getUser(String displayName);
 
+    Optional<Player> getPlayer(Text displayName);
+
+    Optional<Player> getPlayer(String displayName);
+
     /**
      * Gets the {@link UUID} of the players that have a name or display name
      * that starts with the given parameter.

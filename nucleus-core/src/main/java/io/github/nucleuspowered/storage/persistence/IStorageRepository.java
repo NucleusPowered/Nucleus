@@ -85,6 +85,14 @@ public interface IStorageRepository {
     interface Keyed<K, Q extends IQueryObject<K, Q>, O> extends IStorageRepository {
 
         /**
+         * Requests that the the cache should be purged of any values
+         * with the supplied keys.
+         *
+         * @param keys The keys.
+         */
+        void clearCache(Iterable<K> keys);
+
+        /**
          * Whether this storage mechanism supports complex queries
          *
          * @return whether the mechanism is supported.

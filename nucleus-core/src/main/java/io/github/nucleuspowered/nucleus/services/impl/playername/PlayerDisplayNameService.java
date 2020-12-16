@@ -18,6 +18,7 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.services.interfaces.ITextStyleService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.user.UserStorageService;
@@ -87,7 +88,25 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
         return Optional.empty();
     }
 
-    @Override public Map<UUID, List<String>> startsWith(String displayName) {
+    @Override
+    public Optional<Player> getPlayer(String displayName) {
+        Optional<Player> withRealName = Sponge.getServer().getPlayer(displayName);
+        if (withRealName.isPresent()) {
+            return withRealName;
+        }
+
+        for (DisplayNameQuery query : this.queries) {
+            Optional<User> user = query.resolve(displayName);
+            if (user.isPresent() && user.get().getPlayer().isPresent()) {
+                return user.get().getPlayer();
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Map<UUID, List<String>> startsWith(String displayName) {
         Map<UUID, List<String>> uuids = new HashMap<>();
         Sponge.getServer().getOnlinePlayers().stream()
             .filter(x -> x.getName().toLowerCase().startsWith(displayName.toLowerCase()))
@@ -105,6 +124,11 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
     @Override
     public Optional<User> getUser(Text displayName) {
         return this.getUser(displayName.toPlain());
+    }
+
+    @Override
+    public Optional<Player> getPlayer(Text displayName) {
+        return this.getPlayer(displayName.toPlain());
     }
 
     @Override

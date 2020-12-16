@@ -14,6 +14,23 @@ import javax.annotation.Nullable;
 
 public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends AbstractConfigurateBackedDataObject implements IKeyedDataObject<T> {
 
+    private transient boolean isDirty = false;
+
+    @Override
+    public final void markDirty() {
+        this.isDirty = true;
+    }
+
+    @Override
+    public final void markDirty(final boolean markDirty) {
+        this.isDirty = markDirty;
+    }
+
+    @Override
+    public final boolean isDirty() {
+        return this.isDirty;
+    }
+
     @Override
     public boolean has(DataKey<?, ? extends T> dataKey) {
         return !getNode(dataKey.getKey()).isVirtual();
@@ -50,6 +67,7 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
     public <V> boolean set(DataKey<V, ? extends T> dataKey, V data) {
         try {
             getNode(dataKey.getKey()).setValue(dataKey.getType(), data);
+            this.markDirty();
             return true;
         } catch (ObjectMappingException e) {
             e.printStackTrace();
@@ -59,6 +77,7 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
 
     public void remove(DataKey<?, ? extends T> dataKey) {
         getNode(dataKey.getKey()).setValue(null);
+        this.markDirty();
     }
 
     private ConfigurationNode getNode(String[] key) {
@@ -70,10 +89,16 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
         return r;
     }
 
+    @Override
+    public void setBackingNode(ConfigurationNode node) {
+        this.markDirty(false);
+        super.setBackingNode(node);
+    }
+
     public class ValueImpl<V, B extends T> implements IKeyedDataObject.Value<V> {
 
         @Nullable private V value;
-        private DataKey<V, B> dataKey;
+        private final DataKey<V, B> dataKey;
 
         private ValueImpl(@Nullable V value, DataKey<V, B> dataKey) {
             this.value = value;

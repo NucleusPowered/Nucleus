@@ -24,6 +24,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Identifiable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -111,16 +112,13 @@ public class DisplayNameArgument extends CommandElement {
         if (!toParse.isEmpty() && this.target == Target.USER) {
             Optional<User> user = uss.get(toParse);
             if (user.isPresent()) {
-                return ImmutableSet.of(user.get());
+                return Collections.singleton(user.get());
             }
         }
 
-        Optional<User> op = this.displayNameService.getUser(toParse.toLowerCase());
-        if (op.isPresent()) {
-            User u = op.get();
-            if (u.getPlayer().isPresent() && this.playerOnlineService.isOnline(source, u.getPlayer().get())) {
-                return ImmutableSet.of(u.getPlayer().get());
-            }
+        Optional<Player> op = this.displayNameService.getPlayer(toParse.toLowerCase());
+        if (op.map(u -> this.playerOnlineService.isOnline(source, u)).isPresent()) {
+            return Collections.singleton(op.get());
         }
 
         if (!PARTIAL_MATCH) {
@@ -136,13 +134,6 @@ public class DisplayNameArgument extends CommandElement {
         final String parse = toParse.toLowerCase();
         // fuzzy matching time.
         // players that match
-        // this is in the display name service now
-        /* Sponge.getServer().getOnlinePlayers().stream()
-                .filter(x -> x.getName().toLowerCase().startsWith(parse))
-                .filter(shouldShow)
-                .limit(USER_LIMIT)
-                .forEach(users::add);
-                 */
         this.displayNameService.startsWith(parse)
                 .keySet()
                 .stream()
@@ -172,7 +163,7 @@ public class DisplayNameArgument extends CommandElement {
             throw exceptionSupplier.apply("args.user.nouser", toParse);
         }
 
-        return ImmutableSet.copyOf(users);
+        return new HashSet<>(users);
     }
 
     @Override

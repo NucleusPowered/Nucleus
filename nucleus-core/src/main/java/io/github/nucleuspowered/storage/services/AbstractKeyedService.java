@@ -10,7 +10,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
 import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
@@ -22,7 +21,7 @@ import io.github.nucleuspowered.storage.util.ThrownFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.plugin.PluginContainer;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,11 +47,11 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
                     return new ReentrantReadWriteLock();
                 }
             });
-    private final Cache<UUID, D> cache = Caffeine.newBuilder()
+    private final Cache<UUID, D> cache = Caffeine
+            .newBuilder()
             .removalListener(this::onRemoval)
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .build();
-    private final Set<UUID> dirty = new HashSet<>();
 
     private final Supplier<IStorageRepository.Keyed<UUID, Q, ?>> storageRepositorySupplier;
     private final Supplier<D> createNew;
@@ -132,12 +132,21 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
+    public CompletableFuture<Void> clearCacheUnless(final Set<UUID> keysToKeep) {
+        final Set<UUID> keysToRemove = this.cache.asMap().keySet().stream().filter(x -> !keysToKeep.contains(x)).collect(Collectors.toSet());
+        this.cache.invalidateAll(keysToRemove);
+        return ServicesUtil.run(() -> {
+            this.storageRepositorySupplier.get().clearCache(keysToRemove);
+            return null;
+        }, this.pluginContainer);
+    }
+
+    @Override
     public CompletableFuture<Optional<D>> get(@NonNull final UUID key) {
         ReentrantReadWriteLock.ReadLock lock = this.dataLocks.get(key).readLock();
         try {
             lock.lock();
             D result = this.cache.getIfPresent(key);
-            this.dirty.add(key);
             if (result != null) {
                 return CompletableFuture.completedFuture(Optional.of(result));
             }
@@ -149,13 +158,22 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     }
 
     @Override
+    public CompletableFuture<D> getOrNew(@Nonnull final UUID key) {
+        return get(key).thenApply(d -> d.orElseGet(() -> {
+            D result = createNew();
+            save(key, result);
+            return result;
+        }));
+    }
+
+    @Override
+    @SuppressWarnings("ConstantConditions")
     public Optional<D> getOnThread(@NonNull UUID key) {
         // Read lock for the cache
         ReentrantReadWriteLock.ReadLock lock = this.dataLocks.get(key).readLock();
         try {
             lock.lock();
             D result = this.cache.getIfPresent(key);
-            this.dirty.add(key);
             if (result != null) {
                 return Optional.of(result);
             }
@@ -170,6 +188,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     private Optional<D> getFromRepo(@NonNull UUID key) throws Exception {
         // Write lock because of the cache
         ReentrantReadWriteLock.WriteLock lock = this.dataLocks.get(key).writeLock();
@@ -193,7 +212,6 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             r.ifPresent(d -> {
                 if (d.getValue().isPresent()) {
                     this.cache.put(d.getKey(), d.getValue().get());
-                    this.dirty.add(d.getKey());
                 } else {
                     this.cache.invalidate(d.getKey());
                 }
@@ -206,13 +224,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     public CompletableFuture<Map<UUID, D>> getAll(@NonNull Q query) {
         return ServicesUtil.run(() -> {
             Map<UUID, D> res = this.getAll.apply(query);
-            /* Map<UUID, D> res = r.entrySet().stream()
-                    .filter(x -> x.getValue() != null)
-                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, v -> dataAccess.fromDataAccessObject(v.getValue()))); */
-            res.forEach((k, v) -> {
-                this.cache.put(k, v);
-                this.dirty.add(k);
-            });
+            res.forEach(this.cache::put);
             return res;
         }, this.pluginContainer);
     }
@@ -267,7 +279,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             lock.lock();
             this.cache.put(key, value);
             this.save.apply(key, value);
-            this.dirty.remove(key);
+            value.markDirty(false);
         } finally {
             lock.unlock();
         }
@@ -281,6 +293,10 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
             try {
                 lock.lock();
                 this.storageRepositorySupplier.get().delete(key);
+                final D o = this.cache.getIfPresent(key);
+                if (o != null) {
+                    o.markDirty(false); // don't want to save it
+                }
                 this.cache.invalidate(key);
                 return null;
             } finally {
@@ -292,12 +308,9 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
     @Override
     public CompletableFuture<Void> ensureSaved() {
         return ServicesUtil.run(() -> {
-            for (UUID uuid : ImmutableSet.copyOf(this.dirty)) {
-                D d = this.cache.getIfPresent(uuid);
-                if (d != null) {
-                    save(uuid, d);
-                } else {
-                    this.dirty.remove(uuid);
+            for (final Map.Entry<UUID, D> objectToSave : new HashMap<>(this.cache.asMap()).entrySet()) {
+                if (objectToSave.getValue() != null && objectToSave.getValue().isDirty()) {
+                    this.save(objectToSave.getKey(), objectToSave.getValue());
                 }
             }
             return null;
@@ -306,7 +319,7 @@ public abstract class AbstractKeyedService<Q extends IQueryObject<UUID, Q>, D ex
 
     void onRemoval(@Nullable UUID uuid, @Nullable D dataObject, @Nonnull RemovalCause removalCause) {
         // If evicted normally, make sure it's saved.
-        if (removalCause.wasEvicted() && uuid != null && dataObject != null) {
+        if (removalCause.wasEvicted() && uuid != null && dataObject != null && dataObject.isDirty()) {
             this.save(uuid, dataObject);
         }
     }

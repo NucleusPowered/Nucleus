@@ -28,6 +28,14 @@ public interface IKeyedDataObject<T extends IKeyedDataObject<T>> extends IDataOb
 
     void remove(DataKey<?, ? extends T> dataKey);
 
+    boolean isDirty();
+
+    default void markDirty() {
+        this.markDirty(true);
+    }
+
+    void markDirty(boolean dirty);
+
     interface Value<T> extends AutoCloseable {
 
         Optional<T> getValue();

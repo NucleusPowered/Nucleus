@@ -25,6 +25,7 @@ import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.ArgumentParseException;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.ServiceManager;
@@ -88,7 +89,10 @@ public class DisplayNameArgumentTests extends TestBase {
         Mockito.when(playerOnlineService.isOnline(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(displayNameService.getDisplayName(Mockito.any(User.class)))
                 .then((Answer<Text>) invocation -> Text.of(invocation.getArgumentAt(0, User.class).getName()));
+        Mockito.when(displayNameService.getDisplayName(Mockito.any(Player.class)))
+                .then((Answer<Text>) invocation -> Text.of(invocation.getArgumentAt(0, Player.class).getName()));
         Mockito.when(displayNameService.getUser(Mockito.any(String.class))).thenReturn(Optional.empty());
+        Mockito.when(displayNameService.getPlayer(Mockito.any(String.class))).thenReturn(Optional.empty());
         Mockito.when(mockProviderService.getMessageFor(Mockito.any(Locale.class), Mockito.anyString(), Mockito.any(String[].class)))
                 .thenReturn(Text.of("test"));
 
