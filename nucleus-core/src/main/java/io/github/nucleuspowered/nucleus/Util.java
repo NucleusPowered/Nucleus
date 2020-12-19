@@ -332,8 +332,8 @@ public class Util {
 
     public static boolean hasPlayedBeforeSponge(final User player) {
         final Instant instant = player.get(Keys.FIRST_DATE_PLAYED).orElseGet(Instant::now);
-        final Instant next = Instant.now().plus(5, ChronoUnit.SECONDS);
-        return instant.isBefore(next);
+        final Instant next = Instant.now().plus(10, ChronoUnit.SECONDS);
+        return instant.isAfter(next);
     }
 
 }
