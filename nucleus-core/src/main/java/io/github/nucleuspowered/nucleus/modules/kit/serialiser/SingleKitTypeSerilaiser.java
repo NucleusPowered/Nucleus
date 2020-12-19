@@ -56,6 +56,11 @@ public class SingleKitTypeSerilaiser {
                 } catch (final Exception e) {
                     // if it's a normal kit, it'll get checked out below;
                 }
+
+                // If the kits entry is empty, remove it
+                if (node.getChildrenMap().isEmpty() && node.getChildrenList().isEmpty()) {
+                    value.getNode("kits").setValue(null);
+                }
             }
         }
 
