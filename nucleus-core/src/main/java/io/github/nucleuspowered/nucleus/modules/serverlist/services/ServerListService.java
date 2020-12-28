@@ -93,7 +93,7 @@ public class ServerListService implements ServiceBase {
             clearMessage();
         }
 
-        if (this.messageCache != null) {
+        if (this.messageCache == null) {
             constructMessage();
         }
 
