@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * Warnings in Nucleus are no longer available. This service allows you to
  * get the legacy data for a user.
  */
+@Deprecated
 public interface NucleusWarningService {
 
     /**
@@ -22,5 +23,6 @@ public interface NucleusWarningService {
      * @param user The {@link User} to get the warnings for.
      * @return The {@link Warning}s.
      */
+    @Deprecated
     CompletableFuture<List<Warning>> getWarnings(User user);
 }

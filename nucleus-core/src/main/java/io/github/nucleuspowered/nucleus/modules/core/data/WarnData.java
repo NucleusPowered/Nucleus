@@ -2,7 +2,7 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.warn.data;
+package io.github.nucleuspowered.nucleus.modules.core.data;
 
 import io.github.nucleuspowered.nucleus.Util;
 import io.github.nucleuspowered.nucleus.api.module.warning.data.Warning;
@@ -18,6 +18,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 @ConfigSerializable
+@SuppressWarnings("deprecation")
 public class WarnData extends EndTimestamp implements Warning {
     @Setting
     private UUID warner;

@@ -16,6 +16,7 @@ import java.util.UUID;
  * <p>Note that warnings are no longer part of the Nucleus plugin,
  * this exists for migration purposes.</p>
  */
+@Deprecated
 public interface Warning extends TimedEntry {
 
     /**

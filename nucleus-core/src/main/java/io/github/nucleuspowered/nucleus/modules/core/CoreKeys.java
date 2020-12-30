@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.core;
 
+import io.github.nucleuspowered.nucleus.modules.core.data.WarnData;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IGeneralDataObject;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IUserDataObject;
 import io.github.nucleuspowered.nucleus.services.impl.storage.dataobjects.modular.IWorldDataObject;
@@ -34,4 +35,7 @@ public class CoreKeys {
 
     public static final DataKey<Boolean, IUserDataObject> FIRST_JOIN_PROCESSED =
             DataKey.of(false, TypeTokens.BOOLEAN, IUserDataObject.class, "firstJoinProcessed");
+
+    public static final DataKey.ListKey<WarnData, IUserDataObject> WARNINGS
+            = DataKey.ofList(TypeTokens.WARN_DATA, IUserDataObject.class, "warnings");
 }

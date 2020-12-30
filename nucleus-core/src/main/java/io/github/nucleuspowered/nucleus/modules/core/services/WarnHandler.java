@@ -2,13 +2,13 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.modules.warn.services;
+package io.github.nucleuspowered.nucleus.modules.core.services;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.github.nucleuspowered.nucleus.api.module.warning.NucleusWarningService;
 import io.github.nucleuspowered.nucleus.api.module.warning.data.Warning;
-import io.github.nucleuspowered.nucleus.modules.warn.WarnKeys;
+import io.github.nucleuspowered.nucleus.modules.core.CoreKeys;
 import io.github.nucleuspowered.nucleus.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
+@SuppressWarnings("deprecation")
 @APIService(NucleusWarningService.class)
 public class WarnHandler implements NucleusWarningService, ServiceBase {
 
@@ -35,7 +36,7 @@ public class WarnHandler implements NucleusWarningService, ServiceBase {
                 .getUserService()
                 .get(user.getUniqueId())
                 .thenApply(y ->
-                        y.flatMap(x -> x.get(WarnKeys.WARNINGS))
+                        y.flatMap(x -> x.get(CoreKeys.WARNINGS))
                             .<List<Warning>>map(Lists::newArrayList)
                             .orElseGet(ImmutableList::of));
     }
