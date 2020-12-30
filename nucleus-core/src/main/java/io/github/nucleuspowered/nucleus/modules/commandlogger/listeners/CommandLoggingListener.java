@@ -22,10 +22,15 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -46,7 +51,7 @@ public class CommandLoggingListener implements IReloadableService.Reloadable, Li
     }
 
     @Listener(order = Order.LAST)
-    public void onCommand(SendCommandEvent event, @First CommandSource source) {
+    public void onCommand(final SendCommandEvent event, @First final CommandSource source) {
         // Check source.
         boolean accept;
         if (source instanceof Player) {
@@ -70,7 +75,31 @@ public class CommandLoggingListener implements IReloadableService.Reloadable, Li
 
         // If whitelist, and we have the command, or if not blacklist, and we do not have the command.
         if (this.c.isWhitelist() == !commands.isEmpty()) {
-            String message = this.messageProvider.getMessageString("commandlog.message", source.getName(), event.getCommand(), event.getArguments());
+            final String cause;
+            if (this.c.isCauseEnhanced()) {
+                final List<String> l = event.getCause()
+                        .all()
+                        .stream()
+                        .filter(x -> (x instanceof PluginContainer || x instanceof CommandSource) && x != source)
+                        .map(x -> {
+                            if (x instanceof CommandSource) {
+                                return ((CommandSource) x).getName();
+                            } else {
+                                return "(plugin) " + ((PluginContainer) x).getName();
+                            }
+                        })
+                        .collect(Collectors.toList());
+                if (l.isEmpty()) {
+                     cause = source.getName();
+                } else {
+                    final List<String> stack = new ArrayList<>(l);
+                    Collections.reverse(stack);
+                    cause = String.format("[ %s -> ] %s", String.join(" -> ", stack), source.getName());
+                }
+            } else {
+                cause = source.getName();
+            }
+            final String message = this.messageProvider.getMessageString("commandlog.message", cause, event.getCommand(), event.getArguments());
             this.logger.info(message);
             this.handler.queueEntry(message);
         }
