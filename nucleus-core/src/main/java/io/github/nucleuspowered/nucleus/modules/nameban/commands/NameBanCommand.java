@@ -30,7 +30,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import java.util.stream.Collectors;
 
 @NonnullByDefault
-@Command(aliases = "nameban", basePermission = NameBanPermissions.BASE_NAMEBAN, commandDescriptionKey = "nameban", async = true)
+@Command(aliases = "nameban", basePermission = NameBanPermissions.BASE_NAMEBAN, commandDescriptionKey = "nameban")
 public class NameBanCommand implements ICommandExecutor<CommandSource>, IReloadableService.Reloadable {
 
     private final String nameKey = "name";
