@@ -161,7 +161,7 @@ public class BanCommand implements ICommandExecutor<CommandSource>, IReloadableS
         MutableMessageChannel send = context.getServiceCollection().permissionService().permissionMessageChannel(BanPermissions.BAN_NOTIFY).asMutable();
         send.addMember(src);
         send.send(context.getMessage("command.ban.applied",
-                u.getName().orElse(context.getMessageString("standard.unknown")),
+                u.getName().orElseGet(() -> context.getMessageString("standard.unknown")),
                 src.getName()));
         send.send(context.getMessage("standard.reasoncoloured", r));
 

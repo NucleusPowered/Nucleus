@@ -86,7 +86,7 @@ public class UnbanCommand implements ICommandExecutor<CommandSource>, IReloadabl
         MutableMessageChannel notify = context.getServiceCollection().permissionService().permissionMessageChannel(BanPermissions.BAN_NOTIFY).asMutable();
         notify.addMember(context.getCommandSource());
         for (MessageReceiver receiver : notify.getMembers()) {
-            context.sendMessageTo(receiver, "command.unban.success", Util.getNameOrUnkown(context, obp.get().getProfile()));
+            context.sendMessageTo(receiver, "command.unban.success", Util.getNameOrUnkown(context, obp.get().getProfile()), context.getName());
         }
         return context.successResult();
     }
