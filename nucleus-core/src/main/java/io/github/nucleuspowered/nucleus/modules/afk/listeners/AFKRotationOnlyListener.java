@@ -39,7 +39,7 @@ public class AFKRotationOnlyListener extends AbstractAFKListener implements List
     public boolean shouldEnable(INucleusServiceCollection serviceCollection) {
         AFKConfig.Triggers triggers = serviceCollection.moduleDataProvider().getModuleConfig(AFKConfig.class)
                 .getTriggers();
-        return triggers.isOnMovement() && !triggers.isOnRotation();
+        return !triggers.isOnMovement() && triggers.isOnRotation();
     }
 
 }
