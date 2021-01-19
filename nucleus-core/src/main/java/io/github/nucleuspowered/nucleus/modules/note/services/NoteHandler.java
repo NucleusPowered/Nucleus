@@ -84,8 +84,7 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
             boolean res;
             try (IKeyedDataObject.Value<List<NoteData>> v = udo.get().getAndSet(NoteKeys.NOTE_DATA)) {
                 List<NoteData> data = v.getValue().orElseGet(Lists::newArrayList);
-                res = data.removeIf(x -> x.getNoterInternal().equals(note.getNoter().orElse(Util.CONSOLE_FAKE_UUID))
-                        && x.getNote().equals(note.getNote()));
+                res = data.removeIf(x -> x.equals(note));
                 v.setValue(data);
             }
 
