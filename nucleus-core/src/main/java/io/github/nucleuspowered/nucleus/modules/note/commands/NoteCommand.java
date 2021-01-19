@@ -30,7 +30,6 @@ import java.util.UUID;
         aliases = {"note", "addnote"},
         basePermission = NotePermissions.NOTE_NOTIFY,
         commandDescriptionKey = "note",
-        async = true,
         associatedPermissions = {
                 NotePermissions.NOTE_NOTIFY,
                 NotePermissions.NOTE_SHOWONLOGIN
