@@ -10,6 +10,7 @@ import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,4 +48,23 @@ public class NoteData implements Note {
     @Override public Instant getDate() {
         return Instant.ofEpochMilli(this.date);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getNoter(), getNote(), getDate());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof NoteData))
+            return false;
+        if (o == this)
+            return true;
+        if (!this.getNote().equals(((NoteData) o).getNote()))
+            return false;
+        if (!this.getDate().equals(((NoteData) o).getDate()))
+            return false;
+        return this.getNoterInternal().equals(((NoteData) o).getNoter().orElse(Util.CONSOLE_FAKE_UUID));
+    }
+
 }
