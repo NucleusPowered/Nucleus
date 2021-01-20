@@ -65,7 +65,7 @@ public class MessageCommand implements ICommandExecutor<CommandSource>, IReloada
 
     @Override
     public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
-        if (context.is(context.requireOne(TO, CommandSource.class))) {
+        if (context.is(context.requireOne(TO, CommandSource.class)) && !this.canMessageSelf) {
             return context.errorResult("command.message.self");
         }
         boolean b = context.getServiceCollection()
