@@ -56,14 +56,18 @@ public class NoteData implements Note {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof NoteData))
+        if (!(o instanceof NoteData)) {
             return false;
-        if (o == this)
+        }
+        if (o == this) {
             return true;
-        if (!this.getNote().equals(((NoteData) o).getNote()))
+        }
+        if (!this.getNote().equals(((NoteData) o).getNote())) {
             return false;
-        if (!this.getDate().equals(((NoteData) o).getDate()))
+        }
+        if (!this.getDate().equals(((NoteData) o).getDate())) {
             return false;
+        }
         return this.getNoterInternal().equals(((NoteData) o).getNoter().orElse(Util.CONSOLE_FAKE_UUID));
     }
 
