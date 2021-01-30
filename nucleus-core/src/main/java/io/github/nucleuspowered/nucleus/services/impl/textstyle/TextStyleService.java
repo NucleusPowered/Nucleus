@@ -128,12 +128,14 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
 
     @Inject
     public TextStyleService(
+            IReloadableService reloadableService,
             IPermissionService permissionService,
             IMessageProviderService messageProviderService,
             Logger logger) {
         this.permissionService = permissionService;
         this.messageProviderService = messageProviderService;
         this.logger = logger;
+        reloadableService.registerReloadable(this);
     }
 
     @Override

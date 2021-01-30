@@ -44,8 +44,9 @@ public class SafeTeleportService implements INucleusTeleportService, IReloadable
     private SafeTeleportConfig config = new SafeTeleportConfig();
 
     @Inject
-    public SafeTeleportService(PluginContainer pluginContainer) {
+    public SafeTeleportService(PluginContainer pluginContainer, IReloadableService reloadableService) {
         Sponge.getServiceManager().setProvider(pluginContainer, INucleusTeleportService.class, this);
+        reloadableService.registerReloadable(this);
     }
 
     @Override public boolean setLocation(Player player, Location<World> location) {

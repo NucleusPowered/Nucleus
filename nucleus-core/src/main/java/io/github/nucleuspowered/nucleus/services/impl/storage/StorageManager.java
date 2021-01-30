@@ -60,7 +60,8 @@ public final class StorageManager implements IStorageManager, IReloadableService
             Logger logger,
             IConfigurateHelper configurateHelper,
             PluginContainer pluginContainer,
-            IDataVersioning dataVersioning) {
+            IDataVersioning dataVersioning,
+            IReloadableService reloadableService) {
         this.flatFileStorageRepositoryFactory = new FlatFileStorageRepositoryFactory(dataDirectory, logger);
         new IStorageRepositoryFactoryRegistryModule(this.flatFileStorageRepositoryFactory);
         this.configurateHelper = configurateHelper;
@@ -78,6 +79,7 @@ public final class StorageManager implements IStorageManager, IReloadableService
                 pluginContainer,
                 x -> {},
                 x -> {});
+        reloadableService.registerReloadable(this);
     }
 
     @Nullable

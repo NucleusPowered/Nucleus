@@ -59,6 +59,7 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
         this.permissionService = serviceCollection.permissionService();
         this.textStyleService = serviceCollection.textStyleService();
         this.serviceCollection = serviceCollection;
+        serviceCollection.reloadableService().registerReloadable(this);
     }
 
     @Override
