@@ -44,8 +44,8 @@ public class NameBanCommand implements ICommandExecutor<CommandSource>, IReloada
                     Util.usernameRegexPattern, "command.nameban.notvalid", ((commandSource, commandArgs, commandContext) -> {
                 try {
                     String arg = commandArgs.peek().toLowerCase();
-                    return Sponge.getServer().getOnlinePlayers().stream().filter(x -> x.getName().toLowerCase().startsWith(arg))
-                        .map(User::getName)
+                    return Sponge.getServer().getOnlinePlayers().stream().map(User::getName)
+                        .filter(name -> name.toLowerCase().startsWith(arg))
                         .collect(Collectors.toList());
                 } catch (Exception e) {
                     return Lists.newArrayList();
