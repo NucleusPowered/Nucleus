@@ -74,12 +74,12 @@ public class NameBanHandler implements NucleusNameBanService, ServiceBase, IRelo
             Optional<String> reason = getReasonForBan(name);
             if (reason.isPresent() && this.entries.remove(name.toLowerCase()) != null) {
                 Sponge.getEventManager().post(new NameBanEvent.Unbanned(name, reason.get(), cause));
+            } else {
+                throw new NameBanException(Text.of("Entry does not exist."), NameBanException.Reason.DOES_NOT_EXIST);
             }
-
-            throw new NameBanException(Text.of("Entry does not exist."), NameBanException.Reason.DOES_NOT_EXIST);
+        } else {
+            throw new NameBanException(Text.of("That is not a valid username."), NameBanException.Reason.DISALLOWED_NAME);
         }
-
-        throw new NameBanException(Text.of("That is not a valid username."), NameBanException.Reason.DISALLOWED_NAME);
     }
 
     public void load() {
