@@ -160,9 +160,9 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
     public CompletableFuture<Optional<Instant>> getCooldownExpiry(Kit kit, User user) {
         return redeemTime(kit.getName(), user).thenApply(x -> {
             if (x.isPresent() && kit.getCooldown().isPresent()) {
-                x = Optional.of(x.get().plus(kit.getCooldown().get()));
-                if (x.get().isAfter(Instant.now())) {
-                    return x;
+                final Instant cooldownExpiry = x.get().plus(kit.getCooldown().get());
+                if (cooldownExpiry.isAfter(Instant.now())) {
+                    return Optional.of(cooldownExpiry);
                 }
             }
             return Optional.empty();
