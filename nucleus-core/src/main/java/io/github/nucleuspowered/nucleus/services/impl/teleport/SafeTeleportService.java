@@ -9,6 +9,7 @@ import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.api.teleport.data.NucleusTeleportHelperFilters;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanner;
+import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.modules.core.config.CoreConfigAdapter;
 import io.github.nucleuspowered.nucleus.modules.core.config.SafeTeleportConfig;
 import io.github.nucleuspowered.nucleus.modules.teleport.events.AboutToTeleportEvent;
@@ -31,6 +32,7 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.teleport.TeleportHelperFilter;
 import org.spongepowered.api.world.teleport.TeleportHelperFilters;
+import uk.co.drnaylor.quickstart.config.TypedAbstractConfigAdapter;
 
 import java.util.Optional;
 
@@ -216,8 +218,7 @@ public class SafeTeleportService implements INucleusTeleportService, IReloadable
 
     @Override
     public void onReload(INucleusServiceCollection serviceCollection) {
-        this.config = serviceCollection.getServiceUnchecked(CoreConfigAdapter.class)
-                .getNodeOrDefault().getSafeTeleportConfig();
+        this.config = serviceCollection.moduleDataProvider().getModuleConfig(CoreConfig.class).getSafeTeleportConfig();
     }
 
     @Override public BorderDisableSession temporarilyDisableBorder(boolean reset, World world) {
