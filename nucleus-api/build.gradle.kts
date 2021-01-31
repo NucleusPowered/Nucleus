@@ -17,7 +17,7 @@ defaultTasks.add("build")
 
 repositories {
     jcenter()
-    maven("http://repo.spongepowered.org/maven")
+    maven("https://repo.spongepowered.org/maven")
 }
 
 dependencies {
