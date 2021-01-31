@@ -26,8 +26,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 @Command(
         aliases = {"nameunban", "namepardon"},
         basePermission = NameBanPermissions.BASE_NAMEUNBAN,
-        commandDescriptionKey = "nameunban",
-        async = true)
+        commandDescriptionKey = "nameunban")
 public class NameUnbanCommand implements ICommandExecutor<CommandSource> {
 
     private final String nameKey = "name";
