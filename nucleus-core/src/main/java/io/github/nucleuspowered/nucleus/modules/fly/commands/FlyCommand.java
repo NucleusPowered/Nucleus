@@ -58,7 +58,7 @@ public class FlyCommand implements ICommandExecutor<CommandSource> { // extends 
             context.sendMessage(fly ? "command.fly.player.on" : "command.fly.player.off", player.getName());
         }
 
-        context.sendMessage(fly ? "command.fly.on" : "command.fly.off");
+        player.sendMessage(context.getMessage(fly ? "command.fly.on" : "command.fly.off"));
         return context.successResult();
     }
 
