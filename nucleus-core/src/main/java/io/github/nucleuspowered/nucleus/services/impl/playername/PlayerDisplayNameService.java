@@ -135,7 +135,7 @@ public class PlayerDisplayNameService implements IPlayerDisplayNameService, IRel
     @Override
     public Text getDisplayName(final UUID playerUUID) {
         final Text.Builder builder;
-        if (playerUUID == Util.CONSOLE_FAKE_UUID) {
+        if (playerUUID.equals(Util.CONSOLE_FAKE_UUID)) {
             return this.getName(Sponge.getServer().getConsole());
         }
         User user = Sponge.getServiceManager()
