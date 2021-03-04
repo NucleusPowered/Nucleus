@@ -53,19 +53,13 @@ public abstract class CommandEvent extends AbstractEvent implements NucleusTelep
     }
 
     @Nullable @Override public User getTargetUser() {
-        UserStorageService userStorageService = Sponge.getServiceManager().provide(UserStorageService.class).orElse(null);
-        if (userStorageService != null) {
-            return userStorageService.get(getTargetUUID()).orElse(null);
-        }
-        return null;
+        UserStorageService userStorageService = Sponge.getServiceManager().provideUnchecked(UserStorageService.class);
+        return userStorageService.get(getTargetUUID()).orElse(null);
     }
 
     @Nullable @Override public User getOriginUser() {
-        UserStorageService userStorageService = Sponge.getServiceManager().provide(UserStorageService.class).orElse(null);
-        if (userStorageService != null) {
+        UserStorageService userStorageService = Sponge.getServiceManager().provideUnchecked(UserStorageService.class);
             return userStorageService.get(getOriginUUID()).orElse(null);
-        }
-        return null;
     }
 
     @Override public UUID getTargetUUID() {
