@@ -56,6 +56,6 @@ public class JailPermissions {
     public static final String JAIL_UNJAIL = "nucleus.jail.unjail";
 
     @LevelOptionMetadata("optionlevel.jail")
-    public static final String JAIL_LEVEL_KEY = "nucleus.jail.key";
+    public static final String JAIL_LEVEL_KEY = "nucleus.jail.level";
 
 }
