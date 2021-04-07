@@ -5,7 +5,6 @@
 package io.github.nucleuspowered.nucleus.services.impl.texttemplatefactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
@@ -15,8 +14,8 @@ import io.github.nucleuspowered.nucleus.services.interfaces.IMessageProviderServ
 import io.github.nucleuspowered.nucleus.services.interfaces.ITextStyleService;
 import io.github.nucleuspowered.nucleus.util.JsonConfigurateStringHelper;
 import io.github.nucleuspowered.nucleus.util.Tuples;
+import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.SimpleConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -35,6 +34,8 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,39 +94,21 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
         return Optional.ofNullable(this.suffix);
     }
 
-    public String getRepresentation() {
-        return this.representation;
-    }
-
-    @Override public TextTemplate getTextTemplate() {
-        return this.textTemplate;
-    }
-
-    abstract Tuple<TextTemplate, Map<String, Function<CommandSource, Text>>> parse(String parser);
-
-    @Override public boolean containsTokens() {
-        return !this.textTemplate.getArguments().isEmpty();
+    @Override
+    public Text getBody(CommandSource source) {
+        return this.getBody(source, Collections.emptyMap());
     }
 
     @Override
-    public Text getForCommandSource(CommandSource source) {
-        return getForCommandSource(source, ImmutableMap.of());
-    }
-
-    @Override
-    public Text getForCommandSource(CommandSource source, CommandSource sender) {
+    public Text getBody(CommandSource source, CommandSource sender) {
         Optional<Text> s =
                 Optional.of(this.serviceCollection.placeholderService().parse(sender, "displayname").toText());
-        return getForCommandSource(source,
-                ImmutableMap.<String, Function<CommandSource, Optional<Text>>>builder()
-                        .put("sender", se -> s)
-                        .build());
+        return this.getBody(source, Collections.singletonMap("sender", se -> s));
     }
 
-    @Override @SuppressWarnings("SameParameterValue")
-    public Text getForCommandSource(CommandSource source,
+    @Override
+    public Text getBody(CommandSource source,
             @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray) {
-
         Map<String, TextTemplate.Arg> tokens = this.textTemplate.getArguments();
         Map<String, TextRepresentable> finalArgs = Maps.newHashMap();
 
@@ -146,29 +129,37 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
             }
         });
 
-        Text.Builder builder = Text.builder();
-        ITextStyleService.TextFormat st = null;
-        if (this.prefix != null) {
-            builder.append(this.prefix);
-            st = this.serviceCollection.textStyleService().getLastColourAndStyle(this.prefix, null);
-        }
+        return this.textTemplate.apply(finalArgs).build();
+    }
 
-        Text finalText = this.textTemplate.apply(finalArgs).build();
+    public String getRepresentation() {
+        return this.representation;
+    }
 
-        // Don't append text if there is no text to append!
-        if (!finalText.isEmpty()) {
-            if (st == null) {
-                builder.append(finalText);
-            } else {
-                builder.append(Text.builder().color(st.colour()).style(st.style()).append(finalText).build());
-            }
-        }
+    @Override public TextTemplate getTextTemplate() {
+        return this.textTemplate;
+    }
 
-        if (this.suffix != null) {
-            builder.append(this.suffix);
-        }
+    abstract Tuple<TextTemplate, Map<String, Function<CommandSource, Text>>> parse(String parser);
 
-        return builder.build();
+    @Override public boolean containsTokens() {
+        return !this.textTemplate.getArguments().isEmpty();
+    }
+
+    @Override
+    public Text getForCommandSource(CommandSource source) {
+        return this.getForCommandSource(source, Collections.emptyMap());
+    }
+
+    @Override
+    public Text getForCommandSource(CommandSource source, CommandSource sender) {
+        return this.applyPrefixSuffix(this.getBody(source, sender));
+    }
+
+    @Override @SuppressWarnings("SameParameterValue")
+    public Text getForCommandSource(CommandSource source,
+            @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray) {
+        return this.applyPrefixSuffix(this.getBody(source, tokensArray));
     }
 
     public Text toText() {
@@ -263,6 +254,29 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
 
         // Return the list.
         return new Tuples.NullableTuple<>(texts, args);
+    }
+
+    private Text applyPrefixSuffix(final Text body) {
+        Text.Builder builder = Text.builder();
+        ITextStyleService.TextFormat st = null;
+        if (this.prefix != null) {
+            builder.append(this.prefix);
+            st = this.serviceCollection.textStyleService().getLastColourAndStyle(this.prefix, null);
+        }
+
+        // Don't append text if there is no text to append!
+        if (!body.isEmpty()) {
+            if (st == null) {
+                builder.append(body);
+            } else {
+                builder.append(Text.builder().color(st.colour()).style(st.style()).append(body).build());
+            }
+        }
+
+        if (this.suffix != null) {
+            builder.append(this.suffix);
+        }
+        return builder.build();
     }
 
     private Text getCmd(String msg, String cmd, @org.checkerframework.checker.nullness.qual.Nullable String optionList, String whiteSpace) {
@@ -437,27 +451,18 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
             return textTemplateTypeSerializer;
         }
 
-        Json(String representation, @Nullable Text prefix, @Nullable Text suffix, INucleusServiceCollection serviceCollection) {
-            super(representation, prefix, suffix, serviceCollection);
-        }
-
         Json(String representation, INucleusServiceCollection serviceCollection) {
             super(representation, serviceCollection);
-        }
-
-        Json(TextTemplate textTemplate, INucleusServiceCollection serviceCollection) {
-            super(JsonConfigurateStringHelper.getJsonStringFrom(textTemplate), serviceCollection);
         }
 
         @Override
         Tuple<TextTemplate, Map<String, Function<CommandSource, Text>>> parse(String parser) {
             try {
-                return Tuple.of(
-                        getSerialiser().deserialize(
-                                TypeToken.of(TextTemplate.class),
-                                JsonConfigurateStringHelper.getNodeFromJson(parser)
-                                        .orElseGet(() -> SimpleConfigurationNode.root().setValue(parser))),
-                        Maps.newHashMap());
+                final TextTemplate t = Json.getSerialiser().deserialize(
+                        TypeToken.of(TextTemplate.class),
+                        JsonConfigurateStringHelper.getNodeFromJson(parser)
+                                .orElseGet(() -> ConfigurationNode.root().setValue(parser)));
+                return Tuple.of(t == null ? TextTemplate.EMPTY : t, new HashMap<>());
             } catch (ObjectMappingException e) {
                 throw new RuntimeException(e);
             }
@@ -474,7 +479,7 @@ public abstract class NucleusTextTemplateImpl implements NucleusTextTemplate {
         }
 
         @Override Tuple<TextTemplate, Map<String, Function<CommandSource, Text>>> parse(String parser) {
-            return Tuple.of(TextTemplate.EMPTY, Maps.newHashMap());
+            return Tuple.of(TextTemplate.EMPTY, new HashMap<>());
         }
 
         @Override public boolean isEmpty() {

@@ -43,6 +43,59 @@ public interface NucleusTextTemplate extends TextRepresentable {
     Optional<Text> getSuffix();
 
     /**
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
+     * the parsed text will be left blank.
+     *
+     * <p>Unlike {@link #getForCommandSource(CommandSource)}, this will
+     * <strong>not</strong> contain the prefix and suffix in the message.</p>
+     *
+     * @param source The {@link CommandSource} that will influence what is
+     *               displayed by the tokens.
+     * @return The parsed {@link Text}
+     */
+    Text getBody(CommandSource source);
+
+    /**
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
+     * the parsed text will be left blank.
+     *
+     * <p>Unlike {@link #getForCommandSource(CommandSource, CommandSource)},
+     * this will <strong>not</strong> contain the prefix and suffix in the
+     * message.</p>
+     *
+     * @param source The {@link CommandSource} that will influence what is displayed by the tokens.
+     * @param sender The {@link CommandSource} that can be considered the <code>{{sender}}</code>
+     * @return The parsed {@link Text}
+     */
+    Text getBody(CommandSource source, CommandSource sender);
+
+    /**
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}.
+     *
+     * <p>
+     *     By supplying a token array, these token identifiers act as additional
+     *     tokens that could be encountered, and will be used above standard
+     *     tokens. This is useful for having a token in a specific context, such
+     *     as "displayfrom", which might only be used in a message, and is not
+     *     worth registering in a {@link NucleusPlaceholderService}. They must
+     *     not contain the token start or end delimiters.
+     * </p>
+     *
+     * <p>Unlike {@link #getForCommandSource(CommandSource, CommandSource)},
+     * this will <strong>not</strong> contain the prefix and suffix in the
+     * message.</p>
+     *
+     * @param source The {@link CommandSource} that will influence what is displayed by the tokens.
+     * @param tokensArray The extra tokens that can be used to parse a text.
+     * @return The parsed {@link Text}
+     */
+    Text getBody(CommandSource source,
+            @Nullable Map<String, Function<CommandSource, Optional<Text>>> tokensArray);
+
+    /**
      * Gets the underlying {@link TextTemplate}
      *
      * @return The {@link TextTemplate}
@@ -57,7 +110,8 @@ public interface NucleusTextTemplate extends TextRepresentable {
     boolean containsTokens();
 
     /**
-     * Gets the {@link Text} where the tokens have been parsed from the viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
      * the parsed text will be left blank.
      *
      * @param source The {@link CommandSource} that will influence what is displayed by the tokens.
@@ -66,7 +120,8 @@ public interface NucleusTextTemplate extends TextRepresentable {
     Text getForCommandSource(CommandSource source);
 
     /**
-     * Gets the {@link Text} where the tokens have been parsed from the viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}. Any unknown tokens in
      * the parsed text will be left blank.
      *
      * @param source The {@link CommandSource} that will influence what is displayed by the tokens.
@@ -76,12 +131,16 @@ public interface NucleusTextTemplate extends TextRepresentable {
     Text getForCommandSource(CommandSource source, CommandSource sender);
 
     /**
-     * Gets the {@link Text} where the tokens have been parsed from the viewpoint of the supplied {@link CommandSource}.
+     * Gets the {@link Text} where the tokens have been parsed from the
+     * viewpoint of the supplied {@link CommandSource}.
      *
      * <p>
-     *     By supplying a token array, these token identifiers act as additional tokens that could be encountered, and will be used above standard
-     *     tokens. This is useful for having a token in a specific context, such as "displayfrom", which might only be used in a message, and is
-     *     not worth registering in a {@link NucleusPlaceholderService}. They must not contain the token start or end delimiters.
+     *     By supplying a token array, these token identifiers act as additional
+     *     tokens that could be encountered, and will be used above standard
+     *     tokens. This is useful for having a token in a specific context, such
+     *     as "displayfrom", which might only be used in a message, and is not
+     *     worth registering in a {@link NucleusPlaceholderService}. They must
+     *     not contain the token start or end delimiters.
      * </p>
      *
      * @param source The {@link CommandSource} that will influence what is displayed by the tokens.
