@@ -32,15 +32,22 @@ public abstract class KitEvent extends AbstractEvent implements NucleusKitEvent 
         private final Player targetPlayer;
         private final Collection<ItemStackSnapshot> original;
         private final Collection<String> commands;
+        private final boolean firstJoin;
 
         public Redeem(Cause cause, @Nullable Instant lastTime, Kit kit, Player targetPlayer, Collection<ItemStackSnapshot> original,
-                Collection<String> commands) {
+                      Collection<String> commands, boolean firstJoin) {
             this.cause = cause;
             this.kit = kit;
             this.targetPlayer = targetPlayer;
             this.lastTime = lastTime;
             this.original = original;
             this.commands = commands;
+            this.firstJoin = firstJoin;
+        }
+
+        @Override
+        public boolean isFirstJoin() {
+            return this.firstJoin;
         }
 
         @Override public Optional<Instant> getLastRedeemedTime() {
@@ -80,8 +87,8 @@ public abstract class KitEvent extends AbstractEvent implements NucleusKitEvent 
         @Nullable private Collection<String> commandRedeem = null;
 
         public PreRedeem(Cause cause, @Nullable Instant lastTime, Kit kit, Player targetPlayer, Collection<ItemStackSnapshot> original,
-                Collection<String> originalCommands) {
-            super(cause, lastTime, kit, targetPlayer, original, originalCommands);
+                Collection<String> originalCommands, final boolean firstJoin) {
+            super(cause, lastTime, kit, targetPlayer, original, originalCommands, firstJoin);
         }
 
         @Override public boolean isCancelled() {
@@ -131,8 +138,8 @@ public abstract class KitEvent extends AbstractEvent implements NucleusKitEvent 
         @Nullable private final Collection<String> commands;
 
         public PostRedeem(Cause cause, @Nullable Instant lastTime, Kit kit, Player targetPlayer, Collection<ItemStackSnapshot> original,
-                @Nullable Collection<ItemStackSnapshot> redeemed, Collection<String> originalCommands, @Nullable Collection<String> commands) {
-            super(cause, lastTime, kit, targetPlayer, original, originalCommands);
+                @Nullable Collection<ItemStackSnapshot> redeemed, Collection<String> originalCommands, @Nullable Collection<String> commands, final boolean firstJoin) {
+            super(cause, lastTime, kit, targetPlayer, original, originalCommands, firstJoin);
             this.redeemed = redeemed;
             this.commands = commands;
         }
@@ -154,8 +161,8 @@ public abstract class KitEvent extends AbstractEvent implements NucleusKitEvent 
 
         public FailedRedeem(Cause cause, @Nullable Instant lastTime, Kit kit, Player targetPlayer, Collection<ItemStackSnapshot> original,
                 @Nullable Collection<ItemStackSnapshot> redeemed, Collection<String> originalCommands, @Nullable Collection<String> commands,
-                KitRedeemResult.Status ex) {
-            super(cause, lastTime, kit, targetPlayer, original, originalCommands);
+                KitRedeemResult.Status ex, final boolean firstJoin) {
+            super(cause, lastTime, kit, targetPlayer, original, originalCommands, firstJoin);
             this.redeemed = redeemed;
             this.commands = commands;
             this.ex = ex;

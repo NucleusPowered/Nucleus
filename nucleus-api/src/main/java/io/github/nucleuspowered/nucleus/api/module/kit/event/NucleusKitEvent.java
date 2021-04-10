@@ -42,6 +42,14 @@ public interface NucleusKitEvent extends Event {
     interface Redeem extends NucleusKitEvent, TargetPlayerEvent {
 
         /**
+         * Gets whether the redemption is due to a player joining the server for
+         * the first time.
+         *
+         * @return true if the redemption is due to a first join
+         */
+        boolean isFirstJoin();
+
+        /**
          * Gets the last time the kit was redeemed, if any.
          *
          * @return The {@link Instant} the kit was last redeemed.

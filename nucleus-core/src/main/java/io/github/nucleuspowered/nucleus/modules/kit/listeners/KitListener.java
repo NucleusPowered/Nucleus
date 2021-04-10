@@ -60,7 +60,7 @@ public class KitListener implements ListenerBase {
     @Listener
     public void onPlayerFirstJoin(NucleusFirstJoinEvent event, @Getter("getTargetEntity") Player player) {
         for (Kit kit : this.handler.getFirstJoinKits()) {
-            this.handler.redeemKit(kit, player, true, true);
+            this.handler.redeemKit(kit, player, true, true, true, true);
         }
     }
 
