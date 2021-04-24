@@ -49,7 +49,7 @@ javadocs jar will also exist.
 
 Nucleus is available via a Maven repository.
 
-* Repo: `http://repo.drnaylor.co.uk/artifactory/list/minecraft`
+* Repo: `https://repo.drnaylor.co.uk/artifactory/list/minecraft`
 * Group ID: `io.github.nucleuspowered`
 * Artifact Name: `nucleus-api`
 
