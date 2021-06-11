@@ -38,7 +38,7 @@ public class AFKModule extends ConfigurableModule<AFKConfig, AFKConfigAdapter> {
     }
 
     @Override
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("afk",
                         PlaceholderParser.builder()

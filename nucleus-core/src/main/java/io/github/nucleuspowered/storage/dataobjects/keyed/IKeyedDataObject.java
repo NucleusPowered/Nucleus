@@ -24,6 +24,8 @@ public interface IKeyedDataObject<T extends IKeyedDataObject<T>> extends IDataOb
 
     <T2> Optional<T2> get(DataKey<T2, ? extends T> dataKey);
 
+    <K, V> Optional<V> get(DataKey.MapKey<K, V, ? extends T> dataKey, K mapKey);
+
     <T2> boolean set(DataKey<T2, ? extends T> dataKey, T2 data);
 
     void remove(DataKey<?, ? extends T> dataKey);

@@ -37,7 +37,7 @@ public class MuteModule extends ConfigurableModule<MuteConfig, MuteConfigAdapter
         return new MuteConfigAdapter();
     }
 
-    @Override protected Map<String, PlaceholderParser> tokensToRegister() {
+    @Override protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("muted",
                         PlaceholderParser.builder()

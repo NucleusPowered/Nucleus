@@ -30,7 +30,7 @@ public class FreezePlayerModule extends StandardModule {
     }
 
     @Override
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("frozen",
                         PlaceholderParser.builder()

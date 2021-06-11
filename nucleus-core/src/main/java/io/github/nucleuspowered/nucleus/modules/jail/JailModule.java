@@ -39,7 +39,7 @@ public class JailModule extends ConfigurableModule<JailConfig, JailConfigAdapter
     }
 
     @Override
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("jailed",
                         PlaceholderParser.builder()
@@ -60,7 +60,7 @@ public class JailModule extends ConfigurableModule<JailConfig, JailConfigAdapter
                         .name("Nucleus Jail Name Token")
                         .parser(placeholder -> {
                     if (placeholder.getAssociatedObject().filter(x -> x instanceof Player).isPresent()) {
-                        return serviceCollection.getServiceUnchecked(JailHandler.class)
+                        return this.serviceCollection.getServiceUnchecked(JailHandler.class)
                                 .getPlayerJailData((Player) placeholder.getAssociatedObject().get())
                                 .<Text>map(x -> Text.of(x.getJailName()))
                                 .orElse(Text.EMPTY);

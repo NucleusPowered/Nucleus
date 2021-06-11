@@ -94,7 +94,7 @@ public abstract class StandardModule implements Module {
         }
     }
 
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.of();
     }
 
@@ -315,7 +315,7 @@ public abstract class StandardModule implements Module {
     }
 
     public final void loadTokens() {
-        Map<String, PlaceholderParser> map = tokensToRegister();
+        Map<String, PlaceholderParser> map = tokensToRegister(this.serviceCollection);
         if (!map.isEmpty()) {
             map.forEach((k, t) -> {
                 try {

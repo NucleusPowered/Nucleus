@@ -36,7 +36,7 @@ public class FlyModule extends ConfigurableModule<FlyConfig, FlyConfigAdapter> {
     }
 
     @Override
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("flying",
                         PlaceholderParser.builder()

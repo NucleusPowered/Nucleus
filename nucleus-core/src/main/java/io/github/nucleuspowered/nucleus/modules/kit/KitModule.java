@@ -4,13 +4,18 @@
  */
 package io.github.nucleuspowered.nucleus.modules.kit;
 
+import com.google.common.collect.ImmutableMap;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfig;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfigAdapter;
+import io.github.nucleuspowered.nucleus.modules.kit.placeholder.KitCooldownPlaceholder;
+import io.github.nucleuspowered.nucleus.modules.kit.services.KitService;
 import io.github.nucleuspowered.nucleus.quickstart.module.ConfigurableModule;
 import io.github.nucleuspowered.nucleus.services.INucleusServiceCollection;
+import org.spongepowered.api.text.placeholder.PlaceholderParser;
 import uk.co.drnaylor.quickstart.annotations.ModuleData;
 import uk.co.drnaylor.quickstart.holders.DiscoveryModuleHolder;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -29,5 +34,13 @@ public class KitModule extends ConfigurableModule<KitConfig, KitConfigAdapter> {
     public KitConfigAdapter createAdapter() {
         return new KitConfigAdapter();
     }
+
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
+        return ImmutableMap.of("kitcooldown", new KitCooldownPlaceholder(
+                serviceCollection.storageManager(),
+                serviceCollection.getServiceUnchecked(KitService.class),
+                serviceCollection.messageProvider()));
+    }
+
 
 }

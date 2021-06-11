@@ -64,6 +64,11 @@ public class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> extends A
         return Optional.ofNullable(getNullable(dataKey));
     }
 
+    @Override
+    public <K, V> Optional<V> get(final DataKey.MapKey<K, V, ? extends T> dataKey, final K mapKey) {
+        return this.get(dataKey).flatMap(x -> Optional.ofNullable(x.get(mapKey)));
+    }
+
     public <V> boolean set(DataKey<V, ? extends T> dataKey, V data) {
         try {
             getNode(dataKey.getKey()).setValue(dataKey.getType(), data);

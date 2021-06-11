@@ -39,7 +39,7 @@ public class VanishModule extends ConfigurableModule<VanishConfig, VanishConfigA
     }
 
     @Override
-    protected Map<String, PlaceholderParser> tokensToRegister() {
+    protected Map<String, PlaceholderParser> tokensToRegister(final INucleusServiceCollection serviceCollection) {
         return ImmutableMap.<String, PlaceholderParser>builder()
                 .put("vanished",
                         PlaceholderParser.builder()
