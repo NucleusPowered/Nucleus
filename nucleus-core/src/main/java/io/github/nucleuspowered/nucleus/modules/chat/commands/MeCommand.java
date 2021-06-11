@@ -25,6 +25,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.SpongeEventFactory;
 import org.spongepowered.api.event.message.MessageChannelEvent;
@@ -37,6 +38,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -90,9 +92,10 @@ public class MeCommand implements ICommandExecutor<CommandSource>, IReloadableSe
         // We create an event so that other plugins can provide transforms, such as Boop, and that we
         // can catch it in ignore and mutes, and so can other plugins.
         CommandSource src = context.getCommandSource();
+        final UUID uuid = src instanceof Player ? ((Player) src).getUniqueId() : Util.CONSOLE_FAKE_UUID;
         try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame();
                 NoExceptionAutoClosable c =
-                        this.chatMessageFormatterService.setPlayerNucleusChannelTemporarily(Util.CONSOLE_FAKE_UUID, new MeChannel(header))) {
+                        this.chatMessageFormatterService.setPlayerNucleusChannelTemporarily(uuid, new MeChannel(header))) {
             frame.addContext(EventContexts.SHOULD_FORMAT_CHANNEL, false);
             if (frame.getCurrentCause().root() != src) {
                 frame.pushCause(src);
