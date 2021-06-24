@@ -1,4 +1,4 @@
-Nucleus v3
+Nucleus v3.1
 ====
 
 For version 1, the legacy version for Sponge API 7.1 (Minecraft 1.12), see the tag "S7.1-v1-FINAL".\
@@ -52,7 +52,7 @@ javadocs jar will also exist.
 
 Nucleus is available via a Maven repository.
 
-* Repo: `https://repo.drnaylor.co.uk/artifactory/list/minecraft`
+* Repo: 'https://repo.drnaylor.co.uk/artifactory/list/minecraft`
 * Group ID: `io.github.nucleuspowered`
 * Artifact Name: `nucleus-api`
 
@@ -60,7 +60,7 @@ The versioning follows `version[-SNAPSHOT|-ALPHAn|-BETAn|-RCn]`, where `n` is an
 
 You can also get Nucleus as a whole this way, but internals may break at any time. The API is guaranteed to be more stable.
 
-You can also use [JitPack](https://jitpack.io/#NucleusPowered/Nucleus) as a repository, if you prefer.
+You can also use [JitPack]('https://jitpack.io/#NucleusPowered/Nucleus`) as a repository, if you prefer.
 
 ## Third Party Libraries
 
@@ -70,10 +70,10 @@ The compiled Nucleus plugin includes the following libraries (with their licence
 
 See [THIRDPARTY.md](THIRDPARTY.md) for more details.
 
-[Source]: https://github.com/NucleusPowered/Nucleus
-[Issues]: https://github.com/NucleusPowered/Nucleus/issues
-[Downloads]: https://github.com/NucleusPowered/Nucleus/releases
-[Website]: http://v2-beta.nucleuspowered.org/
-[Documentation]: http://v2-beta.nucleuspowered.org/docs
+[Source]: 'https://github.com/NucleusPowered/Nucleus`
+[Issues]: 'https://github.com/NucleusPowered/Nucleus/issues`
+[Downloads]: 'https://github.com/NucleusPowered/Nucleus/releases`
+[Website]: 'http://v2-beta.nucleuspowered.org/`
+[Documentation]: 'http://v2-beta.nucleuspowered.org/docs`
 [guidelines]: Contributing.md
-[Discord]: https://discord.gg/A9QHG5H
+[Discord]: 'https://discord.gg/A9QHG5H`
