@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Singleton
 public class UserPreferenceService implements IUserPreferenceService {
@@ -30,7 +31,6 @@ public class UserPreferenceService implements IUserPreferenceService {
     private final ResourceKey resourceKey;
     private final DefaultedRegistryType<PreferenceKey<?>> registryType;
     private final NucleusKeysProvider provider;
-    private final Map<ResourceKey, NucleusUserPreferenceService.PreferenceKey<?>> registered = new HashMap<>();
     private final INucleusServiceCollection serviceCollection;
 
     @Inject
@@ -39,19 +39,6 @@ public class UserPreferenceService implements IUserPreferenceService {
         this.resourceKey = ResourceKey.of(serviceCollection.pluginContainer(), "preference_service");
         this.registryType = RegistryType.of(RegistryRoots.SPONGE, this.resourceKey).asDefaultedType(() -> Sponge.game().registries());
         this.provider = new NucleusKeysProvider(this.registryType);
-    }
-
-    @Override
-    public void postInit() {
-        this.provider.getAll().forEach(x -> this.register((PreferenceKeyImpl<?>) x));
-    }
-
-    @Override
-    public void register(final PreferenceKeyImpl<?> key) {
-        if (this.registered.containsKey(key.getKey())) {
-            throw new IllegalArgumentException("ID already registered");
-        }
-        this.registered.put(key.getKey(), key);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -81,18 +68,18 @@ public class UserPreferenceService implements IUserPreferenceService {
     @Override
     public Map<NucleusUserPreferenceService.PreferenceKey<?>, Object> get(final UUID user) {
         final Map<NucleusUserPreferenceService.PreferenceKey<?>, Object> ret = new HashMap<>();
-        for (final NucleusUserPreferenceService.PreferenceKey<?> key : this.registered.values()) {
+        this.registryType.get().stream().forEach(key -> {
             if (((PreferenceKeyImpl) key).canAccess(this.serviceCollection, user)) {
                 ret.put(key, this.get(user, key).orElse(null));
             }
-        }
+        });
 
         return ret;
     }
 
     @Override
     public <T> Optional<T> get(final UUID uuid, final NucleusUserPreferenceService.PreferenceKey<T> key) {
-        if (!this.registered.containsValue(key)) {
+        if (!this.registryType.get().findValueKey(key).isPresent()) {
             throw new IllegalArgumentException("Key is not registered.");
         }
 
