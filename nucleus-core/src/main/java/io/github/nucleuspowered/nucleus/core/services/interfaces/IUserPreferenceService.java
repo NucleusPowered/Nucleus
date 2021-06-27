@@ -18,10 +18,6 @@ import java.util.UUID;
 @ImplementedBy(UserPreferenceService.class)
 public interface IUserPreferenceService extends NucleusUserPreferenceService {
 
-    void postInit();
-
-    void register(PreferenceKeyImpl<?> key);
-
     <T> void set(UUID uuid, PreferenceKey<T> key, @Nullable T value);
 
     <T> void set(UUID uuid, PreferenceKeyImpl<T> key, @Nullable T value);

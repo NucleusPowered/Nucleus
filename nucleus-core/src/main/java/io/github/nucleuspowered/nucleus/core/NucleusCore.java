@@ -187,8 +187,6 @@ public final class NucleusCore {
                 factoryMap.put(CoreKeys.LOCALE_PREFERENCE_KEY.getKey(), CoreKeys.LOCALE_PREFERENCE_KEY);
                 return factoryMap;
             });
-            // now we can post init the UPS
-            this.serviceCollection.userPreferenceService().postInit();
             event.register(Registry.Keys.COMMAND_MODIFIER_FACTORY_KEY, false, () -> {
                 final Map<ResourceKey, CommandModifierFactory> factoryMap = new HashMap<>();
 
