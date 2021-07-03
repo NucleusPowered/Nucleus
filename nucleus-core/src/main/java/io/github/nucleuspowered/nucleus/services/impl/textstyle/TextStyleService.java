@@ -218,7 +218,7 @@ public class TextStyleService implements ITextStyleService, IReloadableService.R
                 int oldlength;
                 do {
                     oldlength = message.length();
-                    message = message.replaceAll(p, "");
+                    message = Pattern.compile(p, Pattern.CASE_INSENSITIVE).matcher(message).replaceAll("");
                 } while (oldlength != message.length());
             }
         }
