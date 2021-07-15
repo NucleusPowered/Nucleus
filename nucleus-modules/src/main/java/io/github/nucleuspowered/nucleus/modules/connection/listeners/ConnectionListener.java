@@ -51,12 +51,12 @@ public class ConnectionListener implements IReloadableService.Reloadable, Listen
         // Have to join - we need to handle this event
         // TODO: Maybe look into getting Sponge to report a ban in this event if there is one.
         final BanService banService = Sponge.server().serviceProvider().banService();
-        final Optional<Ban.Profile> profileBan = banService.banFor(user.profile()).join();
+        final Optional<Ban.Profile> profileBan = banService.find(user.profile()).join();
         if (profileBan.isPresent()) {
             return;
         }
 
-        final Optional<Ban.IP> ipBan = banService.banFor(event.connection().address().getAddress()).join();
+        final Optional<Ban.IP> ipBan = banService.find(event.connection().address().getAddress()).join();
         if (ipBan.isPresent()) {
             return;
         }

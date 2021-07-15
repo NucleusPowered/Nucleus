@@ -191,7 +191,7 @@ public class ResetUserCommand implements ICommandExecutor {
             // Ban temporarily.
             final BanService bss = Sponge.server().serviceProvider().banService();
             final CompletableFuture<Optional<? extends Ban>> future =
-                    bss.addBan(Ban.builder().type(BanTypes.PROFILE)
+                    bss.add(Ban.builder().type(BanTypes.PROFILE)
                             .expirationDate(Instant.now().plus(30, ChronoUnit.SECONDS)).profile(user.profile())
                             .build());
 
@@ -221,7 +221,7 @@ public class ResetUserCommand implements ICommandExecutor {
                 } catch (final Exception e) {
                     source.sendMessage(messageProvider.getMessageFor(source, "command.nucleus.reset.failed", user.name()));
                 } finally {
-                    ban.ifPresent(bss::removeBan);
+                    ban.ifPresent(bss::remove);
                 }
             } , 1, TimeUnit.SECONDS);
         }

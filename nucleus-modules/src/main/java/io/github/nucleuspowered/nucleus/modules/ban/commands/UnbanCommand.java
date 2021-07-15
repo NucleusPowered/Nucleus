@@ -51,7 +51,7 @@ public class UnbanCommand implements ICommandExecutor, IReloadableService.Reload
         final BanService service = Sponge.server().serviceProvider().banService();
 
         // TODO: Async
-        final Optional<Ban.Profile> obp = service.banFor(profile).join();
+        final Optional<Ban.Profile> obp = service.find(profile).join();
         if (!obp.isPresent()) {
             return context.errorResult(
                     "command.checkban.notset", Util.getNameOrUnkown(context, profile));
@@ -67,7 +67,7 @@ public class UnbanCommand implements ICommandExecutor, IReloadableService.Reload
             return context.errorResult("command.modifiers.level.insufficient", user.name());
         }
 
-        service.removeBan(obp.get());
+        service.remove(obp.get());
 
         final Audience send = Audience.audience(
                 context.audience(),

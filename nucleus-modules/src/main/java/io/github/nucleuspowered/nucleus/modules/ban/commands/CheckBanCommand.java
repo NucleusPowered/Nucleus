@@ -39,7 +39,7 @@ public class CheckBanCommand implements ICommandExecutor {
         final BanService service = Sponge.server().serviceProvider().banService();
 
         // TODO: Async
-        final Optional<Ban.Profile> obp = service.banFor(profile).join();
+        final Optional<Ban.Profile> obp = service.find(profile).join();
         if (!obp.isPresent()) {
             return context.errorResult("command.checkban.notset", Util.getNameOrUnkown(context, profile));
         }

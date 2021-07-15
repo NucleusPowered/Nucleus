@@ -121,7 +121,7 @@ public class BanCommand implements ICommandExecutor, IReloadableService.Reloadab
         }
 
         // TODO: Fix joins to be async
-        if (service.banFor(user.profile()).join().isPresent()) {
+        if (service.find(user.profile()).join().isPresent()) {
             return context.errorResult("command.ban.alreadyset",
                     context.getServiceCollection().playerDisplayNameService().getName(user));
         }
@@ -140,7 +140,7 @@ public class BanCommand implements ICommandExecutor, IReloadableService.Reloadab
         final Ban bp = Ban.builder().type(BanTypes.PROFILE).profile(user.profile())
                 .source(context.getDisplayName())
                 .reason(LegacyComponentSerializer.legacyAmpersand().deserialize(r)).build();
-        service.addBan(bp);
+        service.add(bp);
 
         // Get the permission, "quickstart.ban.notify"
         final Audience audience = Audience.audience(
