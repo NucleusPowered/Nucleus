@@ -67,7 +67,7 @@ public class MessageProviderService implements IMessageProviderService, IReloada
     private final INucleusServiceCollection serviceCollection;
     private final IUserPreferenceService userPreferenceService;
 
-    private Locale defaultLocale = Sponge.getServer().getConsole().getLocale();
+    private Locale defaultLocale = Locale.US;
     private boolean useMessagesFile;
     private boolean useClientLocalesWhenPossible;
 
@@ -91,6 +91,9 @@ public class MessageProviderService implements IMessageProviderService, IReloada
             INucleusServiceCollection serviceCollection, @ConfigDirectory Path configPath) {
         this.serviceCollection = serviceCollection;
         serviceCollection.reloadableService().registerReloadable(this);
+        if (Sponge.isServerAvailable()) {
+            defaultLocale = Sponge.getServer().getConsole().getLocale();
+        }
         this.defaultMessagesResource = new PropertiesMessageRepository(
                 serviceCollection.textStyleService(),
                 serviceCollection.playerDisplayNameService(),
