@@ -8,9 +8,6 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-val kotlinVersion: String? by project
-var kotlin_version: String by extra
-kotlin_version = kotlinVersion!!
 buildscript {
     val kotlinVersion: String? by project
     repositories {
@@ -29,13 +26,13 @@ plugins {
     // id("com.github.hierynomus.license") version "0.15.0" apply false
     id("org.cadixdev.licenser") version "0.6.1" apply false
     id("net.kyori.blossom") version "1.2.0"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("org.spongepowered.gradle.plugin") version "2.0.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.spongepowered.gradle.plugin") version "2.0.1"
 }
 
 // Until I can figure out how to get Blossom to accept task outputs, if at all
 // this will have to do.
-fun getGitCommit() : String {
+fun getGitCommit(): String {
     return try {
         val byteOut = ByteArrayOutputStream()
         project.exec {
@@ -67,7 +64,7 @@ allprojects {
 
     if (verbose) {
         gradle.projectsEvaluated {
-            tasks.withType(JavaCompile::class.java) {
+            tasks.withType<JavaCompile> {
                 options.compilerArgs.add("-Xlint:unchecked")
                 options.isDeprecation = true
             }
@@ -79,23 +76,20 @@ extra["gitHash"] = getGitCommit()
 
 // Get the Level
 val nucleusVersion: String by project // = project.properties["nucleusVersion"]?.toString()!!
-val nucleusVersionSuffix : String? by project // = project.properties["nucleusVersionSuffix"]?.toString()
+val nucleusVersionSuffix: String? by project // = project.properties["nucleusVersionSuffix"]?.toString()
 val vavrVersion: String by project
 val declaredApiVersion: String by project
 val spongeApiVersion: String by project
 
 var level = getLevel(nucleusVersion, nucleusVersionSuffix)
-val spongeVersion: String = declaredApiVersion
-val versionString: String = if (nucleusVersionSuffix == null) {
-    nucleusVersion
-} else {
-    "$nucleusVersion-$nucleusVersionSuffix"
-}
+val spongeVersion = declaredApiVersion
+val versionString = "$nucleusVersion${if (nucleusVersionSuffix.isNullOrBlank()) "" else "-$nucleusVersionSuffix"}"
 val filenameSuffix = "SpongeAPI$spongeVersion"
+
 version = versionString
 
-project(":nucleus-api").version = versionString
-project(":nucleus-core").version = versionString
+project(":nucleus-api").version = version
+project(":nucleus-core").version = version
 
 group = "io.github.nucleuspowered"
 
@@ -156,7 +150,7 @@ val setGithubActionsVersion by tasks.registering(Exec::class) {
     }
 }
 
-val gitHash by tasks.registering(StdOutExec::class)  {
+val gitHash by tasks.registering(StdOutExec::class) {
     commandLine("git", "rev-parse", "--short", "HEAD")
     doLast {
         project.extra["gitHash"] = result
@@ -196,16 +190,20 @@ val relNotes by tasks.registering(RelNotesTask::class) {
 val writeRelNotes by tasks.registering {
     dependsOn(relNotes)
     doLast {
-        Files.write(project.projectDir.toPath().resolve("changelogs").resolve("${nucleusVersion}.md"),
-                relNotes.get().relNotes!!.toByteArray(StandardCharsets.UTF_8))
+        Files.write(
+            project.projectDir.toPath().resolve("changelogs").resolve("${nucleusVersion}.md"),
+            relNotes.get().relNotes!!.toByteArray(StandardCharsets.UTF_8)
+        )
     }
 }
 
 val outputRelNotes by tasks.registering {
     dependsOn(relNotes)
     doLast {
-        Files.write(project.projectDir.toPath().resolve("output").resolve("${nucleusVersion}.md"),
-                relNotes.get().relNotes!!.toByteArray(StandardCharsets.UTF_8))
+        Files.write(
+            project.projectDir.toPath().resolve("output").resolve("${nucleusVersion}.md"),
+            relNotes.get().relNotes!!.toByteArray(StandardCharsets.UTF_8)
+        )
     }
 }
 
@@ -223,7 +221,8 @@ val upload by tasks.registering(io.github.nucleuspowered.gradle.task.UploadToOre
 
 val setupDocGen by tasks.registering(io.github.nucleuspowered.gradle.task.SetupServer::class) {
     dependsOn(shadowJar)
-    spongeVanillaDownload = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2.3-RC372/spongevanilla-1.12.2-7.2.3-RC372.jar")
+    spongeVanillaDownload =
+        URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2.3-RC372/spongevanilla-1.12.2-7.2.3-RC372.jar")
     spongeVanillaSHA1Hash = "e72ec4bc0368cd2fc604f412eed5fa8941d7580c"
     acceptEula = true
     fileProvider = shadowJar.archiveFile
@@ -304,7 +303,6 @@ tasks {
     blossomSourceReplacementJava {
         dependsOn(gitHash)
     }
-
 }
 
 publishing {
