@@ -26,21 +26,18 @@ java {
 apply(plugin = "org.jetbrains.kotlin.jvm")
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     gradleApi()
-    implementation(kotlin("stdlib-jdk8", "1.3.61"))
+    implementation(kotlin("stdlib-jdk8"))
     implementation("org.apache.httpcomponents:httpmime:4.5.3")
     implementation("com.google.code.gson:gson:2.8.6")
 }
 
-val compileKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: org.jetbrains.kotlin.gradle.tasks.KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
