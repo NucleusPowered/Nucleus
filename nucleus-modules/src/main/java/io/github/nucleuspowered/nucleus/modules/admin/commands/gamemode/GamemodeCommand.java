@@ -44,7 +44,7 @@ public class GamemodeCommand extends GamemodeBase {
     private final Parameter.Value<GameMode> gameModeParameter =
             Parameter.builder(GameMode.class)
                     .key("Game Mode")
-                    .addParser(VariableValueParameters.registryEntryBuilder(RegistryTypes.GAME_MODE).defaultNamespace("minecraft").build())
+                    .addParser(VariableValueParameters.registryEntryBuilder(RegistryTypes.GAME_MODE).defaultNamespace("sponge").build())
                     .build();
 
     final Parameter.Value<ServerPlayer> playerValue;
