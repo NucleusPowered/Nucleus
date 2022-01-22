@@ -96,6 +96,7 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
 
     @Override
     public void reset() {
+        this.controlToAliases.clear();
         this.registeredAliases.clear();
         this.registeredCommands.clear();
         this.registrationComplete = false;
