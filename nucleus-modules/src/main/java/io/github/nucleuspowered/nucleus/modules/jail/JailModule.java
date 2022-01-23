@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.jail;
 
+import io.github.nucleuspowered.nucleus.api.module.jail.data.Jail;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.CheckJailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.CheckJailedCommand;
@@ -14,7 +15,7 @@ import io.github.nucleuspowered.nucleus.modules.jail.commands.JailsCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.SetJailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.commands.UnjailCommand;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
-import io.github.nucleuspowered.nucleus.modules.jail.data.JailData;
+import io.github.nucleuspowered.nucleus.modules.jail.data.NucleusJailing;
 import io.github.nucleuspowered.nucleus.modules.jail.infoprovider.JailInfoProvider;
 import io.github.nucleuspowered.nucleus.modules.jail.listeners.ChatJailListener;
 import io.github.nucleuspowered.nucleus.modules.jail.listeners.InterceptTeleportListener;
@@ -27,9 +28,9 @@ import io.github.nucleuspowered.nucleus.core.scaffold.task.TaskBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPlaceholderService;
+import io.github.nucleuspowered.nucleus.modules.jail.services.NucleusJail;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.placeholder.PlaceholderParser;
 
@@ -46,7 +47,7 @@ public class JailModule implements IModule.Configurable<JailConfig> {
     public void init(final INucleusServiceCollection serviceCollection) {
         final JailService handler = new JailService(serviceCollection);
         serviceCollection.registerService(JailService.class, handler, false);
-        serviceCollection.userCacheService().setJailProcessor(x -> x.get(JailKeys.JAIL_DATA).map(JailData::getJailName).orElse(null));
+        serviceCollection.userCacheService().setJailProcessor(x -> x.get(JailKeys.JAIL_DATA).map(NucleusJailing::getJailName).orElse(null));
         final IPlaceholderService placeholderService = serviceCollection.placeholderService();
         placeholderService.registerToken("jailed", PlaceholderParser.builder()
                 .parser(p -> {
@@ -68,6 +69,8 @@ public class JailModule implements IModule.Configurable<JailConfig> {
 
                     return Component.empty();
                 }).build());
+
+        serviceCollection.game().dataManager().registerBuilder(Jail.class, new NucleusJail.DataBuilder());
     }
 
     @Override

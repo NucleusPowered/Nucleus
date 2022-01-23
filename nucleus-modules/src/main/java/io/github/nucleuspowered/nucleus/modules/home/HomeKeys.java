@@ -5,9 +5,9 @@
 package io.github.nucleuspowered.nucleus.modules.home;
 
 import io.github.nucleuspowered.nucleus.core.configurate.datatypes.LocationNode;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.util.TypeTokens;
-import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.DataKey;
 
 import java.util.Map;
 

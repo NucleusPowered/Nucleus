@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.module.jail.data;
 
 import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
+import org.spongepowered.api.data.persistence.DataSerializable;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.time.Instant;
@@ -14,7 +15,7 @@ import java.util.UUID;
 /**
  * Represents information about a player's jailing.
  */
-public interface Jailing extends TimedEntry {
+public interface Jailing extends DataSerializable {
 
     /**
      * The reason a player was jailed.
@@ -52,4 +53,7 @@ public interface Jailing extends TimedEntry {
      * @return The instant, if known.
      */
     Optional<Instant> getCreationInstant();
+
+    Optional<TimedEntry> getTimedEntry();
+
 }

@@ -6,10 +6,12 @@ package io.github.nucleuspowered.nucleus.modules.kit.misc;
 
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
+import io.github.nucleuspowered.nucleus.modules.kit.data.KitDataBuilder;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.SystemSubject;
 import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -219,4 +221,13 @@ public class SingleKit implements Kit {
         return this;
     }
 
+    @Override
+    public int contentVersion() {
+        return KitDataBuilder.CONTENT_VERSION;
+    }
+
+    @Override
+    public DataContainer toContainer() {
+        return KitDataBuilder.kitToContainer(this);
+    }
 }

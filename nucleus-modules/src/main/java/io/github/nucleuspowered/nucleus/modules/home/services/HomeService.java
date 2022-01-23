@@ -22,7 +22,7 @@ import io.github.nucleuspowered.nucleus.modules.home.events.UseHomeEvent;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.INucleusLocationService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import net.kyori.adventure.audience.Audience;
@@ -196,7 +196,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
     }
 
     public TeleportResult warpToHome(final ServerPlayer src, final Home home, final boolean safeTeleport) throws HomeException {
-        Sponge.server().worldManager().world(home.getResourceKey())
+        Sponge.server().worldManager().world(home.getWorldResourceKey())
                 .orElseThrow(() ->
                         new HomeException(
                                 this.serviceCollection.messageProvider().getMessageFor(src, "command.home.invalid", home.getName()),

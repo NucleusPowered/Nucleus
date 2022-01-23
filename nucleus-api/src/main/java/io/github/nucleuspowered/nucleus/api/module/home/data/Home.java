@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Represents a home in Nucleus.
  */
-public interface Home extends NamedLocation {
+public interface Home {
 
     /**
      * The {@link UUID} of the user.
@@ -19,5 +19,7 @@ public interface Home extends NamedLocation {
      * @return The {@link UUID}
      */
     UUID getOwnersUniqueId();
+
+    NamedLocation getLocation();
 
 }

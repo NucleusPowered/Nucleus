@@ -4,20 +4,20 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.interfaces;
 
-import com.google.gson.JsonObject;
+import org.spongepowered.api.data.persistence.DataContainer;
 import com.google.inject.ImplementedBy;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.StorageManager;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IGeneralDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IWorldDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects.IUserQueryObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects.IWorldQueryObject;
-import io.github.nucleuspowered.storage.IStorageModule;
-import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
-import io.github.nucleuspowered.storage.dataobjects.IDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IGeneralDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IWorldDataObject;
+import io.github.nucleuspowered.storage.query.IUserQueryObject;
+import io.github.nucleuspowered.storage.query.IWorldQueryObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.IStorageModule;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.IDataTranslator;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IDataObject;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.persistence.IStorageRepositoryFactory;
-import io.github.nucleuspowered.storage.services.IStorageService;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.services.IStorageService;
 import org.spongepowered.api.ResourceKey;
 
 import java.util.Optional;
@@ -33,7 +33,7 @@ public interface IStorageManager {
 
     // ugh
     <T extends IDataObject, S extends IStorageService<T>> void register(
-            final IStorageModule<T, S, ? extends IStorageRepository, ? extends IDataTranslator<T, JsonObject>> module);
+            final IStorageModule<T, S, ? extends IStorageRepository, ? extends IDataTranslator<T, DataContainer>> module);
 
     IStorageService.SingleCached<IGeneralDataObject> getGeneralService();
 
@@ -44,17 +44,17 @@ public interface IStorageManager {
 
     IStorageService.Keyed.KeyedData<ResourceKey, IWorldQueryObject, IWorldDataObject> getWorldService();
 
-    IDataTranslator<IUserDataObject, JsonObject> getUserDataAccess();
+    IDataTranslator<IUserDataObject, DataContainer> getUserDataAccess();
 
-    IDataTranslator<IWorldDataObject, JsonObject> getWorldDataAccess();
+    IDataTranslator<IWorldDataObject, DataContainer> getWorldDataAccess();
 
-    IDataTranslator<IGeneralDataObject, JsonObject> getGeneralDataAccess();
+    IDataTranslator<IGeneralDataObject, DataContainer> getGeneralDataAccess();
 
-    IStorageRepository.Keyed<UUID, IUserQueryObject, JsonObject> getUserRepository();
+    IStorageRepository.Keyed<UUID, IUserQueryObject, DataContainer> getUserRepository();
 
-    IStorageRepository.Keyed<ResourceKey, IWorldQueryObject, JsonObject> getWorldRepository();
+    IStorageRepository.Keyed<ResourceKey, IWorldQueryObject, DataContainer> getWorldRepository();
 
-    IStorageRepository.Single<JsonObject> getGeneralRepository();
+    IStorageRepository.Single<DataContainer> getGeneralRepository();
 
     CompletableFuture<Void> saveAndInvalidateAllCaches();
 

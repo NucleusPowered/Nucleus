@@ -12,11 +12,10 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.Command;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.world.server.ServerWorld;
-import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.Optional;
 

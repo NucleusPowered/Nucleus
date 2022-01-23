@@ -15,7 +15,7 @@ import io.github.nucleuspowered.nucleus.modules.mail.parameter.MailFilterParamet
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager;
 import net.kyori.adventure.text.Component;

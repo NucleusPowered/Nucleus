@@ -46,12 +46,13 @@ import io.leangen.geantyref.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.Client;
-import org.spongepowered.api.Engine;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
+import org.spongepowered.api.data.persistence.DataBuilder;
+import org.spongepowered.api.data.persistence.DataSerializable;
 import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.EventContext;
 import org.spongepowered.api.event.Listener;
@@ -107,14 +108,17 @@ public final class NucleusCore {
     @Nullable private Path dataDirectory;
 
     private final INucleusServiceCollection serviceCollection;
+    private final Game game;
 
     public NucleusCore(
+            final Game game,
             final PluginContainer pluginContainer,
             final Path configDirectory,
             final Logger logger,
             final Injector injector,
             final IModuleProvider provider,
             final IPluginInfo pluginInfo) {
+        this.game = game;
         this.pluginContainer = pluginContainer;
         this.configDirectory = configDirectory;
         this.logger = logger;
@@ -122,6 +126,7 @@ public final class NucleusCore {
         this.injector = injector.createChildInjector(new NucleusInjectorModule(() -> this, pluginInfo));
         this.provider = provider;
         this.serviceCollection = new NucleusServiceCollection(
+                this.game,
                 this.injector,
                 this.pluginContainer,
                 this.logger,
@@ -166,7 +171,7 @@ public final class NucleusCore {
 
     public Path getDataDirectory() {
         if (this.dataDirectory == null) {
-            this.dataDirectory = Sponge.game().gameDirectory().resolve("nucleus");
+            this.dataDirectory = this.game.gameDirectory().resolve("nucleus");
             try {
                 Files.createDirectories(this.dataDirectory);
             } catch (final IOException e) {
@@ -236,7 +241,7 @@ public final class NucleusCore {
                 this.serviceCollection.userPreferenceService().getRegistryResourceType(),
                 event.cause().with(this.pluginContainer)
         );
-        Sponge.eventManager().post(registerPreferenceKeyEvent);
+        this.game.eventManager().post(registerPreferenceKeyEvent);
         this.serviceCollection.logger().info("Registered user preference keys.");
     }
 
@@ -288,8 +293,8 @@ public final class NucleusCore {
                 if (docgenPath.isEmpty()) {
                     finalPath = this.getDataDirectory();
                 } else {
-                    final Path path = Sponge.game().gameDirectory().resolve(docgenPath);
-                    boolean isOk = path.toAbsolutePath().startsWith(Sponge.game().gameDirectory().toAbsolutePath());
+                    final Path path = this.game.gameDirectory().resolve(docgenPath);
+                    boolean isOk = path.toAbsolutePath().startsWith(this.game.gameDirectory().toAbsolutePath());
                     isOk &= Files.notExists(path) || Files.isDirectory(path);
                     if (isOk) {
                         Files.createDirectories(path);
@@ -306,12 +311,12 @@ public final class NucleusCore {
                 ex.printStackTrace();
             }
 
-            Sponge.server().shutdown();
+            this.game.server().shutdown();
             return;
         }
         this.onStartedActions.forEach(Action::action);
         this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
-        Sponge.asyncScheduler().executor(this.pluginContainer)
+        this.game.asyncScheduler().executor(this.pluginContainer)
                 .submit(() -> this.serviceCollection.userCacheService().startFilewalkIfNeeded());
         this.serviceCollection.platformService().setGameStartedTime();
     }
@@ -428,6 +433,11 @@ public final class NucleusCore {
         modules.forEach(tuple -> tuple.second().postLoad(this.serviceCollection));
     }
 
+    @SuppressWarnings("unchecked")
+    private <T extends DataSerializable> void registerDataBuilder(final Class<T> clazz, final DataBuilder<?> builder) {
+        this.game.dataManager().registerBuilder(clazz, (DataBuilder<T>) builder);
+    }
+
     private Collection<ModuleContainer> filterModules(final Collection<ModuleContainer> moduleContainers) {
         final CommentedConfigurationNode defaults = this.serviceCollection.configurateHelper().createConfigNode();
         for (final ModuleContainer moduleContainer : moduleContainers) {
@@ -467,7 +477,7 @@ public final class NucleusCore {
                                 return true;
                             }
                         }).collect(Collectors.toSet()));
-        Sponge.eventManager().post(event);
+        this.game.eventManager().post(event);
         final ArrayList<ModuleContainer> containersToReturn = new ArrayList<>();
         containersToReturn.add(new ModuleContainer("core", "Core", true, CoreModule.class));
         for (final ModuleContainer moduleContainer : moduleContainers) {

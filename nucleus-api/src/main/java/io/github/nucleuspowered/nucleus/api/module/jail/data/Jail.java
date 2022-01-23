@@ -5,10 +5,13 @@
 package io.github.nucleuspowered.nucleus.api.module.jail.data;
 
 import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
+import org.spongepowered.api.data.persistence.DataSerializable;
 
 /**
  * Represents a jail
  */
-public interface Jail extends NamedLocation {
+public interface Jail extends DataSerializable {
+
+    NamedLocation getLocation();
 
 }

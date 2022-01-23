@@ -29,7 +29,6 @@ import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.Comparator;
 import java.util.List;
@@ -145,7 +144,7 @@ public class ListWarpCommand implements ICommandExecutor, IReloadableService.Rel
             final ICommandContext context) {
 
         final String pos = data.getLocation().map(Location::blockPosition).orElseGet(() -> data.getPosition().toInt()).toString();
-        final String worldName = data.getResourceKey().asString();
+        final String worldName = data.getWorldResourceKey().asString();
 
         final TextComponent.Builder inner = Component.text().content(name).color(NamedTextColor.GREEN).style(Style.style(TextDecoration.ITALIC))
                 .clickEvent(ClickEvent.runCommand("/warp \"" + name + "\""));

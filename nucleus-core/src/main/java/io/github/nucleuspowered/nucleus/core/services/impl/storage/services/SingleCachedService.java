@@ -4,13 +4,11 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.services;
 
-import com.google.gson.JsonObject;
-import io.github.nucleuspowered.storage.dataaccess.IDataTranslator;
-import io.github.nucleuspowered.storage.dataobjects.IDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.IDataTranslator;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IDataObject;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
-import io.github.nucleuspowered.storage.services.IStorageService;
-import io.github.nucleuspowered.storage.services.ServicesUtil;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.plugin.PluginContainer;
 
 import java.util.Optional;
@@ -21,15 +19,15 @@ import java.util.function.Supplier;
 public class SingleCachedService<O extends IDataObject> implements IStorageService.SingleCached<O> {
 
     private final Supplier<O> createNew;
-    private final Supplier<IStorageRepository.Single<JsonObject>> repositorySupplier;
-    private final Supplier<IDataTranslator<O, JsonObject>> dataAccessSupplier;
+    private final Supplier<IStorageRepository.Single<DataContainer>> repositorySupplier;
+    private final Supplier<IDataTranslator<O, DataContainer>> dataAccessSupplier;
     private final PluginContainer pluginContainer;
     private final Consumer<O> dataMigrator;
     private O cached = null;
 
     public SingleCachedService(
-            final Supplier<IStorageRepository.Single<JsonObject>> repositorySupplier,
-            final Supplier<IDataTranslator<O, JsonObject>> dataAccessSupplier,
+            final Supplier<IStorageRepository.Single<DataContainer>> repositorySupplier,
+            final Supplier<IDataTranslator<O, DataContainer>> dataAccessSupplier,
             final PluginContainer pluginContainer,
             final Consumer<O> createVersion,
             final Consumer<O> dataMigrator) {
@@ -97,7 +95,7 @@ public class SingleCachedService<O extends IDataObject> implements IStorageServi
     }
 
     private Optional<O> getFromRepo() throws Exception {
-        final Optional<JsonObject> gdo = this.repositorySupplier.get().get();
+        final Optional<DataContainer> gdo = this.repositorySupplier.get().get();
         if (gdo.isPresent()) {
             final O r = this.dataAccessSupplier.get().fromDataAccessObject(gdo.get());
             this.dataMigrator.accept(r);

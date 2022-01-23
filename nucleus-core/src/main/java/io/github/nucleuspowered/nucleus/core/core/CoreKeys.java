@@ -5,13 +5,13 @@
 package io.github.nucleuspowered.nucleus.core.core;
 
 import io.github.nucleuspowered.nucleus.api.core.NucleusUserPreferenceService;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IGeneralDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IWorldDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IGeneralDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IWorldDataObject;
 import io.github.nucleuspowered.nucleus.core.services.impl.userprefs.NucleusKeysProvider;
 import io.github.nucleuspowered.nucleus.core.services.impl.userprefs.PreferenceKeyImpl;
 import io.github.nucleuspowered.nucleus.core.util.TypeTokens;
-import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.DataKey;
 
 import java.time.Instant;
 import java.util.Locale;

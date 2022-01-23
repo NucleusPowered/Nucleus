@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects;
 
-import io.github.nucleuspowered.storage.queryobjects.AbstractUUIDKeyedQueryObject;
+import io.github.nucleuspowered.storage.query.IUserQueryObject;
 
 public class UserQueryObject extends AbstractUUIDKeyedQueryObject<IUserQueryObject> implements IUserQueryObject {
 

@@ -14,10 +14,10 @@ import io.github.nucleuspowered.nucleus.core.core.events.NucleusOnLoginEvent;
 import io.github.nucleuspowered.nucleus.modules.jail.JailPermissions;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
 import io.github.nucleuspowered.nucleus.modules.jail.services.JailService;
-import io.github.nucleuspowered.nucleus.modules.jail.services.JailingEntry;
+import io.github.nucleuspowered.nucleus.modules.jail.services.NucleusJailing;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
@@ -87,11 +87,11 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
     @Listener(order = Order.LATE)
     public void onPlayerJoin(final ServerSideConnectionEvent.Join event, @Getter("player") final ServerPlayer serverPlayer) {
         final Optional<Jailing> jailing = this.handler.getPlayerJailData(serverPlayer.uniqueId());
-        if (!jailing.filter(x -> x instanceof JailingEntry).isPresent()) {
+        if (!jailing.filter(x -> x instanceof NucleusJailing).isPresent()) {
             return;
         }
 
-        final JailingEntry entry = jailing.map(x -> (JailingEntry) x).get();
+        final NucleusJailing entry = jailing.map(x -> (NucleusJailing) x).get();
         this.handler.onJail(entry, serverPlayer);
     }
 

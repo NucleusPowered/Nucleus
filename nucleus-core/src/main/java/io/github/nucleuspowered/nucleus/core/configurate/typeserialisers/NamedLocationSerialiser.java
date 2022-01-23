@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.core.configurate.typeserialisers;
 
 import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
-import io.github.nucleuspowered.nucleus.core.datatypes.LocationData;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusNamedLocation;
 import io.github.nucleuspowered.nucleus.core.util.TypeTokens;
 import io.leangen.geantyref.TypeToken;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -38,7 +38,7 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
         final Vector3d pos = getPosition(value);
         final Vector3d rot = getRotation(value);
 
-        return new LocationData(
+        return new NucleusNamedLocation(
                 NamedLocationSerialiser.getName(value),
                 NamedLocationSerialiser.getWorldResourceKey(value),
                 pos,
@@ -91,7 +91,7 @@ public class NamedLocationSerialiser implements TypeSerializer<NamedLocation> {
     }
 
     public static void serializeLocation(final NamedLocation obj, final ConfigurationNode value) throws SerializationException {
-        value.node("world").set(TypeTokens.RESOURCE_KEY, obj.getResourceKey());
+        value.node("world").set(TypeTokens.RESOURCE_KEY, obj.getWorldResourceKey());
 
         value.node("x").set(obj.getPosition().x());
         value.node("y").set(obj.getPosition().y());

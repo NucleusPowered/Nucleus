@@ -4,38 +4,23 @@
  */
 package io.github.nucleuspowered.nucleus.modules.kit.storage;
 
-import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.IConfigurateBackedDataTranslator;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.services.SingleCachedService;
-import io.github.nucleuspowered.storage.IStorageModule;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.IStorageModule;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.IDataTranslator;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.persistence.IStorageRepositoryFactory;
-import io.github.nucleuspowered.storage.services.IStorageService;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.services.IStorageService;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.configurate.CommentedConfigurationNode;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.ConfigurationOptions;
+import org.spongepowered.api.data.persistence.DataContainer;
 
 public final class KitStorageModule implements IStorageModule<IKitDataObject, IStorageService.SingleCached<IKitDataObject>,
-        IStorageRepository.Single<JsonObject>, IConfigurateBackedDataTranslator<IKitDataObject>> {
+        IStorageRepository.Single<DataContainer>, IDataTranslator<IKitDataObject, DataContainer>> {
 
     private final INucleusServiceCollection serviceCollection;
     private final IStorageService.SingleCached<IKitDataObject> kitsService;
-    private IStorageRepository.@Nullable Single<JsonObject> repository;
-
-    private final IConfigurateBackedDataTranslator<IKitDataObject> kitsDataAccess = new IConfigurateBackedDataTranslator<IKitDataObject>() {
-        @Override public ConfigurationOptions getOptions() {
-            return KitStorageModule.this.serviceCollection.configurateHelper().getDefaultDataOptions();
-        }
-
-        @Override public IKitDataObject createNew() {
-            final KitDataObject d = new KitDataObject();
-            d.setBackingNode(KitStorageModule.this.serviceCollection.configurateHelper().createDataNode());
-            return d;
-        }
-    };
+    private IStorageRepository.@Nullable Single<DataContainer> repository;
 
     @Inject
     public KitStorageModule(final INucleusServiceCollection serviceCollection) {
@@ -54,12 +39,12 @@ public final class KitStorageModule implements IStorageModule<IKitDataObject, IS
     }
 
     @Override
-    public IConfigurateBackedDataTranslator<IKitDataObject> getDataTranslator() {
-        return this.kitsDataAccess;
+    public IDataTranslator<IKitDataObject, DataContainer> getDataTranslator() {
+        return KitDataTranslator.Holder.INSTANCE;
     }
 
     @Override
-    public IStorageRepository.Single<JsonObject> getRepository() {
+    public IStorageRepository.Single<DataContainer> getRepository() {
         if (this.repository == null) {
             this.repository = this.serviceCollection.storageManager().getFlatFileRepositoryFactory().kitsRepository();
         }

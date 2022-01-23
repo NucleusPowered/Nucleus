@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects;
 
-import io.github.nucleuspowered.storage.queryobjects.AbstractQueryObject;
+import io.github.nucleuspowered.storage.query.IWorldQueryObject;
 import org.spongepowered.api.ResourceKey;
 
 public class WorldQueryObject extends AbstractQueryObject<ResourceKey, IWorldQueryObject> implements IWorldQueryObject {

@@ -6,9 +6,9 @@ package io.github.nucleuspowered.nucleus.core.services.interfaces;
 
 import com.google.inject.ImplementedBy;
 import io.github.nucleuspowered.nucleus.core.services.impl.dataversioning.DataVersioning;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IGeneralDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IWorldDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IGeneralDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IWorldDataObject;
 
 @ImplementedBy(DataVersioning.class)
 public interface IDataVersioning {

@@ -41,6 +41,7 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.IUserPreference
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IWarmupService;
 import io.github.nucleuspowered.nucleus.core.util.LazyLoad;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.event.lifecycle.RegisterFactoryEvent;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -86,6 +87,7 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     private final Supplier<IModuleReporter> moduleReporterSupplier;
     private final Supplier<ISchedulerService> schedulerServiceProvider;
     private final Supplier<ITimingsService> timingsServiceProvider;
+    private final Game game;
     private final Injector injector;
     private final PluginContainer pluginContainer;
     private final Logger logger;
@@ -94,6 +96,7 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
 
     @Inject
     public NucleusServiceCollection(
+            final Game game,
             final Injector injector,
             final PluginContainer pluginContainer,
             final Logger logger,
@@ -132,6 +135,7 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
         this.logger = logger;
         this.dataDir = dataPath;
         this.configPath = configPath;
+        this.game = game;
     }
 
     @Override
@@ -315,6 +319,11 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
 
     @Override public Supplier<Path> dataDir() {
         return this.dataDir;
+    }
+
+    @Override
+    public Game game() {
+        return this.game;
     }
 
     @Override public void registerFactories(final RegisterFactoryEvent event) {

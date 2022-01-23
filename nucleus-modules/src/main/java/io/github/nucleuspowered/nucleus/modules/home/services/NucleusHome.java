@@ -8,11 +8,11 @@ import org.spongepowered.api.ResourceKey;
 import org.spongepowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.module.home.data.Home;
 import io.github.nucleuspowered.nucleus.core.configurate.datatypes.LocationNode;
-import io.github.nucleuspowered.nucleus.core.datatypes.LocationData;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusNamedLocation;
 
 import java.util.UUID;
 
-public class NucleusHome extends LocationData implements Home {
+public class NucleusHome implements Home {
 
     private final UUID owner;
 

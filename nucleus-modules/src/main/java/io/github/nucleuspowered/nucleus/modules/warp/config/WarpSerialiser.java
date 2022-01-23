@@ -6,7 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.warp.config;
 
 import io.github.nucleuspowered.nucleus.api.module.warp.data.Warp;
 import io.github.nucleuspowered.nucleus.core.configurate.typeserialisers.NamedLocationSerialiser;
-import io.github.nucleuspowered.nucleus.modules.warp.data.WarpData;
+import io.github.nucleuspowered.nucleus.modules.warp.data.NucleusWarp;
 import io.leangen.geantyref.TypeToken;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -34,7 +34,7 @@ public final class WarpSerialiser implements TypeSerializer<Warp> {
             res = GsonComponentSerializer.gson().deserialize(desc);
         }
 
-        return new WarpData(
+        return new NucleusWarp(
                 value.node("category").getString(),
                 value.node("cost").getDouble(0d),
                 res,

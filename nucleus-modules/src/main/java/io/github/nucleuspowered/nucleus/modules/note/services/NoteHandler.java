@@ -13,7 +13,7 @@ import io.github.nucleuspowered.nucleus.modules.note.event.CreateNoteEvent;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 
