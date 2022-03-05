@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.module.mute.data;
 
 import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
+import org.spongepowered.api.data.persistence.DataSerializable;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.UUID;
 /**
  * Provides information about a player's mute.
  */
-public interface Mute extends TimedEntry {
+public interface Mute extends DataSerializable {
 
     /**
      * The reason for the mute.
@@ -35,4 +36,12 @@ public interface Mute extends TimedEntry {
      * @return The instant, if known.
      */
     Optional<Instant> getCreationInstant();
+
+    /**
+     * Gets the {@link TimedEntry} which represents how long this mute has to go.
+     *
+     * @return The timed entry.
+     */
+    Optional<TimedEntry> getTimedEntry();
+
 }

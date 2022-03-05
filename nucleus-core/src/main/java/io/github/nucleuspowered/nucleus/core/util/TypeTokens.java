@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.core.util;
 
+import io.github.nucleuspowered.nucleus.api.module.home.data.Home;
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jail;
 import io.github.nucleuspowered.nucleus.api.module.mail.data.MailMessage;
 import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
@@ -37,7 +38,7 @@ public final class TypeTokens {
 
     public static final TypeToken<NamedLocation> NAMED_LOCATION = TypeToken.get(NamedLocation.class);
 
-    public static final TypeToken<Map<String, LocationNode>> LOCATION_NODES_MAP = new TypeToken<Map<String, LocationNode>>() { };
+    public static final TypeToken<Map<String, Home>> HOMES_MAP = new TypeToken<Map<String, Home>>() { };
 
     public static final TypeToken<ResourceKey> RESOURCE_KEY = TypeToken.get(ResourceKey.class);
 

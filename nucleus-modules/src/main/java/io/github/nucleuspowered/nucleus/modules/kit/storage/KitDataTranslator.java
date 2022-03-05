@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.modules.kit.storage;
 
 import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
@@ -35,7 +39,12 @@ public final class KitDataTranslator extends AbstractDataContainerDataTranslator
     }
 
     @Override
-    protected IKitDataObject translateCurrentVersion(final DataView dataView) throws InvalidDataException {
+    protected IKitDataObject createNew(final DataView dataView) {
+        return this.loadFromDataContainer(dataView);
+    }
+
+    @Override
+    protected IKitDataObject loadFromDataContainer(final DataView dataView) throws InvalidDataException {
         final IKitDataObject dataObject = this.createNew();
         dataObject
                 .setKitMap(dataView.keys(false)
@@ -47,8 +56,8 @@ public final class KitDataTranslator extends AbstractDataContainerDataTranslator
     }
 
     @Override
-    public DataContainer translateCurrentVersion(final IKitDataObject obj, final DataContainer view) throws InvalidDataException {
-        DataContainer container = view;
+    public DataView saveToDataContainer(final IKitDataObject obj, final DataView view) throws InvalidDataException {
+        DataView container = view;
         for (final Map.Entry<String, Kit> kit : obj.getKitMap().entrySet()) {
             container = container.set(DataQuery.of(kit.getKey()), kit.getValue());
         }

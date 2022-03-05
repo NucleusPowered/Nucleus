@@ -69,7 +69,7 @@ public class PreferenceKeyImpl<T> extends ScalarDataKey<T, IUserDataObject> impl
             final BiPredicate<INucleusServiceCollection, UUID> canAccess,
             final String descriptionKey,
             final TriConsumer<INucleusServiceCollection, UUID, T> onSet) {
-        super(new String[] { "user-prefs", key.asString() }, TypeToken.get(clazz).getType(), IUserDataObject.class, def);
+        super(new String[] { "user-prefs", key.asString() }, TypeToken.get(clazz).getType(), IUserDataObject.class, def, null);
         this.key = key;
         this.def = def;
         this.clazz = clazz;

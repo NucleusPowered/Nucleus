@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.note.listeners;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.modules.note.NotePermissions;
 import io.github.nucleuspowered.nucleus.modules.note.config.NoteConfig;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
@@ -25,14 +25,14 @@ import org.spongepowered.plugin.PluginContainer;
 
 public class NoteListener implements ListenerBase.Conditional {
 
-    private final NoteHandler noteHandler;
+    private final NoteService noteService;
     private final IPermissionService permissionService;
     private final IMessageProviderService messageService;
     private final PluginContainer pluginContainer;
 
     @Inject
     public NoteListener(final INucleusServiceCollection serviceCollection) {
-        this.noteHandler = serviceCollection.getServiceUnchecked(NoteHandler.class);
+        this.noteService = serviceCollection.getServiceUnchecked(NoteService.class);
         this.permissionService = serviceCollection.permissionService();
         this.messageService = serviceCollection.messageProvider();
         this.pluginContainer = serviceCollection.pluginContainer();
@@ -47,7 +47,7 @@ public class NoteListener implements ListenerBase.Conditional {
      */
     @Listener
     public void onPlayerLogin(final ServerSideConnectionEvent.Join event, @Getter("player") final ServerPlayer player) {
-        this.noteHandler.getNotes(player.uniqueId()).thenAccept(notes -> {
+        this.noteService.getNotes(player.uniqueId()).thenAccept(notes -> {
             if (notes != null && !notes.isEmpty()) {
                 final Audience audience = this.permissionService.permissionMessageChannel(NotePermissions.NOTE_SHOWONLOGIN);
                 Sponge.server().scheduler().executor(this.pluginContainer).execute(() ->

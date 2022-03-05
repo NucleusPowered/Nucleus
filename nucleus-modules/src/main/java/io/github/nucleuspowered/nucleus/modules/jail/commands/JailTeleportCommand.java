@@ -48,13 +48,13 @@ public class JailTeleportCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final Jail location = context.requireOne(this.parameter);
-        final ServerLocation serverLocation = location.getLocation().orElseThrow(() -> context.createException("command.jails.tp.noworld",
-                location.getName()));
+        final ServerLocation serverLocation = location.getLocation().getLocation().orElseThrow(() -> context.createException("command.jails.tp.noworld",
+                location.getLocation().getName()));
 
         final ServerPlayer player = context.getIfPlayer();
         player.setLocation(serverLocation);
-        player.setRotation(location.getRotation());
-        context.sendMessage("command.jails.tp.success", location.getName());
+        player.setRotation(location.getLocation().getRotation());
+        context.sendMessage("command.jails.tp.success", location.getLocation().getName());
         return context.successResult();
     }
 }

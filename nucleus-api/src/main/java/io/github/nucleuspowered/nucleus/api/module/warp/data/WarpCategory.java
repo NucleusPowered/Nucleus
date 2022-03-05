@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.module.warp.data;
 
 import net.kyori.adventure.text.Component;
+import org.spongepowered.api.data.persistence.DataSerializable;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -12,14 +13,7 @@ import java.util.Optional;
 /**
  * Defines a warp category.
  */
-public interface WarpCategory {
-
-    /**
-     * Gets the ID of the category.
-     *
-     * @return The ID.
-     */
-    String getId();
+public interface WarpCategory extends DataSerializable {
 
     /**
      * Gets the display name of the category. Defaults to the category name.
@@ -35,10 +29,5 @@ public interface WarpCategory {
      */
     Optional<Component> getDescription();
 
-    /**
-     * Gets the warps associated with this category.
-     *
-     * @return The warps.
-     */
-    Collection<Warp> getWarps();
+    String getId();
 }

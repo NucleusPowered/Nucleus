@@ -9,8 +9,9 @@ import com.google.inject.Singleton;
 import io.github.nucleuspowered.nucleus.api.module.warp.NucleusWarpService;
 import io.github.nucleuspowered.nucleus.api.module.warp.data.Warp;
 import io.github.nucleuspowered.nucleus.api.module.warp.data.WarpCategory;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusNamedLocation;
 import io.github.nucleuspowered.nucleus.modules.warp.WarpKeys;
-import io.github.nucleuspowered.nucleus.modules.warp.data.WarpCategoryData;
+import io.github.nucleuspowered.nucleus.modules.warp.data.NucleusWarpCategory;
 import io.github.nucleuspowered.nucleus.modules.warp.data.NucleusWarp;
 import io.github.nucleuspowered.nucleus.modules.warp.parameters.WarpCategoryParameter;
 import io.github.nucleuspowered.nucleus.modules.warp.parameters.WarpParameter;
@@ -111,7 +112,9 @@ public class WarpService implements NucleusWarpService, ServiceBase {
                 .orElseGet(Collections::emptyMap)
                 .forEach((key, value) -> this.warpCache.put(key.toLowerCase(), value));
 
-                this.warpCategoryCache.putAll(dataObject.get(WarpKeys.WARP_CATEGORIES)
+                this.warpCategoryCache
+                        .putAll(dataObject.get(WarpKeys.WARP_CATEGORIES)
+                                .map(x -> x.stream().collect(Collectors.toMap(WarpCategory::getId, v -> v)))
                                 .orElseGet(Collections::emptyMap));
     }
 
@@ -126,7 +129,7 @@ public class WarpService implements NucleusWarpService, ServiceBase {
                         .getGeneralService()
                         .getOrNewOnThread();
         dataObject.set(WarpKeys.WARP_NODES, new HashMap<>(this.warpCache));
-        dataObject.set(WarpKeys.WARP_CATEGORIES, new HashMap<>(this.warpCategoryCache));
+        dataObject.set(WarpKeys.WARP_CATEGORIES, new ArrayList<>(this.warpCategoryCache.values()));
         this.serviceCollection.storageManager().getGeneralService().save(dataObject);
     }
 
@@ -166,10 +169,7 @@ public class WarpService implements NucleusWarpService, ServiceBase {
                     null,
                     0,
                     null,
-                    location.worldKey(),
-                    location.position(),
-                    rotation,
-                    warpName
+                    new NucleusNamedLocation(warpName, location.worldKey(), location.position(), rotation)
             ));
 
             this.saveFromCache();
@@ -228,14 +228,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (warp.isPresent()) {
             final Warp w = warp.get();
             this.removeWarp(warpName);
-            this.getWarpCache().put(w.getName().toLowerCase(), new NucleusWarp(
+            this.getWarpCache().put(w.getNamedLocation().getName().toLowerCase(), new NucleusWarp(
                     w.getCategory().orElse(null),
                     0,
                     w.getDescription().orElse(null),
-                    w.getWorldResourceKey(),
-                    w.getPosition(),
-                    w.getRotation(),
-                    w.getName()
+                    w.getNamedLocation()
             ));
             this.saveFromCache();
             return true;
@@ -253,14 +250,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (warp.isPresent()) {
             final Warp w = warp.get();
             this.removeWarp(warpName);
-            this.getWarpCache().put(w.getName().toLowerCase(), new NucleusWarp(
+            this.getWarpCache().put(w.getNamedLocation().getName().toLowerCase(), new NucleusWarp(
                     w.getCategory().orElse(null),
                     cost,
                     w.getDescription().orElse(null),
-                    w.getWorldResourceKey(),
-                    w.getPosition(),
-                    w.getRotation(),
-                    w.getName()
+                    w.getNamedLocation()
             ));
             this.saveFromCache();
             return true;
@@ -273,7 +267,7 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (category != null) {
             final Optional<WarpCategory> c = this.getWarpCategory(category);
             if (!c.isPresent()) {
-                final WarpCategory wc = new WarpCategoryData(
+                final WarpCategory wc = new NucleusWarpCategory(
                         category,
                         null,
                         null);
@@ -291,14 +285,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (warp.isPresent()) {
             final Warp w = warp.get();
             this.removeWarp(warpName);
-            this.getWarpCache().put(w.getName().toLowerCase(), new NucleusWarp(
+            this.getWarpCache().put(w.getNamedLocation().getName().toLowerCase(), new NucleusWarp(
                     category,
                     w.getCost().orElse(0d),
                     w.getDescription().orElse(null),
-                    w.getWorldResourceKey(),
-                    w.getPosition(),
-                    w.getRotation(),
-                    w.getName()
+                    w.getNamedLocation()
             ));
             this.saveFromCache();
             return true;
@@ -312,14 +303,11 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (warp.isPresent()) {
             final Warp w = warp.get();
             this.removeWarp(warpName);
-            this.getWarpCache().put(w.getName().toLowerCase(), new NucleusWarp(
+            this.getWarpCache().put(w.getNamedLocation().getName().toLowerCase(), new NucleusWarp(
                     w.getCategory().orElse(null),
                     w.getCost().orElse(0d),
                     description,
-                    w.getWorldResourceKey(),
-                    w.getPosition(),
-                    w.getRotation(),
-                    w.getName()
+                    w.getNamedLocation()
             ));
             this.saveFromCache();
             return true;
@@ -343,7 +331,7 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (c.isPresent()) {
             final WarpCategory cat = c.get();
             this.getWarpCategoryCache().remove(category.toLowerCase());
-            this.getWarpCategoryCache().put(category.toLowerCase(), new WarpCategoryData(
+            this.getWarpCategoryCache().put(category.toLowerCase(), new NucleusWarpCategory(
                     cat.getId(),
                     displayName,
                     cat.getDescription().orElse(null)
@@ -361,7 +349,7 @@ public class WarpService implements NucleusWarpService, ServiceBase {
         if (c.isPresent()) {
             final WarpCategory cat = c.get();
             this.getWarpCategoryCache().remove(category.toLowerCase());
-            this.getWarpCategoryCache().put(category.toLowerCase(), new WarpCategoryData(
+            this.getWarpCategoryCache().put(category.toLowerCase(), new NucleusWarpCategory(
                     cat.getId(),
                     cat.getDisplayName(),
                     description

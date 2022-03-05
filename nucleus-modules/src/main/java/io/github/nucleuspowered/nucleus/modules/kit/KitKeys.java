@@ -12,7 +12,7 @@ import java.time.Instant;
 
 public final class KitKeys {
 
-    public static final DataKey.MapKey<String, Instant, IUserDataObject> REDEEMED_KITS
-            = DataKey.ofMap(TypeTokens.STRING, TypeTokens.INSTANT, IUserDataObject.class, "usedKits");
+    public static final DataKey.StringKeyedMapKey<Instant, IUserDataObject> REDEEMED_KITS
+            = DataKey.ofMap(TypeTokens.INSTANT, IUserDataObject.class, "usedKits");
 
 }

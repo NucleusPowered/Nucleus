@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess;
 
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IDataObject;
@@ -24,6 +28,8 @@ public abstract class AbstractDataContainerDataTranslator<R extends IDataObject>
         this.currentVersion = currentVersion;
         this.updaters = updaters;
     }
+
+    protected abstract R createNew(final DataView dataView);
 
     public int version() {
         return this.currentVersion;
@@ -61,18 +67,19 @@ public abstract class AbstractDataContainerDataTranslator<R extends IDataObject>
                 currentData = updater.update(currentData);
             }
         }
-        return this.translateCurrentVersion(currentData);
+        return this.loadFromDataContainer(currentData);
     }
 
     @Override
     public final DataContainer translate(final R obj) throws InvalidDataException {
         final DataContainer container = DataContainer.createNew();
         container.set(Queries.CONTENT_VERSION, this.version());
-        return this.translateCurrentVersion(obj, container);
+        this.saveToDataContainer(obj, container);
+        return container;
     }
 
-    protected abstract R translateCurrentVersion(final DataView dataView) throws InvalidDataException;
+    protected abstract R loadFromDataContainer(final DataView dataView) throws InvalidDataException;
 
-    protected abstract DataContainer translateCurrentVersion(final R obj, final DataContainer dataView) throws InvalidDataException;
+    protected abstract DataView saveToDataContainer(final R obj, final DataView dataView) throws InvalidDataException;
 
 }

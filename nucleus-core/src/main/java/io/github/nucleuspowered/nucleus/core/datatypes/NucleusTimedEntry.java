@@ -1,3 +1,7 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.core.datatypes;
 
 import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
@@ -17,6 +21,7 @@ public abstract class NucleusTimedEntry implements TimedEntry {
 
     public static final int CONTENT_VERSION = 1;
 
+    public static final DataQuery TIMED_ENTRY = DataQuery.of("timedEntry");
     private static final DataQuery REMAINING_SECONDS = DataQuery.of("remainingSeconds");
     private static final DataQuery ABSOLUTE_TIME = DataQuery.of("absoluteTime");
 
@@ -54,6 +59,16 @@ public abstract class NucleusTimedEntry implements TimedEntry {
         }
 
         @Override
+        public TimedEntry start() {
+            return this;
+        }
+
+        @Override
+        public TimedEntry stop() {
+            return new NucleusTimedEntry.Stopped(this.getRemainingTime());
+        }
+
+        @Override
         public DataContainer toContainer() {
             return DataContainer.createNew().set(NucleusTimedEntry.ABSOLUTE_TIME, this.targetInstant.getEpochSecond());
         }
@@ -75,6 +90,16 @@ public abstract class NucleusTimedEntry implements TimedEntry {
         @Override
         public boolean isCurrentlyTicking() {
             return false;
+        }
+
+        @Override
+        public TimedEntry start() {
+            return new NucleusTimedEntry.Ticking(Instant.now().plus(this.duration));
+        }
+
+        @Override
+        public TimedEntry stop() {
+            return this;
         }
 
         @Override

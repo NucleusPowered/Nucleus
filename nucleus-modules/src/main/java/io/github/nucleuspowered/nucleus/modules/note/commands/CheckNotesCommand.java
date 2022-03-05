@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.note.commands;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.note.data.Note;
 import io.github.nucleuspowered.nucleus.modules.note.NotePermissions;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -49,7 +49,7 @@ public class CheckNotesCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final NoteHandler handler = context.getServiceCollection().getServiceUnchecked(NoteHandler.class);
+        final NoteService handler = context.getServiceCollection().getServiceUnchecked(NoteService.class);
         final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), Identifiable::uniqueId);
 
         handler.getNotes(uuid).thenAccept(notes -> {

@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.home;
 
+import io.github.nucleuspowered.nucleus.api.module.home.data.Home;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
 import io.github.nucleuspowered.nucleus.modules.home.commands.DeleteHomeCommand;
 import io.github.nucleuspowered.nucleus.modules.home.commands.HomeCommand;
@@ -16,6 +17,7 @@ import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
+import io.github.nucleuspowered.nucleus.modules.home.services.NucleusHome;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +31,8 @@ public class HomeModule implements IModule.Configurable<HomeConfig> {
     @Override
     public void init(final INucleusServiceCollection serviceCollection) {
         serviceCollection.registerService(HomeService.class, new HomeService(serviceCollection), false);
+
+        serviceCollection.game().dataManager().registerBuilder(Home.class, new NucleusHome.DataBuilder());
     }
 
     @Override

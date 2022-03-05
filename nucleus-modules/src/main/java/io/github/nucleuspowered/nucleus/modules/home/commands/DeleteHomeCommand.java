@@ -70,11 +70,11 @@ public class DeleteHomeCommand implements ICommandExecutor {
 
         try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
             frame.pushCause(context.getCommandSourceRoot());
-            context.getServiceCollection().getServiceUnchecked(HomeService.class).removeHome(wl.getOwnersUniqueId(), wl.getName());
+            context.getServiceCollection().getServiceUnchecked(HomeService.class).removeHome(wl.getOwnersUniqueId(), wl.getLocation().getName());
             if (target.isPresent()) {
-                context.sendMessage("command.home.delete.other.success", target.get().name(), wl.getName());
+                context.sendMessage("command.home.delete.other.success", target.get().name(), wl.getLocation().getName());
             } else {
-                context.sendMessage("command.home.delete.success", wl.getName());
+                context.sendMessage("command.home.delete.success", wl.getLocation().getName());
             }
         } catch (final HomeException e) {
             return context.errorResultLiteral(Component.text(e.getMessage() == null ? "null" : e.getMessage()));

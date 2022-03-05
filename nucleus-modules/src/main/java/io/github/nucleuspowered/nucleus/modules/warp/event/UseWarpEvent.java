@@ -17,7 +17,7 @@ public class UseWarpEvent extends AbstractWarpEvent implements NucleusWarpEvent.
     private final Warp warp;
 
     public UseWarpEvent(final Cause cause, final UUID user, final Warp warp) {
-        super(cause, warp.getName());
+        super(cause, warp.getNamedLocation().getName());
         this.user = user;
         this.warp = warp;
     }
@@ -27,7 +27,7 @@ public class UseWarpEvent extends AbstractWarpEvent implements NucleusWarpEvent.
     }
 
     @Override public ServerLocation getLocation() {
-        return this.warp.getLocation().get();
+        return this.warp.getNamedLocation().getLocation().get();
     }
 
     @Override public UUID getTargetUser() {

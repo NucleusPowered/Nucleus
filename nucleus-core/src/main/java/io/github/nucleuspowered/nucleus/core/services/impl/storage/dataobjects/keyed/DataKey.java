@@ -4,17 +4,23 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed;
 
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.AbstractDataKey;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.ListDataKey;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.MappedDataKey;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.MappedListDataKey;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.MappedDataKeyStringKeyed;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.StringKeyedMappedListDataKeyStringKeyed;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.ScalarDataKey;
 import io.leangen.geantyref.TypeToken;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.data.persistence.DataQuery;
+import org.spongepowered.api.data.persistence.DataView;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Represents a data point in an {@link AbstractKeyBasedDataObject}
@@ -25,25 +31,28 @@ import java.util.Map;
 public interface DataKey<R, O extends IKeyedDataObject<?>> {
 
     static <T, O extends IKeyedDataObject<?>> DataKey<T, O> of(final TypeToken<T> type, final Class<O> target, final String... key) {
-        return new ScalarDataKey<>(key, type.getType(), target,  null);
+        return new ScalarDataKey<>(key, type.getType(), target,  null, null);
     }
 
     static <T, O extends IKeyedDataObject<?>> DataKey<T, O> of(final T def, final TypeToken<T> type, final Class<O> target, final String... key) {
-        return new ScalarDataKey<>(key, type.getType(), target, def);
+        return new ScalarDataKey<>(key, type.getType(), target, def, null);
+    }
+
+    static <T, O extends IKeyedDataObject<?>> DataKey.ListKey<T, O> ofList(final TypeToken<T> type, final Class<O> target, final BiFunction<DataQuery, DataView, DataView> transformer, final String... key) {
+        return new ListDataKey<>(key, type, target, transformer);
     }
 
     static <T, O extends IKeyedDataObject<?>> DataKey.ListKey<T, O> ofList(final TypeToken<T> type, final Class<O> target, final String... key) {
-        return new ListDataKey<>(key, type, target);
+        return new ListDataKey<>(key, type, target, null);
     }
 
-    static <K, V, O extends IKeyedDataObject<?>> DataKey.MapKey<K, V, O> ofMap(
-            final TypeToken<K> keyType, final TypeToken<V> value, final Class<O> target, final String... key) {
-        return new MappedDataKey<>(key, keyType, value, target);
+    static <V, O extends IKeyedDataObject<?>> StringKeyedMapKey<V, O> ofMap(final TypeToken<V> value, final Class<O> target, final String... key) {
+        return new MappedDataKeyStringKeyed<>(key, value, target, null);
     }
 
-    static <K, V, O extends IKeyedDataObject<?>> DataKey.MapListKey<K, V, O> ofMapList(
-            final TypeToken<K> keyType, final TypeToken<V> listValueType, final Class<O> target, final String... key) {
-        return new MappedListDataKey<>(key, keyType, listValueType, target);
+    static <K, V, O extends IKeyedDataObject<?>> StringKeyedMapListKey<V, O> ofMapList(
+            final TypeToken<V> listValueType, final Class<O> target, final String... key) {
+        return new StringKeyedMappedListDataKeyStringKeyed<>(key, listValueType, target, null);
     }
 
     /**
@@ -60,6 +69,8 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
      */
     String[] getDataPath();
 
+    DataQuery getDataQuery();
+
     /**
      * The {@link Class} of the data
      *
@@ -68,15 +79,26 @@ public interface DataKey<R, O extends IKeyedDataObject<?>> {
     Type getKeyType();
 
     /**
+     * Gets the value from the provided {@link DataView}, if it exists
+     * when queried with the given {@link DataQuery}
+     *
+     * @param view The view
+     * @return The value, if it exists
+     */
+    Optional<R> getFromDataView(DataView view);
+
+    /**
      * The default
      *
      * @return The default
      */
     @Nullable R getDefault();
 
+    void performTransformation(DataContainer data);
+
     interface ListKey<R, O extends IKeyedDataObject<?>> extends DataKey<List<R>, O> { }
 
-    interface MapKey<K, V, O extends IKeyedDataObject<?>> extends DataKey<Map<K, V>, O> { }
+    interface StringKeyedMapKey<V, O extends IKeyedDataObject<?>> extends DataKey<Map<String, V>, O> { }
 
-    interface MapListKey<K, V, O extends IKeyedDataObject<?>> extends DataKey<Map<K, List<V>>, O> { }
+    interface StringKeyedMapListKey<V, O extends IKeyedDataObject<?>> extends DataKey<Map<String, List<V>>, O> { }
 }

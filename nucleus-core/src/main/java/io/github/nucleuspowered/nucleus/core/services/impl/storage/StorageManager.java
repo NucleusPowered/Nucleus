@@ -5,6 +5,10 @@
 package io.github.nucleuspowered.nucleus.core.services.impl.storage;
 
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.AbstractDataContainerDataTranslator;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess.KeyBasedDataTranslator;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.AbstractKeyBasedDataObject;
+import io.github.nucleuspowered.nucleus.core.util.TypeTokens;
+import io.leangen.geantyref.TypeToken;
 import org.spongepowered.api.data.persistence.DataContainer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -34,6 +38,8 @@ import io.github.nucleuspowered.nucleus.core.services.impl.storage.services.ISto
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.data.persistence.DataView;
+import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -103,39 +109,14 @@ public final class StorageManager implements IStorageManager {
 
     private IStorageRepository.@Nullable Single<DataContainer> generalRepository;
 
-    private final AbstractDataContainerDataTranslator<IUserDataObject> userDataAccess = new IConfigurateBackedDataTranslator<IUserDataObject>() {
-        @Override public ConfigurationOptions getOptions() {
-            return StorageManager.this.configurateHelper.getDefaultDataOptions();
-        }
+    private final AbstractDataContainerDataTranslator<IUserDataObject> userDataAccess =
+            new KeyBasedDataTranslator<>(TypeToken.get(IUserDataObject.class), UserDataObject::new);
 
-        @Override public IUserDataObject createNew() {
-            final UserDataObject d = new UserDataObject();
-            d.setBackingNode(StorageManager.this.configurateHelper.createDataNode());
-            return d;
-        }
-    };
-    private final AbstractDataContainerDataTranslator<IWorldDataObject> worldDataAccess = new IConfigurateBackedDataTranslator<IWorldDataObject>() {
-        @Override public ConfigurationOptions getOptions() {
-            return StorageManager.this.configurateHelper.getDefaultDataOptions();
-        }
+    private final AbstractDataContainerDataTranslator<IWorldDataObject> worldDataAccess =
+            new KeyBasedDataTranslator<>(TypeToken.get(IWorldDataObject.class), WorldDataObject::new);
 
-        @Override public IWorldDataObject createNew() {
-            final WorldDataObject d = new WorldDataObject();
-            d.setBackingNode(StorageManager.this.configurateHelper.createDataNode());
-            return d;
-        }
-    };
-    private final AbstractDataContainerDataTranslator<IGeneralDataObject> generalDataAccess = new IConfigurateBackedDataTranslator<IGeneralDataObject>() {
-        @Override public ConfigurationOptions getOptions() {
-            return StorageManager.this.configurateHelper.getDefaultDataOptions();
-        }
-
-        @Override public IGeneralDataObject createNew() {
-            final GeneralDataObject d = new GeneralDataObject();
-            d.setBackingNode(StorageManager.this.configurateHelper.createDataNode());
-            return d;
-        }
-    };
+    private final AbstractDataContainerDataTranslator<IGeneralDataObject> generalDataAccess =
+            new KeyBasedDataTranslator<>(TypeToken.get(IGeneralDataObject.class), GeneralDataObject::new);;
 
     @Override
     public IStorageService.SingleCached<IGeneralDataObject> getGeneralService() {

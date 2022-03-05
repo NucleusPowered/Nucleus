@@ -6,13 +6,14 @@ package io.github.nucleuspowered.nucleus.api.module.warp.data;
 
 import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
 import net.kyori.adventure.text.Component;
+import org.spongepowered.api.data.persistence.DataSerializable;
 
 import java.util.Optional;
 
 /**
  * Represents a warp.
  */
-public interface Warp extends NamedLocation {
+public interface Warp extends DataSerializable {
 
     /**
      * Gets the category for this warp, if it exists.
@@ -34,4 +35,6 @@ public interface Warp extends NamedLocation {
      * @return The {@link Component} description, if available.
      */
     Optional<Component> getDescription();
+
+    NamedLocation getNamedLocation();
 }

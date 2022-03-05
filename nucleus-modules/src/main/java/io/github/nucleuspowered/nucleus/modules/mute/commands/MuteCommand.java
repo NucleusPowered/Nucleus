@@ -112,7 +112,7 @@ public class MuteCommand implements ICommandExecutor, IReloadableService.Reloada
 
     private void timedMute(
             final ICommandContext context, final User user, final Mute data, final Audience mc) {
-        final String ts = context.getTimeString(data.getRemainingTime().get());
+        final String ts = context.getTimeString(data.getTimedEntry().get().getRemainingTime());
         mc.sendMessage(context.getMessage("command.mute.success.time", user.name(), context.getName(), ts));
         mc.sendMessage(context.getMessage("standard.reasoncoloured", data.getReason()));
 

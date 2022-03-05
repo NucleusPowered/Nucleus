@@ -15,7 +15,7 @@ import io.github.nucleuspowered.nucleus.modules.kit.KitPermissions;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfig;
 import io.github.nucleuspowered.nucleus.modules.kit.events.KitEvent;
 import io.github.nucleuspowered.nucleus.modules.kit.misc.KitRedeemResultImpl;
-import io.github.nucleuspowered.nucleus.modules.kit.misc.SingleKit;
+import io.github.nucleuspowered.nucleus.modules.kit.data.SingleKit;
 import io.github.nucleuspowered.nucleus.modules.kit.parameters.KitParameter;
 import io.github.nucleuspowered.nucleus.modules.kit.storage.IKitDataObject;
 import io.github.nucleuspowered.nucleus.modules.kit.storage.KitStorageModule;

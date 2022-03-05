@@ -1,46 +1,57 @@
+/*
+ * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
+ * at the root of this project for more details.
+ */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess;
 
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.AbstractKeyBasedDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 import io.leangen.geantyref.TypeToken;
+import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 
 import java.util.Collections;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
-public class KeyBasedDataTranslator<T extends AbstractKeyBasedDataObject<T>> extends AbstractDataContainerDataTranslator<T> {
+public class KeyBasedDataTranslator<K extends IKeyedDataObject<K>, T extends AbstractKeyBasedDataObject<K>> extends AbstractDataContainerDataTranslator<K> {
 
-    private final TypeToken<T> typeToken;
-    private final Supplier<T> create;
+    private final TypeToken<K> typeToken;
+    private final Function<DataView, K> create;
 
-    public KeyBasedDataTranslator(final TypeToken<T> typeToken, final Supplier<T> create) {
+    public KeyBasedDataTranslator(final TypeToken<K> typeToken, final Function<DataView, K> create) {
         super(1, Collections.emptyList());
         this.typeToken = typeToken;
         this.create = create;
     }
 
     @Override
-    protected T translateCurrentVersion(final DataView dataView) throws InvalidDataException {
-        // for each data query, if there is a matching key, apply it to the map if it's of the right type,
-        // else put it in invalid.
-
-        return null;
+    protected K loadFromDataContainer(final DataView dataView) throws InvalidDataException {
+        return this.create.apply(dataView);
     }
 
     @Override
-    protected DataContainer translateCurrentVersion(final T obj, final DataContainer dataView) throws InvalidDataException {
-        return null;
-    }
-
-
-    @Override
-    public T createNew() {
-        return this.create.get();
+    protected DataView saveToDataContainer(final K obj, final DataView dataView) throws InvalidDataException {
+        if (obj instanceof AbstractKeyBasedDataObject<?>) {
+            return dataView.set(DataQuery.of(), ((AbstractKeyBasedDataObject<?>) obj).data());
+        }
+        throw new InvalidDataException(obj.getClass().getName() + "is not of type AbstractKeyBasedDataObject");
     }
 
     @Override
-    public TypeToken<T> token() {
+    public K createNew() {
+        return this.create.apply(DataContainer.createNew());
+    }
+
+    @Override
+    protected K createNew(final DataView dataView) {
+        return this.create.apply(dataView);
+    }
+
+    @Override
+    public TypeToken<K> token() {
         return this.typeToken;
     }
 }

@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.api.module.mail.data;
 
+import org.spongepowered.api.data.persistence.DataSerializable;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,7 +13,7 @@ import java.util.UUID;
 /**
  * Represents a mail message.
  */
-public interface MailMessage {
+public interface MailMessage extends DataSerializable {
 
     /**
      * The message that was sent.

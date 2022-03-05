@@ -40,7 +40,7 @@ public class SetDescriptionCommand implements ICommandExecutor {
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final WarpService handler = context.getServiceCollection().getServiceUnchecked(WarpService.class);
-        final String warpName = context.requireOne(handler.warpElement(false)).getName();
+        final String warpName = context.requireOne(handler.warpElement(false)).getNamedLocation().getName();
         if (context.hasFlag("r")) {
             // Remove the desc.
             if (handler.setWarpDescription(warpName, null)) {

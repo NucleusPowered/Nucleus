@@ -20,8 +20,7 @@ public final class PowertoolKeys {
                     "userpref.powertooltoggle"
             );
 
-    public final static DataKey.MapListKey<String, String, IUserDataObject> POWERTOOLS = DataKey.ofMapList(
-                    TypeTokens.STRING,
+    public final static DataKey.StringKeyedMapListKey<String, IUserDataObject> POWERTOOLS = DataKey.ofMapList(
                     TypeTokens.STRING,
                     IUserDataObject.class,
                     "powertools"

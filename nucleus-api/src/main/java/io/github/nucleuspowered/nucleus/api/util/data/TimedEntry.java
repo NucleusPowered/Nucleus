@@ -35,4 +35,18 @@ public interface TimedEntry extends DataSerializable {
      * @return <code>true</code> if so.
      */
     boolean isCurrentlyTicking();
+
+    /**
+     * Returns a {@link TimedEntry} that is currently ticking.
+     *
+     * @return An entry that represents something that's ticking down.
+     */
+    TimedEntry start();
+
+    /**
+     * Returns a {@link TimedEntry} that is currently not ticking.
+     *
+     * @return An entry that represents something that is not ticking down.
+     */
+    TimedEntry stop();
 }

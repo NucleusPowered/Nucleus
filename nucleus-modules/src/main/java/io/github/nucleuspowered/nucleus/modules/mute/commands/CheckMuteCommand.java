@@ -53,10 +53,10 @@ public class CheckMuteCommand implements ICommandExecutor {
         // Muted, get information.
         final Mute md = omd.get();
         final Component muterName = context.getServiceCollection().playerDisplayNameService().getName(md.getMuter().orElse(Util.CONSOLE_FAKE_UUID));
-        if (md.getRemainingTime().isPresent()) {
+        if (md.getTimedEntry().isPresent()) {
             context.sendMessage("command.checkmute.mutedfor", name,
                     muterName,
-                    context.getTimeString(md.getRemainingTime().get().getSeconds()));
+                    context.getTimeString(md.getTimedEntry().get().getRemainingTime().getSeconds()));
         } else {
             context.sendMessage("command.checkmute.mutedperm", name, muterName);
         }

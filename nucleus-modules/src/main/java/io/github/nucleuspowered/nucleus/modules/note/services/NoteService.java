@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.module.note.NucleusNoteService;
 import io.github.nucleuspowered.nucleus.api.module.note.data.Note;
 import io.github.nucleuspowered.nucleus.modules.note.NoteKeys;
-import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
 import io.github.nucleuspowered.nucleus.modules.note.event.CreateNoteEvent;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
@@ -28,12 +27,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @APIService(NucleusNoteService.class)
-public class NoteHandler implements NucleusNoteService, ServiceBase {
+public class NoteService implements NucleusNoteService, ServiceBase {
 
     private final INucleusServiceCollection serviceCollection;
 
     @Inject
-    public NoteHandler(final INucleusServiceCollection serviceCollection) {
+    public NoteService(final INucleusServiceCollection serviceCollection) {
         this.serviceCollection = serviceCollection;
     }
 
@@ -42,15 +41,15 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
         return this.serviceCollection.storageManager()
                 .getUserService().get(uuid)
                 .thenApply(result -> result
-                        .<Collection<Note>>flatMap(udo -> udo.get(NoteKeys.NOTE_DATA).map(x -> x.stream().map(UserNote::fromNoteData).collect(Collectors.toList())))
+                        .<Collection<Note>>flatMap(udo -> udo.get(NoteKeys.NOTE_DATA).map(ArrayList::new))
                         .orElseGet(Collections::emptyList));
     }
 
     @Override public CompletableFuture<Boolean> addNote(@Nullable final UUID uuid, final String note) {
-        return this.addNote(uuid, new UserNote(uuid, note, Instant.now()));
+        return this.addNote(uuid, new NucleusNote(uuid, note, Instant.now()));
     }
 
-    public CompletableFuture<Boolean> addNote(final UUID user, final UserNote note) {
+    public CompletableFuture<Boolean> addNote(final UUID user, final NucleusNote note) {
         Objects.requireNonNull(user);
         Objects.requireNonNull(note);
 
@@ -65,9 +64,9 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
         Sponge.eventManager().post(event);
 
         return this.serviceCollection.storageManager().getUserService().getOrNew(user).thenApply(x -> {
-            try (final IKeyedDataObject.Value<List<NoteData>> v = x.getAndSet(NoteKeys.NOTE_DATA)) {
-                final List<NoteData> data = v.getValue().orElseGet(ArrayList::new);
-                data.add(note.toNoteData());
+            try (final IKeyedDataObject.Value<List<Note>> v = x.getAndSet(NoteKeys.NOTE_DATA)) {
+                final List<Note> data = v.getValue().orElseGet(ArrayList::new);
+                data.add(note);
                 v.setValue(data);
             }
             this.serviceCollection.storageManager().getUserService().save(user, x);
@@ -79,10 +78,10 @@ public class NoteHandler implements NucleusNoteService, ServiceBase {
     public CompletableFuture<Boolean> removeNote(final UUID uuid, final Note note) {
         return this.serviceCollection.storageManager().getUserService().get(uuid).thenApply(udo -> {
             if (udo.isPresent()) {
-                try (final IKeyedDataObject.Value<List<NoteData>> v = udo.get().getAndSet(NoteKeys.NOTE_DATA)) {
+                try (final IKeyedDataObject.Value<List<Note>> v = udo.get().getAndSet(NoteKeys.NOTE_DATA)) {
                     if (v.getValue().isPresent()) {
-                        final List<NoteData> data = new ArrayList<>(v.getValue().get());
-                        if (data.removeIf(x -> note.equals(UserNote.fromNoteData(x)))) {
+                        final List<Note> data = new ArrayList<>(v.getValue().get());
+                        if (data.removeIf(x -> note.equals(x))) {
                             v.setValue(data);
                             this.serviceCollection.storageManager().getUserService().save(uuid, udo.get());
                             return true;

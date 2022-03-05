@@ -67,7 +67,7 @@ public class SetCategoryCommand implements ICommandExecutor {
     }
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final String warpName = context.requireOne(context.getServiceCollection().getServiceUnchecked(WarpService.class).warpElement(false)).getName();
+        final String warpName = context.requireOne(context.getServiceCollection().getServiceUnchecked(WarpService.class).warpElement(false)).getNamedLocation().getName();
         final WarpService handler = context.getServiceCollection().getServiceUnchecked(WarpService.class);
         if (context.hasFlag("r")) {
             // Remove the category.

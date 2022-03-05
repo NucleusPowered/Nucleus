@@ -97,7 +97,7 @@ public class SetWarpCommand implements ICommandExecutor {
                         .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
             }
 
-            final String toRemove = exists.get().getName();
+            final String toRemove = exists.get().getNamedLocation().getName();
             if (warpService.removeWarp(toRemove)) {
                 // Worked. Tell them.
                 context.sendMessage("command.warps.del", toRemove);

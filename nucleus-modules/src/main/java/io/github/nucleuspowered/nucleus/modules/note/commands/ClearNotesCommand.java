@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.note.commands;
 
 import io.github.nucleuspowered.nucleus.modules.note.NotePermissions;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -37,7 +37,7 @@ public class ClearNotesCommand implements ICommandExecutor {
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final UUID user = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), Identifiable::uniqueId);
         final Component name = context.getDisplayName(user);
-        final NoteHandler handler = context.getServiceCollection().getServiceUnchecked(NoteHandler.class);
+        final NoteService handler = context.getServiceCollection().getServiceUnchecked(NoteService.class);
 
         handler.getNotes(user).thenAccept(x -> {
             final ISchedulerService service = context.getServiceCollection().schedulerService();

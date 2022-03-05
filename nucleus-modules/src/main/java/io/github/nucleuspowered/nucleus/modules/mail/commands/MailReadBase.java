@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.mail.commands;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.mail.NucleusMailService;
 import io.github.nucleuspowered.nucleus.api.module.mail.data.MailMessage;
-import io.github.nucleuspowered.nucleus.modules.mail.data.MailData;
+import io.github.nucleuspowered.nucleus.modules.mail.data.NucleusMailMessage;
 import io.github.nucleuspowered.nucleus.modules.mail.services.MailHandler;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -22,7 +22,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.pagination.PaginationList;
 
@@ -136,8 +135,8 @@ public final class MailReadBase {
     }
 
     private UUID getUuid(final MailMessage message) {
-        if (message instanceof MailData) {
-            return ((MailData) message).getUuid();
+        if (message instanceof NucleusMailMessage) {
+            return ((NucleusMailMessage) message).getSenderUUID();
         } else {
             return message.getSender().orElse(Util.CONSOLE_FAKE_UUID);
         }

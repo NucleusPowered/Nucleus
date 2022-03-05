@@ -4,13 +4,13 @@
  */
 package io.github.nucleuspowered.storage.persistence;
 
-import com.google.gson.JsonObject;
 import io.github.nucleuspowered.storage.exceptions.DataDeleteException;
 import io.github.nucleuspowered.storage.exceptions.DataLoadException;
 import io.github.nucleuspowered.storage.exceptions.DataQueryException;
 import io.github.nucleuspowered.storage.exceptions.DataSaveException;
 import io.github.nucleuspowered.storage.query.IQueryObject;
 import io.github.nucleuspowered.storage.util.KeyedObject;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.configurate.ConfigurateException;
 
 import java.util.Collection;
@@ -22,8 +22,8 @@ import java.util.UUID;
  * Base interface for interfacing with storage engines. Implementors should implement one of the
  * sub interfaces, {@link Single} or {@link Keyed}, depending on the store.
  *
- * <p>Note that all data will be provided as {@link JsonObject}s. It is expected that the json going
- * into storage is equivalent to that coming out. You may inspect the json as you wish (which you may
+ * <p>Note that all data will be provided as {@link DataContainer}s. It is expected that the container going
+ * into storage is equivalent to that coming out. You may inspect the container as you wish (which you may
  * want to do to support queries more effectively)</p>
  */
 public interface IStorageRepository {
@@ -58,7 +58,8 @@ public interface IStorageRepository {
     boolean hasCache();
 
     /**
-     * A repository where a single document is stored.
+     * A repository where a single document is stored. In general, this will be a game or
+     * server scoped document.
      */
     interface Single<O> extends IStorageRepository {
 

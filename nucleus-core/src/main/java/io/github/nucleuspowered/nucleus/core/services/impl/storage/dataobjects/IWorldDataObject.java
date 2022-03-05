@@ -4,9 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects;
 
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.configurate.IConfigurateBackedDataObject;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 
-public interface IWorldDataObject extends IKeyedDataObject<IWorldDataObject>, IConfigurateBackedDataObject {
+public interface IWorldDataObject extends IKeyedDataObject<IWorldDataObject> {
 
 }

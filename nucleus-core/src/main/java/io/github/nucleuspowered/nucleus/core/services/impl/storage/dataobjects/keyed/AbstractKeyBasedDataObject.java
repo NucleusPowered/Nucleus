@@ -9,6 +9,7 @@ import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -31,13 +32,6 @@ public abstract class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> 
 
     public final DataContainer data() {
         return this.data;
-    }
-
-    private <V> @Nullable V getData(final DataKey<V, ? extends T> dataKey) {
-        if (this.dataHolder.containsKey(dataKey)) { // might have a null value, can't just assume no value needs to hit the container
-            return (V) this.dataHolder.get(dataKey);
-        }
-        final V data = this.data.getObject(DataQuery.of(dataKey.getDataPath()), dataKey.getKeyType())
     }
 
     @Override
@@ -65,9 +59,8 @@ public abstract class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> 
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
     public <V> V getNullable(final DataKey<V, ? extends T> dataKey) {
-        return (V) this.dataHolder.get(dataKey);
+        return get(dataKey).orElse(null);
     }
 
     @Nullable
@@ -80,8 +73,15 @@ public abstract class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> 
         return t;
     }
 
+    @SuppressWarnings("unchecked")
     public <V> Optional<V> get(final DataKey<V, ? extends T> dataKey) {
-        return Optional.ofNullable(this.getNullable(dataKey));
+        if (this.dataHolder.containsKey(dataKey)) { // might have a null value, can't just assume no value needs to hit the container
+            return Optional.of((V) this.dataHolder.get(dataKey));
+        }
+        dataKey.performTransformation(this.data);
+        final Optional<V> v = dataKey.getFromDataView(this.data);
+        this.dataHolder.put(dataKey, v.orElse(null));
+        return v;
     }
 
     public <V> boolean set(final DataKey<V, ? extends T> dataKey, final V data) {

@@ -4,7 +4,12 @@
  */
 package io.github.nucleuspowered.nucleus.modules.note;
 
+import io.github.nucleuspowered.nucleus.api.module.note.data.Note;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
+import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
+import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
+import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
+import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
 import io.github.nucleuspowered.nucleus.modules.note.commands.CheckNotesCommand;
 import io.github.nucleuspowered.nucleus.modules.note.commands.ClearNotesCommand;
 import io.github.nucleuspowered.nucleus.modules.note.commands.NoteCommand;
@@ -12,11 +17,8 @@ import io.github.nucleuspowered.nucleus.modules.note.commands.RemoveNoteCommand;
 import io.github.nucleuspowered.nucleus.modules.note.config.NoteConfig;
 import io.github.nucleuspowered.nucleus.modules.note.infoprovider.NoteInfoProvider;
 import io.github.nucleuspowered.nucleus.modules.note.listeners.NoteListener;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
-import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
-import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
-import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
+import io.github.nucleuspowered.nucleus.modules.note.services.NucleusNote;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +31,8 @@ public final class NoteModule implements IModule.Configurable<NoteConfig> {
 
     @Override
     public void init(final INucleusServiceCollection serviceCollection) {
-        serviceCollection.registerService(NoteHandler.class, new NoteHandler(serviceCollection), false);
+        serviceCollection.registerService(NoteService.class, new NoteService(serviceCollection), false);
+        serviceCollection.game().dataManager().registerBuilder(Note.class, new NucleusNote.DataBuilder());
     }
 
     @Override

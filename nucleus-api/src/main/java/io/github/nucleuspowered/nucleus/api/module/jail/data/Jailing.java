@@ -54,6 +54,11 @@ public interface Jailing extends DataSerializable {
      */
     Optional<Instant> getCreationInstant();
 
+    /**
+     * Gets the {@link TimedEntry} which represents how long this jailing has to go.
+     *
+     * @return The timed entry.
+     */
     Optional<TimedEntry> getTimedEntry();
 
 }
