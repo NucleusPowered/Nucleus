@@ -52,6 +52,7 @@ public class NucleusWarpCategory implements WarpCategory {
     @Override
     public DataContainer toContainer() {
         final DataContainer dataContainer = DataContainer.createNew()
+                .set(NucleusWarpCategory.ID, this.id)
                 .set(NucleusWarpCategory.DISPLAY_NAME, this.displayName);
         if (description != null) {
             dataContainer.set(NucleusWarpCategory.DESCRIPTION, this.description);
