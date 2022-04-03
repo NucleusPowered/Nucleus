@@ -20,6 +20,7 @@ import org.spongepowered.api.user.UserManager;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -63,7 +64,7 @@ public class UniqueUserService implements ServiceBase, IReloadableService.Reload
             ERROR_REPORTED = false;
 
             if (Sponge.server().onMainThread()) {
-                Sponge.asyncScheduler().createExecutor(this.serviceCollection.pluginContainer())
+                Sponge.asyncScheduler().executor(this.serviceCollection.pluginContainer())
                         .submit(() -> this.doTask(resultConsumer));
             } else {
                 this.doTask(resultConsumer);
@@ -79,7 +80,8 @@ public class UniqueUserService implements ServiceBase, IReloadableService.Reload
         // This could be slow...
         if (this.isMoreAccurate) {
             this.userCount = uss.streamAll().filter(GameProfile::hasName)
-                    .map(uss::find)
+                    .map(uss::load)
+                    .map(CompletableFuture::join)
                     .filter(Optional::isPresent)
                     .filter(x -> {
                         final boolean ret = x.get().player().isPresent() || service.exists(x.get().uniqueId()).join(); // already async

@@ -13,6 +13,9 @@ sourceSets {
     main
 }
 
+val powermockJunit4: String by rootProject.properties
+val powermockApiMockito: String by rootProject.properties
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -31,11 +34,7 @@ dependencies {
         exclude("org.spongepowered", "configurate-yaml")
     }
 
-    testImplementation("org.mockito:mockito-all:1.10.19")
-    testImplementation("org.powermock:powermock-module-junit4:1.6.4")
-    testImplementation("org.powermock:powermock-api-mockito:1.6.4")
-    testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0")
-    testImplementation("junit", "junit", "4.12")
+
 }
 
 tasks {

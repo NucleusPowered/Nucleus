@@ -31,10 +31,4 @@ java {
 dependencies {
     api(project(":nucleus-api"))
     implementation(project(":nucleus-core"))
-
-    testImplementation("org.mockito:mockito-all:1.10.19")
-    testImplementation("org.powermock:powermock-module-junit4:1.6.4")
-    testImplementation("org.powermock:powermock-api-mockito:1.6.4")
-    testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0")
-    testImplementation("junit", "junit", "4.12")
 }

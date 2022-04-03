@@ -23,6 +23,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.profile.GameProfile;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 @Command(
@@ -44,8 +45,8 @@ public class UnmuteCommand implements ICommandExecutor, IReloadableService.Reloa
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final Either<User, GameProfile> either = NucleusParameters.Composite.parseUserOrGameProfile(context);
-        final User user = either.fold(Function.identity(), Sponge.server().userManager()::findOrCreate);
+        final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), GameProfile::uuid);
+        final User user = Sponge.server().userManager().loadOrCreate(uuid).join();
         final MuteService handler = context.getServiceCollection().getServiceUnchecked(MuteService.class);
         if (this.levelConfig.isUseLevels() &&
                 !context.isPermissionLevelOkay(user,

@@ -23,6 +23,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.pagination.PaginationList;
 
 import java.time.ZoneId;
@@ -51,7 +52,10 @@ public final class MailReadBase {
         }
 
         final String name =
-                Sponge.server().userManager().find(target).map(User::name).orElseGet(() -> context.getMessageString("standard.unknown"));
+                Sponge.server().gameProfileManager().cache()
+                        .findById(target)
+                        .flatMap(GameProfile::name)
+                        .orElseGet(() -> context.getMessageString("standard.unknown"));
         final boolean isSelf = context.is(target);
         if (lmd.isEmpty()) {
             if (isSelf) {

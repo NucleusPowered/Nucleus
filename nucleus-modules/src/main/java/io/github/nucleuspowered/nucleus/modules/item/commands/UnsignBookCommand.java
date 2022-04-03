@@ -25,6 +25,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Command(
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 )
 public class UnsignBookCommand implements ICommandExecutor {
 
-    private final Parameter.Value<User> user;
+    private final Parameter.Value<UUID> user;
 
     @Inject
     public UnsignBookCommand(final ICommandElementSupplier elementSupplier) {

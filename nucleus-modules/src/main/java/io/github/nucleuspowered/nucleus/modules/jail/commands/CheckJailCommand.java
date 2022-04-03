@@ -26,6 +26,7 @@ import org.spongepowered.api.util.Identifiable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Command(
         aliases = "checkjail",
@@ -49,8 +50,8 @@ public class CheckJailCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final Either<User, GameProfile> either = NucleusParameters.Composite.parseUserOrGameProfile(context);
-        final UUID uuid = either.fold(Identifiable::uniqueId, Identifiable::uniqueId);
+        final Either<UUID, GameProfile> either = NucleusParameters.Composite.parseUserOrGameProfile(context);
+        final UUID uuid = either.fold(Function.identity(), Identifiable::uniqueId);
         final Optional<Jailing> jailing = this.handler.getPlayerJailData(uuid);
         final Component name = context.getDisplayName(uuid);
 

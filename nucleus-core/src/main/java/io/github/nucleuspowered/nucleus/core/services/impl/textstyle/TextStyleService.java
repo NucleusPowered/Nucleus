@@ -194,7 +194,7 @@ public class TextStyleService implements ITextStyleService {
                 int oldlength;
                 do {
                     oldlength = message.length();
-                    message = message.replaceAll(p, "");
+                    message = Pattern.compile(p, Pattern.CASE_INSENSITIVE).matcher(p).replaceAll("");
                 } while (oldlength != message.length());
             }
         }

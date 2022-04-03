@@ -69,12 +69,12 @@ public class CommandInfoCommand implements ICommandExecutor {
         final List<Component> content = new ArrayList<>();
 
         // Owner
-        final PluginContainer owner = mapping.plugin();
-        content.add(provider.getMessage("command.commandinfo.owner", owner.metadata().name()
-                .orElseGet(() -> context.getMessageString("standard.unknown")) + " (" + owner.metadata().id() + ")"));
+        final Optional<PluginContainer> owner = mapping.plugin();
+        content.add(provider.getMessage("command.commandinfo.owner", owner.flatMap(x -> x.metadata().name())
+                .orElseGet(() -> context.getMessageString("standard.unknown")) + " (" + owner.map(x -> x.metadata().id()).orElse("unknown") + ")"));
         content.add(context.getMessage("command.commandinfo.aliases", String.join(", ", mapping.allAliases())));
 
-        if (mapping.plugin().equals(context.getServiceCollection().pluginContainer())) {
+        if (owner.map(x -> x.equals(context.getServiceCollection().pluginContainer())).orElse(false)) {
             // we did it, do we have a control for it?
             this.nucleusCommand(content, context, provider, mapping);
         } else {

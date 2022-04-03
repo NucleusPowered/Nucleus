@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Command(
@@ -49,7 +50,7 @@ public class CheckNotesCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final NoteHandler handler = context.getServiceCollection().getServiceUnchecked(NoteHandler.class);
-        final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Identifiable::uniqueId, Identifiable::uniqueId);
+        final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), Identifiable::uniqueId);
 
         handler.getNotes(uuid).thenAccept(notes -> {
             final Component name = context.getServiceCollection().playerDisplayNameService().getName(uuid);

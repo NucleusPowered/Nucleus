@@ -23,6 +23,7 @@ import org.spongepowered.api.user.UserManager;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Command(
@@ -49,7 +50,8 @@ public class GetFromIpCommand implements ICommandExecutor {
                 .userCacheService()
                 .getForIp(ip.toString())
                 .stream()
-                .map(uss::find)
+                .map(uss::load)
+                .map(CompletableFuture::join)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());

@@ -27,6 +27,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.profile.GameProfile;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -73,8 +74,8 @@ public class JailCommand implements ICommandExecutor, IReloadableService.Reloada
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         // Get the subject.
-        final User pl = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(),
-                x -> Sponge.server().userManager().findOrCreate(x));
+        final User pl = Sponge.server().userManager().loadOrCreate(
+                NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), GameProfile::uuid)).join();
         if (!pl.isOnline() && !context.testPermission(JailPermissions.JAIL_OFFLINE)) {
             return context.errorResult("command.jail.offline.noperms");
         }

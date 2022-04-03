@@ -18,7 +18,7 @@ public final class TeleportScanners {
     public static final ResourceKey REGISTRY_KEY = ResourceKey.of("nucleus", "teleport_scanner");
 
     public static final DefaultedRegistryType<TeleportScanner> REGISTRY =
-            RegistryType.of(RegistryRoots.SPONGE, TeleportScanners.REGISTRY_KEY).asDefaultedType(() -> Sponge.game().registries());
+            RegistryType.of(RegistryRoots.SPONGE, TeleportScanners.REGISTRY_KEY).asDefaultedType(Sponge::game);
 
     public static final Supplier<TeleportScanner> ASCENDING_SCAN =
             TeleportScanners.REGISTRY.defaultReferenced(ResourceKey.of("nucleus", "ascending_scan"));

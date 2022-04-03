@@ -8,6 +8,8 @@ import com.google.common.base.Preconditions;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.CommandResult;
 
@@ -67,7 +69,8 @@ public class CommandResultImpl implements ICommandResult {
 
     @Override
     public CommandResult getResult(final ICommandContext source) {
-        return this.success ? CommandResult.success() : this.getErrorMessage(source).map(CommandResult::error).orElseGet(CommandResult::empty);
+        return this.success ? CommandResult.success() :
+                this.getErrorMessage(source).map(CommandResult::error).orElseGet(() -> CommandResult.error(Component.text("Unknown error occurred", Style.style(NamedTextColor.RED))));
     }
 
     public static final class Literal extends CommandResultImpl {

@@ -15,6 +15,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.resource.ResourcePath;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,8 +31,9 @@ public class InfoModule implements IModule.Configurable<InfoConfig> {
     public void init(final INucleusServiceCollection serviceCollection) {
         serviceCollection.registerService(InfoHandler.class, new InfoHandler(), false);
         final TextFileController motdController = new TextFileController(
+                serviceCollection.pluginContainer(),
                 serviceCollection.textTemplateFactory(),
-                Sponge.assetManager().asset(serviceCollection.pluginContainer(), "motd.txt").get(),
+                "motd.txt",
                 serviceCollection.configDir().resolve("motd.txt"));
         serviceCollection.textFileControllerCollection().register(InfoModule.MOTD_KEY, motdController);
 

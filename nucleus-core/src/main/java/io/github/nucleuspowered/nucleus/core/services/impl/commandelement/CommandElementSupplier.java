@@ -17,6 +17,7 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 @Singleton
 public class CommandElementSupplier implements ICommandElementSupplier {
@@ -34,7 +35,7 @@ public class CommandElementSupplier implements ICommandElementSupplier {
     }
 
     @Override
-    public Parameter.Value<User> createOnlyOtherUserPermissionElement(final String permission) {
+    public Parameter.Value<UUID> createOnlyOtherUserPermissionElement(final String permission) {
         return Parameter.user().optional().key(NucleusParameters.ONE_USER.key()).requiredPermission(permission).build();
     }
 
@@ -45,7 +46,7 @@ public class CommandElementSupplier implements ICommandElementSupplier {
 
     @Override
     public User getUserFromParametersElseSelf(final ICommandContext context) throws CommandException {
-        final Optional<? extends User> user = context.getOne(NucleusParameters.ONE_USER).filter(context::isNot);
+        final Optional<UUID> user = context.getOne(NucleusParameters.ONE_USER).filter(context::isNot);
         if (!user.isPresent()) {
             return context.getIfPlayer().user();
         }
@@ -54,7 +55,7 @@ public class CommandElementSupplier implements ICommandElementSupplier {
         context.setCooldown(0);
         context.setCost(0);
         context.setWarmup(0);
-        return user.get();
+        return context.getUserFromArgs(NucleusParameters.ONE_USER);
     }
 
 }

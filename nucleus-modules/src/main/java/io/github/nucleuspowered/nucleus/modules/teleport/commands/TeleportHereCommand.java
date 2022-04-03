@@ -17,11 +17,14 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.Essenti
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+
+import java.util.UUID;
 
 /**
  * NOTE: TeleportHere is considered an admin command, as there is a potential
@@ -45,7 +48,7 @@ public class TeleportHereCommand implements ICommandExecutor, IReloadableService
 
     private final Parameter.Value<Boolean> quietOption = Parameter.bool().key("quiet").build();
 
-    private final Parameter.Value<User> userToWarp;
+    private final Parameter.Value<UUID> userToWarp;
     private final Parameter.Value<ServerPlayer> playerToWarp;
 
     @Inject
@@ -89,7 +92,9 @@ public class TeleportHereCommand implements ICommandExecutor, IReloadableService
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final ServerPlayer source = context.requirePlayer();
         final boolean beQuiet = context.getOne(this.quietOption).orElse(this.isDefaultQuiet);
-        final User target = context.getOne(this.userToWarp).orElseGet(() -> context.requireOne(this.playerToWarp).user());
+        final User target =
+                context.getOne(this.userToWarp).flatMap(x -> Sponge.server().userManager().load(x).join())
+                        .orElseGet(() -> context.requireOne(this.playerToWarp).user());
         final PlayerTeleporterService sts = context.getServiceCollection().getServiceUnchecked(PlayerTeleporterService.class);
         if (target.player().isPresent()) {
             final TeleportResult result = sts.teleportWithMessage(

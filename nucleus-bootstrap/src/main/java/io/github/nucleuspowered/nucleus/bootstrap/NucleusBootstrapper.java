@@ -17,13 +17,14 @@ import io.github.nucleuspowered.nucleus.modules.NucleusModuleProvider;
 import io.github.nucleuspowered.nucleus.bootstrap.error.InvalidVersionErrorHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.plugin.PluginContainer;
-import org.spongepowered.plugin.jvm.Plugin;
+import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -57,7 +58,7 @@ public class NucleusBootstrapper {
     private boolean versionCheck(final IPluginInfo pluginInfo) throws IllegalStateException {
         if (System.getProperty(NO_VERSION_CHECK) != null) {
             final Pattern matching = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)");
-            final String v = Sponge.platform().container(Platform.Component.API).metadata().version();
+            final ArtifactVersion v = Sponge.platform().container(Platform.Component.API).metadata().version();
 
             final Optional<Matcher> versionResult = Arrays.stream(pluginInfo.validVersions()).map(x -> {
                 final Matcher version1 = matching.matcher(NucleusPluginInfo.SPONGE_API_VERSION);
@@ -73,45 +74,40 @@ public class NucleusBootstrapper {
             final Matcher version = versionResult.get();
             final int maj = Integer.parseInt(version.group("major"));
             final int min = Integer.parseInt(version.group("minor"));
-            //noinspection MismatchedStringCase,ConstantConditions
-            final boolean notRequiringSnapshot = !NucleusPluginInfo.SPONGE_API_VERSION.contains("SNAPSHOT");
+            final boolean notRequiringSnapshot = !v.getQualifier().contains("SNAPSHOT");
 
-            final Matcher m = matching.matcher(v);
-            if (m.find()) {
-                final int major = Integer.parseInt(m.group("major"));
-                if (major != maj) {
-                    this.logger.fatal("Unable to start Nucleus: SpongeAPI major version {} does not match Nucleus expectation of {}", major, maj);
-                    new InvalidVersionErrorHandler(
-                            this.pluginContainer,
-                            NucleusJavaProperties.RUN_DOCGEN,
-                            this.logger,
-                            NucleusPluginInfo.SPONGE_API_VERSION,
-                            pluginInfo
-                            );
-                    return false;
-                }
+            final int major = v.getMajorVersion();
+            if (major != maj) {
+                this.logger.fatal("Unable to start Nucleus: SpongeAPI major version {} does not match Nucleus expectation of {}", major, maj);
+                new InvalidVersionErrorHandler(
+                        this.pluginContainer,
+                        NucleusJavaProperties.RUN_DOCGEN,
+                        this.logger,
+                        NucleusPluginInfo.SPONGE_API_VERSION,
+                        pluginInfo
+                        );
+                return false;
+            }
 
-                int minor = Integer.parseInt(m.group("minor"));
-                final boolean serverIsSnapshot = v.contains("SNAPSHOT");
+            int minor = v.getMinorVersion();
+            final boolean serverIsSnapshot = v.getQualifier().contains("SNAPSHOT");
 
-                //noinspection ConstantConditions
-                if (serverIsSnapshot && notRequiringSnapshot) {
-                    // If we are a snapshot, and the target version is NOT a snapshot, decrement our version number.
-                    minor = minor - 1;
-                }
+            if (serverIsSnapshot && notRequiringSnapshot) {
+                // If we are a snapshot, and the target version is NOT a snapshot, decrement our version number.
+                minor = minor - 1;
+            }
 
-                if (minor < min) {
-                    // not right minor version
-                    this.logger.fatal("Unable to start Nucleus: SpongeAPI version {} is lower than Nucleus' requirement {}", v, version);
-                    new InvalidVersionErrorHandler(
-                            this.pluginContainer,
-                            NucleusJavaProperties.RUN_DOCGEN,
-                            this.logger,
-                            NucleusPluginInfo.SPONGE_API_VERSION,
-                            pluginInfo
-                    );
-                    return false;
-                }
+            if (minor < min) {
+                // not right minor version
+                this.logger.fatal("Unable to start Nucleus: SpongeAPI version {} is lower than Nucleus' requirement {}", v, version);
+                new InvalidVersionErrorHandler(
+                        this.pluginContainer,
+                        NucleusJavaProperties.RUN_DOCGEN,
+                        this.logger,
+                        NucleusPluginInfo.SPONGE_API_VERSION,
+                        pluginInfo
+                );
+                return false;
             }
         }
         return true;

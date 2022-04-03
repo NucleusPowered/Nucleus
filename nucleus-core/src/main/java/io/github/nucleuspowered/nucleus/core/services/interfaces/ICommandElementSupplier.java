@@ -13,6 +13,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.Locale;
+import java.util.UUID;
 
 
 @ImplementedBy(CommandElementSupplier.class)
@@ -20,7 +21,7 @@ public interface ICommandElementSupplier {
 
     Parameter.Value<Locale> createLocaleElement(String key);
 
-    Parameter.Value<User> createOnlyOtherUserPermissionElement(String permission);
+    Parameter.Value<UUID> createOnlyOtherUserPermissionElement(String permission);
 
     Parameter.Value<ServerPlayer> createOnlyOtherPlayerPermissionElement(String permission);
 

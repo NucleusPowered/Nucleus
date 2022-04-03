@@ -38,7 +38,7 @@ public class BanInfoProvider implements NucleusProvider {
             final IMessageProviderService messageProviderService = serviceCollection.messageProvider();
 
             // TODO: Async
-            final Optional<Ban.Profile> bs = obs.banFor(user.profile()).join();
+            final Optional<Ban.Profile> bs = obs.find(user.profile()).join();
             final Audience audience = source.audience();
             if (bs.isPresent()) {
 

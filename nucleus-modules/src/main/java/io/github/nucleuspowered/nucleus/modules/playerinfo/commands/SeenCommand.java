@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @EssentialsEquivalent("seen")
@@ -194,8 +195,9 @@ public class SeenCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final Either<User, GameProfile> target = NucleusParameters.Composite.parseUserOrGameProfile(context);
-        final User user = target.fold(Function.identity(), x -> Sponge.server().userManager().findOrCreate(x));
+        final Either<UUID, GameProfile> target = NucleusParameters.Composite.parseUserOrGameProfile(context);
+        final User user = target.fold(x -> Sponge.server().userManager().loadOrCreate(x).join(),
+                x -> Sponge.server().userManager().loadOrCreate(x.uuid()).join());
         final IUserDataObject userDataObject = context.getServiceCollection()
                 .storageManager()
                 .getUserService()

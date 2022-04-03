@@ -13,13 +13,15 @@ group = "io.github.nucleuspowered"
 defaultTasks.add("licenseFormat")
 defaultTasks.add("build")
 
+val spongeApiVersion: String by rootProject.properties
+
 repositories {
     mavenCentral()
     maven("https://repo-new.spongepowered.org/repository/maven-public")
 }
 
 dependencies {
-    api("org.spongepowered:spongeapi:" + rootProject.properties["spongeApiVersion"])
+    api("org.spongepowered:spongeapi:$spongeApiVersion")
 }
 
 java {

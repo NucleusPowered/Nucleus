@@ -8,13 +8,17 @@ import io.github.nucleuspowered.nucleus.core.io.TextFileController;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.AssetManager;
-import org.spongepowered.plugin.PluginContainer;
+import org.spongepowered.api.resource.Resource;
+import org.spongepowered.api.resource.ResourcePath;
+import org.spongepowered.api.resource.pack.Pack;
+import org.spongepowered.api.resource.pack.PackType;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +51,16 @@ public class InfoHandler implements IReloadableService.Reloadable, ServiceBase {
 
     }
 
+    private void copyIfNotExists(final Logger logger, final Pack pack, final ResourcePath path, final Path target) {
+        if (Files.notExists(target)) {
+            try (final Resource resource = pack.contents().requireResource(PackType.server(), path)) {
+                Files.copy(resource.inputStream(), target);
+            } catch (final IOException e) {
+                logger.error("Could not find resource {} when it should exist.", path.toString());
+            }
+        }
+    }
+
     @Override
     public void onReload(final INucleusServiceCollection serviceCollection) {
         // Get the config directory, check to see if "info/" exists.
@@ -55,14 +69,10 @@ public class InfoHandler implements IReloadableService.Reloadable, ServiceBase {
             try {
                 Files.createDirectories(infoDir);
 
-                final AssetManager am = Sponge.assetManager();
-
-                final PluginContainer pluginContainer = serviceCollection.pluginContainer();
-
-                // They exist.
-                am.asset(pluginContainer, "info.txt").get().copyToFile(infoDir.resolve("info.txt"));
-                am.asset(pluginContainer, "colors.txt").get().copyToFile(infoDir.resolve("colors.txt"));
-                am.asset(pluginContainer, "links.txt").get().copyToFile(infoDir.resolve("links.txt"));
+                final Pack pack = Sponge.server().packRepository().pack(serviceCollection.pluginContainer());
+                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "info.txt"), infoDir.resolve("info.txt"));
+                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "colors.txt"), infoDir.resolve("colors.txt"));
+                this.copyIfNotExists(serviceCollection.logger(), pack, ResourcePath.of(pack.id(), "links.txt"), infoDir.resolve("links.txt"));
             } catch (final IOException e) {
                 e.printStackTrace();
                 return;
@@ -95,7 +105,8 @@ public class InfoHandler implements IReloadableService.Reloadable, ServiceBase {
                     return;
                 }
 
-                final TextFileController tfc = new TextFileController(serviceCollection.textTemplateFactory(), x, true);
+                final TextFileController tfc = new TextFileController(serviceCollection.pluginContainer(),
+                        serviceCollection.textTemplateFactory(), x, true);
                 tfc.load();
                 mst.put(name, tfc);
             } catch (final IOException e) {

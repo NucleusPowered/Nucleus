@@ -95,7 +95,7 @@ public final class NucleusParameters {
                     .build())
             .build();
 
-    public static final Parameter.Value<User> ONE_USER = Parameter.user().key(Keys.USER).build();
+    public static final Parameter.Value<UUID> ONE_USER = Parameter.user().key(Keys.USER).build();
 
     public static final Parameter.Value<GameProfile> GAME_PROFILE =
             Parameter.builder(TypeToken.get(GameProfile.class)).key(Keys.GAME_PROFILE).addParser(ResourceKeyedValueParameters.GAME_PROFILE).build();
@@ -163,9 +163,9 @@ public final class NucleusParameters {
                 NucleusParameters.ONE_PLAYER
         );
 
-        public static Either<User, GameProfile> parseUserOrGameProfile(final ICommandContext context) {
+        public static Either<UUID, GameProfile> parseUserOrGameProfile(final ICommandContext context) {
             return context.getOne(NucleusParameters.ONE_USER)
-                    .<Either<User, GameProfile>>map(Either::left)
+                    .<Either<UUID, GameProfile>>map(Either::left)
                     .orElseGet(() -> Either.right(context.requireOne(NucleusParameters.GAME_PROFILE)));
         }
 

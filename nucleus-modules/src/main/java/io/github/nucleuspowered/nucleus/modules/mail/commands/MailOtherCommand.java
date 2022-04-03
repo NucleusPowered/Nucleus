@@ -35,7 +35,7 @@ public class MailOtherCommand implements ICommandExecutor {
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         return MailReadBase.INSTANCE.executeCommand(
                 context,
-                context.requireOne(NucleusParameters.ONE_USER).uniqueId(),
+                context.requireOne(NucleusParameters.ONE_USER),
                 context.getAll(context.getServiceCollection().getServiceUnchecked(MailHandler.class).getMailFilterParameter()));
     }
 }

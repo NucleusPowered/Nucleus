@@ -20,7 +20,7 @@ public final class ServicesUtil {
         final CompletableFuture<R> future = new CompletableFuture<>();
 
         if (Sponge.isServerAvailable() && Sponge.server().onMainThread()) {
-            Sponge.asyncScheduler().createExecutor(pluginContainer).submit(() -> ServicesUtil.runInternal(future, taskConsumer, printException));
+            Sponge.asyncScheduler().executor(pluginContainer).submit(() -> ServicesUtil.runInternal(future, taskConsumer, printException));
         } else {
             ServicesUtil.runInternal(future, taskConsumer, printException);
         }

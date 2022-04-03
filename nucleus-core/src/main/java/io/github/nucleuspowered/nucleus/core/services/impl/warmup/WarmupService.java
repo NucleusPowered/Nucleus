@@ -81,11 +81,10 @@ public class WarmupService implements IWarmupService, IReloadableService.Reloada
 
             final Task t = Task.builder()
                     .delay(duration.toMillis(), TimeUnit.MILLISECONDS)
-                    .name("Nucleus Warmup task: " + playerTarget.toString())
                     .execute(taskToSubmit)
                     .plugin(this.pluginContainer)
                     .build();
-            final ScheduledTask scheduledTask = Sponge.server().scheduler().submit(t);
+            final ScheduledTask scheduledTask = Sponge.server().scheduler().submit(t, "Nucleus Warmup task: " + playerTarget.toString());
             this.tasks.put(playerTarget, scheduledTask.uniqueId());
             this.uuidToWarmup.put(scheduledTask.uniqueId(), runnable);
         }

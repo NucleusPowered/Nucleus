@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -95,9 +96,11 @@ public final class InfoCommand implements ICommandExecutor {
                 .distinct()
                 .forEach(x -> {
                     final Set<String> a = x.allAliases();
-                    final PluginContainer container = x.plugin();
-                    final String id = container.metadata().id();
-                    final String info = " - " + container.metadata().name().orElse("unknown") + " (" + id + ") version " + container.metadata().version();
+                    final Optional<PluginContainer> container = x.plugin();
+                    final String id = container.map(p -> p.metadata().id()).orElse("unknown");
+                    final String info =
+                            " - " + container.flatMap(p -> p.metadata().name()).orElse("unknown") + " (" + id + ") version " +
+                                    container.map(p -> p.metadata().version().toString()).orElse("unknown");
                     a.forEach(y -> {
                         if (y.startsWith(id + ":")) {
                             // /nucleus:<blah>

@@ -45,7 +45,8 @@ public class InvSeeCommand implements ICommandExecutor {
     }
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final User target = context.requireOne(NucleusParameters.ONE_USER);
+        final User target = context.getOptionalUserFromUUID(NucleusParameters.ONE_USER)
+                .orElseThrow(() -> new IllegalStateException("This shouldn't happen"));
 
         if (!target.isOnline() && !context.testPermission(InventoryPermissions.INVSEE_OFFLINE)) {
             return context.errorResult("command.invsee.nooffline");

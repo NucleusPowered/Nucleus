@@ -21,7 +21,9 @@ import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
+import org.spongepowered.api.profile.GameProfile;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 @Command(
@@ -44,8 +46,10 @@ public class UnjailCommand implements ICommandExecutor, IReloadableService.Reloa
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final User user = NucleusParameters.Composite.parseUserOrGameProfile(context)
-                .fold(Function.identity(), Sponge.server().userManager()::findOrCreate);
+        final User user =
+                Sponge.server().userManager().loadOrCreate(
+                        NucleusParameters.Composite.parseUserOrGameProfile(context)
+                                .fold(Function.identity(), GameProfile::uuid)).join();
         if (this.levelConfig.isUseLevels() &&
                 !context.isPermissionLevelOkay(user,
                         JailPermissions.JAIL_LEVEL_KEY,

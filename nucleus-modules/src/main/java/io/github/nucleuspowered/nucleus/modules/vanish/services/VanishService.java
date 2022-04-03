@@ -18,6 +18,7 @@ import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.effect.VanishState;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -114,9 +115,7 @@ public class VanishService implements IReloadableService.Reloadable, ServiceBase
 
     private void vanishPlayerInternal(final Player player, final boolean vanish) {
         if (vanish) {
-            player.offer(Keys.VANISH, true);
-            player.offer(Keys.VANISH_IGNORES_COLLISION, true);
-            player.offer(Keys.VANISH_PREVENTS_TARGETING, true);
+            player.offer(Keys.VANISH_STATE, VanishState.vanished());
 
             if (this.isAlter) {
                 Sponge.server().onlinePlayers().stream().filter(x -> !player.equals(x) || !this.permissionService
@@ -130,12 +129,9 @@ public class VanishService implements IReloadableService.Reloadable, ServiceBase
         this.storageManager.getUserService()
                 .getOrNew(user.uniqueId())
                 .thenAccept(x -> x.set(VanishKeys.VANISH_STATUS, false));
-        user.offer(Keys.VANISH, false);
-        user.offer(Keys.VANISH_IGNORES_COLLISION, false);
-        user.offer(Keys.VANISH_PREVENTS_TARGETING, false);
+        user.offer(Keys.VANISH_STATE, VanishState.unvanished());
 
-        if (this.isAlter && user.isOnline()) {
-            final ServerPlayer player = user.player().get();
+        user.player().filter(x -> this.isAlter).ifPresent(player -> {
             Sponge.server().onlinePlayers().forEach(x -> {
                 if (!x.tabList().entry(player.uniqueId()).isPresent()) {
                     x.tabList().addEntry(TabListEntry.builder()
@@ -146,7 +142,7 @@ public class VanishService implements IReloadableService.Reloadable, ServiceBase
                             .list(x.tabList()).build());
                 }
             });
-        }
+        });
     }
 
     public void setLastVanishedTime(final UUID pl, final Instant instant) {

@@ -37,7 +37,7 @@ public class CommandListener implements ListenerBase.Conditional {
                 event.setCommand("minecraft:list");
                 if (!this.messageShown) {
                     this.messageShown = true;
-                    Sponge.server().scheduler().createExecutor(this.pluginContainer).submit(() ->
+                    Sponge.server().scheduler().executor(this.pluginContainer).submit(() ->
                             this.messageProviderService.sendMessageTo(Sponge.systemSubject(), "list.listener.multicraftcompat"));
                 }
             }

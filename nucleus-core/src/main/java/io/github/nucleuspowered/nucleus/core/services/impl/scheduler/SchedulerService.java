@@ -35,7 +35,7 @@ public final class SchedulerService implements ISchedulerService {
             }
         } else {
             final CompletableFuture<Void> future = new CompletableFuture<>();
-            Sponge.server().scheduler().createExecutor(this.pluginContainer).submit(() -> {
+            Sponge.server().scheduler().executor(this.pluginContainer).submit(() -> {
                 try {
                     runnable.run();
                     return CompletableFuture.completedFuture(null);

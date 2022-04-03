@@ -165,15 +165,25 @@ public final class CommandContextImpl implements ICommandContext {
     }
 
     @Override
-    public User getUserFromArgs(final Parameter.Value<? extends User> key, final String errorKey) throws CommandException {
+    public Optional<User> getOptionalUserFromUUID(final Parameter.Key<? extends UUID> key) {
+        return this.context.one(key).flatMap(x -> Sponge.server().userManager().load(x).join());
+    }
+
+    @Override
+    public Optional<User> getOptionalUserFromUUID(final Parameter.Value<? extends UUID> key) {
+        return this.context.one(key).flatMap(x -> Sponge.server().userManager().load(x).join());
+    }
+
+    @Override
+    public User getUserFromArgs(final Parameter.Value<? extends UUID> key, final String errorKey) throws CommandException {
         return this.getUserFromArgs(key.key(), errorKey);
     }
 
     @Override
-    public User getUserFromArgs(final Parameter.Key<? extends User> key, final String errorKey) throws CommandException {
-        final Optional<? extends User> user = this.context.one(key);
+    public User getUserFromArgs(final Parameter.Key<? extends UUID> key, final String errorKey) throws CommandException {
+        final Optional<? extends UUID> user = this.context.one(key);
         if (user.isPresent()) {
-            return user.get();
+            return Sponge.server().userManager().load(user.get()).join().get();
         } else {
             return this.getIfPlayer(errorKey).user();
         }
@@ -292,6 +302,10 @@ public final class CommandContextImpl implements ICommandContext {
         return this.testPermissionFor(this.cause.subject(), permission);
     }
 
+    @Override public boolean testPermissionFor(final UUID subject, final String permission) {
+        return this.serviceCollection.permissionService().hasPermission(subject, permission);
+    }
+
     @Override public boolean testPermissionFor(final Subject subject, final String permission) {
         return this.serviceCollection.permissionService().hasPermission(subject, permission);
     }
@@ -394,6 +408,11 @@ public final class CommandContextImpl implements ICommandContext {
     }
 
     @Override
+    public boolean isPermissionLevelOkay(final UUID actee, final String key, final String permissionIfNoLevel, final boolean isSameLevel) {
+        return this.serviceCollection.permissionService().isPermissionLevelOkay(this.cause.subject(), actee, key, permissionIfNoLevel, isSameLevel).join();
+    }
+
+    @Override
     public Optional<UUID> uniqueId() {
         return Optional.empty();
     }
@@ -419,9 +438,14 @@ public final class CommandContextImpl implements ICommandContext {
 
     @Override
     public boolean is(final User x) {
+        return this.is(x.uniqueId());
+    }
+
+    @Override
+    public boolean is(final UUID x) {
         final Object source = this.getCommandSourceRoot();
         if (source instanceof ServerPlayer) {
-            return ((ServerPlayer) source).uniqueId().equals(x.uniqueId());
+            return ((ServerPlayer) source).uniqueId().equals(x);
         }
 
         return false;

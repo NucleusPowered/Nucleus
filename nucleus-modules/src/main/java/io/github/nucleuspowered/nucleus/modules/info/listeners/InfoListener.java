@@ -46,7 +46,7 @@ public class InfoListener implements IReloadableService.Reloadable, ListenerBase
     @Listener
     public void playerJoin(final ServerSideConnectionEvent.Join event, @Getter("player") final ServerPlayer player) {
         // Send message one second later on the Async thread.
-        Sponge.asyncScheduler().createExecutor(this.pluginContainer).schedule(() -> {
+        Sponge.asyncScheduler().executor(this.pluginContainer).schedule(() -> {
                 if (this.permissionService.hasPermission(player, InfoPermissions.MOTD_JOIN)) {
                     this.textFileControllerCollection.get(InfoModule.MOTD_KEY).ifPresent(x -> {
                         if (this.usePagination) {

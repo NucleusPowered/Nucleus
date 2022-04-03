@@ -54,7 +54,7 @@ abstract class AbstractMessageRepository implements IMessageRepository {
 
     @Override
     public Component getText(final String key) {
-        return this.cachedMessages.computeIfAbsent(key, this::getTextTemplate).create();
+        return this.getTextTemplate(key).create();
     }
 
     @Override

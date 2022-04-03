@@ -55,7 +55,7 @@ public class ServerStatCommand implements ICommandExecutor {
         final Optional<Instant> oi = context.getServiceCollection().platformService().gameStartedTime();
         oi.ifPresent(instant -> {
             final Duration duration = Duration.between(instant, Instant.now());
-            final double averageTPS = Math.min(20, ((double) Sponge.server().runningTimeTicks() / ((double) (duration.toMillis() + 50) / 1000.0d)));
+            final double averageTPS = Sponge.server().ticksPerSecond();
             messages.add(context.getMessage("command.serverstat.averagetps", this.getTPS(averageTPS)));
             messages.add(this.createText(context, "command.serverstat.uptime.main", "command.serverstat.uptime.hover",
                     context.getTimeString(duration.getSeconds())));

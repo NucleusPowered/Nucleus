@@ -44,7 +44,7 @@ public class NoteCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final User user = context.requireOne(NucleusParameters.ONE_USER);
+        final User user = context.getUserFromArgs(NucleusParameters.ONE_USER);
         final String note = context.requireOne(NucleusParameters.MESSAGE);
 
         final UUID noter = context.uniqueId().orElse(Util.CONSOLE_FAKE_UUID);

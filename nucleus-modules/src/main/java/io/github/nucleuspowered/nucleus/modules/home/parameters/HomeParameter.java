@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class HomeParameter implements ValueParameter<Home> {
 
-    public static final Parameter.Key<User> OTHER_PLAYER_KEY = Parameter.key("other player", TypeToken.get(User.class));
+    public static final Parameter.Key<UUID> OTHER_PLAYER_KEY = Parameter.key("other player", TypeToken.get(UUID.class));
 
     private final HomeService homeService;
     protected final IMessageProviderService messageProviderService;
@@ -80,7 +80,7 @@ public class HomeParameter implements ValueParameter<Home> {
 
     private Optional<UUID> getTarget(final CommandContext context) {
         if (context.hasAny(HomeParameter.OTHER_PLAYER_KEY)) {
-            return Optional.of(context.requireOne(HomeParameter.OTHER_PLAYER_KEY).uniqueId());
+            return Optional.of(context.requireOne(HomeParameter.OTHER_PLAYER_KEY));
         } else if (context.cause().root() instanceof ServerPlayer) {
             return Optional.of(((ServerPlayer) context.cause().root()).uniqueId());
         } else {

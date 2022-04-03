@@ -395,7 +395,7 @@ public final class CommandControl {
             try {
                 // Get the registry entry.
                 final ICommandModifier commandModifier =
-                        Sponge.game().registries().registry(Registry.Types.COMMAND_MODIFIER_FACTORY)
+                        Sponge.game().registry(Registry.Types.COMMAND_MODIFIER_FACTORY)
                                 .findValue(ResourceKey.resolve(modifier.value()))
                                 .map(x -> x.apply(control))
                                 .orElseThrow(() -> new IllegalArgumentException("Could not get registry entry for \"" + modifier.value() + "\""));

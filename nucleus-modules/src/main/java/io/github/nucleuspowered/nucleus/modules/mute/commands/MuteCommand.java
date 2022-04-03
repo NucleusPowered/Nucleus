@@ -25,9 +25,11 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.profile.GameProfileCache;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @EssentialsEquivalent(value = {"mute", "silence"}, isExact = false, notes = "Unmuting a player should be done via the /unmute command.")
@@ -60,11 +62,10 @@ public class MuteCommand implements ICommandExecutor, IReloadableService.Reloada
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final MuteService handler = context.getServiceCollection().getServiceUnchecked(MuteService.class);
         // Get the user.
-        final Either<User, GameProfile> either = NucleusParameters.Composite.parseUserOrGameProfile(context);
+        final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), GameProfile::uuid);
 
         final Optional<Duration> time = context.getOne(NucleusParameters.DURATION);
-        final User user = either.fold(Function.identity(), Sponge.server().userManager()::findOrCreate);
-        final Optional<Mute> omd = handler.getPlayerMuteInfo(user.uniqueId());
+        final User user = Sponge.server().userManager().loadOrCreate(uuid).join();
         final Optional<String> reas = context.getOne(NucleusParameters.OPTIONAL_REASON);
 
         if (!context.isConsoleAndBypass() && context.testPermissionFor(user, MutePermissions.MUTE_EXEMPT_TARGET)) {

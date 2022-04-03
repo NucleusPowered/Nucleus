@@ -76,8 +76,8 @@ public class TeleportPositionCommand implements ICommandExecutor {
             context.sendMessage("command.tppos.fromchunk", xx, yy, zz);
         }
 
-        final Vector3i max = world.blockMax();
-        final Vector3i min = world.blockMin();
+        final Vector3i max = world.max();
+        final Vector3i min = world.min();
         if (!(this.isBetween(xx, max.x(), min.x()) && this.isBetween(yy, max.y(), min.y()) && this.isBetween(zz, max.z(), min.z()))) {
             return context.errorResult("command.tppos.invalid");
         }

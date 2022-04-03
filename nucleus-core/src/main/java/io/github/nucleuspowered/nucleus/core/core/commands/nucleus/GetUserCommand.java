@@ -72,7 +72,7 @@ public class GetUserCommand implements ICommandExecutor {
             }
 
             // We have a game profile, it's been added to the cache. Create the user too, just in case.
-            Sponge.server().userManager().findOrCreate(gp);
+            Sponge.server().userManager().loadOrCreate(gp.uuid());
             context.sendMessage("command.nucleus.getuser.success", gp.uniqueId().toString(), gp.name().orElse("unknown"));
 
             return 0;

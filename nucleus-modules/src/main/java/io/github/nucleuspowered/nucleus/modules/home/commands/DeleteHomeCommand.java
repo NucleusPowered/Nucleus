@@ -25,6 +25,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Command(
         aliases = {"delete", "del", "#deletehome", "#delhome"},
@@ -37,7 +38,7 @@ import java.util.Optional;
 public class DeleteHomeCommand implements ICommandExecutor {
 
     private final Parameter.Value<Home> parameter;
-    private final Parameter.Value<User> userParameter;
+    private final Parameter.Value<UUID> userParameter;
 
     @Inject
     public DeleteHomeCommand(final INucleusServiceCollection serviceCollection) {
@@ -64,7 +65,8 @@ public class DeleteHomeCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final Home wl = context.requireOne(this.parameter);
-        final Optional<User> target = context.getOne(this.userParameter);
+        final Optional<User> target = context.getOne(this.userParameter)
+                .flatMap(x -> Sponge.server().userManager().load(x).join());
 
         try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
             frame.pushCause(context.getCommandSourceRoot());

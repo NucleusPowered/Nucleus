@@ -220,7 +220,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         this.removeFromCache(uuid);
         Sponge.eventManager().post(new ChangeNicknameEventPost(cause, currentNickname, null, uuid));
 
-        final Optional<User> user = Sponge.server().userManager().find(uuid);
+        final Optional<User> user = Sponge.server().userManager().load(uuid).join();
         if (user.isPresent()) {
             final Optional<ServerPlayer> player = user.get().player();
             if (player.isPresent()) {
@@ -243,7 +243,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
 
         // Does the user exist?
         try {
-            final Optional<User> match = Sponge.server().userManager().find(plain);
+            final Optional<User> match = Sponge.server().userManager().load(plain).join();
 
             // The only person who can use such a name is oneself.
             if (match.isPresent() && !match.get().uniqueId().equals(pl)) {
@@ -307,7 +307,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
 
         Sponge.eventManager().post(new ChangeNicknameEventPost(Sponge.server().causeStackManager().currentCause(),
                 currentNickname, nickname, pl));
-        final Optional<User> user = Sponge.server().userManager().find(pl);
+        final Optional<User> user = Sponge.server().userManager().load(pl).join();
         if (user.isPresent()) {
             final Optional<ServerPlayer> player = user.get().player();
             if (player.isPresent()) {

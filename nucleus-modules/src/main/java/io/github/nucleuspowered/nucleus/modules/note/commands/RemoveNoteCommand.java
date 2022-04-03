@@ -22,6 +22,7 @@ import org.spongepowered.api.util.Identifiable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Command(
         aliases = {"removenote", "deletenote", "delnote"},
@@ -45,7 +46,7 @@ public class RemoveNoteCommand implements ICommandExecutor {
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final NoteHandler handler = context.getServiceCollection().getServiceUnchecked(NoteHandler.class);
         final UUID uuid = NucleusParameters.Composite.parseUserOrGameProfile(context)
-                .fold(Identifiable::uniqueId, Identifiable::uniqueId);
+                .fold(Function.identity(), Identifiable::uniqueId);
         final Component name = context.getDisplayName(uuid);
         final int idx = context.requireOne(this.index);
 

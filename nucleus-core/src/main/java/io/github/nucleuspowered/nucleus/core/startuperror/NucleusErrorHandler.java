@@ -42,7 +42,7 @@ public class NucleusErrorHandler {
     }
 
     public void disable() {
-        Sponge.eventManager().unregisterPluginListeners(this.pluginContainer);
+        Sponge.eventManager().unregisterListeners(this.pluginContainer);
         Sponge.asyncScheduler().tasks(this.pluginContainer).forEach(ScheduledTask::cancel);
 
         // Re-register this to warn people about the error.

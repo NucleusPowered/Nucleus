@@ -90,7 +90,7 @@ public class SanityTests {
                 .map(x -> (Class<? extends ICommandExecutor>)x).collect(Collectors.toSet());
 
         // Get the resource
-        final String bundle = "assets.nucleus.messages";
+        final String bundle = "data.plugin-nucleus.messages";
 
         // Get the resource
         final ResourceBundle rb = ResourceBundle.getBundle(bundle, Locale.getDefault());
@@ -155,7 +155,7 @@ public class SanityTests {
     @Test
     public void testThatNoResourceKeyIsAParentOfAnother() throws Exception {
         // Get the resource
-        final String bundle = "assets.nucleus.messages";
+        final String bundle = "data.plugin-nucleus.messages";
 
         // Get the resource
         final ResourceBundle rb = ResourceBundle.getBundle(bundle, Locale.getDefault());

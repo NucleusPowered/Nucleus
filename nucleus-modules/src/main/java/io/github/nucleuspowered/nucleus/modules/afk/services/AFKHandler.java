@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -146,7 +147,7 @@ public class AFKHandler implements NucleusAFKService, IReloadableService.Reloada
                     }
 
                     final Component toSend = t instanceof NucleusTextTemplateImpl ? ((NucleusTextTemplateImpl) t).getForObject(player) : t.asComponent();
-                    Sponge.server().scheduler().createExecutor(this.serviceCollection.pluginContainer()).execute(() -> player.kick(toSend));
+                    Sponge.server().scheduler().executor(this.serviceCollection.pluginContainer()).execute(() -> player.kick(toSend));
                     final Component eventMessage = events.message();
                     if (!AdventureUtils.isEmpty(eventMessage)) {
                         events.audience().ifPresent(x -> x.sendMessage(eventMessage, MessageType.SYSTEM));
@@ -338,11 +339,12 @@ public class AFKHandler implements NucleusAFKService, IReloadableService.Reloada
 
     @Override public NoExceptionAutoClosable disableTrackingForPlayer(final UUID player, final Duration time) {
         // Disable tracking now with a new UUID.
-        final Task n = Task.builder().execute(t -> {
+        final Consumer<ScheduledTask> consumer = t -> {
             synchronized (this.lock2) {
                 this.disabledTracking.remove(player, t.uniqueId());
             }
-        }).delay(time).plugin(this.serviceCollection.pluginContainer()).build();
+        };
+        final Task n = Task.builder().execute(consumer).delay(time).plugin(this.serviceCollection.pluginContainer()).build();
         final ScheduledTask task = Sponge.server().scheduler().submit(n);
 
         synchronized (this.lock2) {
@@ -351,7 +353,7 @@ public class AFKHandler implements NucleusAFKService, IReloadableService.Reloada
 
         return () -> {
             task.cancel();
-            n.consumer().accept(task);
+            consumer.accept(task);
         };
     }
 

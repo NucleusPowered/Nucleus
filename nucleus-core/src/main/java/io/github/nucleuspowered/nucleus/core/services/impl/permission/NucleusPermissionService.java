@@ -46,6 +46,7 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -98,7 +99,7 @@ public class NucleusPermissionService implements IPermissionService, IReloadable
 
     @Override
     public boolean hasPermission(final UUID playerUUID, final String permission) {
-        return this.hasPermission(Sponge.server().userManager().find(playerUUID)
+        return this.hasPermission(Sponge.server().userManager().load(playerUUID).join()
                 .orElseThrow(() -> new IllegalArgumentException("The UUID " + playerUUID + " is not a valid player UUID")), permission);
     }
 
@@ -302,6 +303,13 @@ public class NucleusPermissionService implements IPermissionService, IReloadable
         } else {
             return actorLevel > acteeLevel;
         }
+    }
+
+    @Override
+    public CompletableFuture<Boolean> isPermissionLevelOkay(final Subject actor, final UUID actee, final String key, final String permission,
+            final boolean isSameOkay) {
+        return Sponge.server().serviceProvider().permissionService().userSubjects().loadSubject(actee.toString())
+                .thenApply(subject -> this.isPermissionLevelOkay(actor, subject, key, permission, isSameOkay));
     }
 
     @Override

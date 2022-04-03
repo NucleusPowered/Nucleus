@@ -31,7 +31,7 @@ be grateful for your contributions - we're an open community that appreciates an
 
 ## Getting and Building Nucleus
 
-Nucleus currently uses Gradle 7.0.0 and is compiled using JDK 11 (but to a Java 8 target). 
+Nucleus currently uses Gradle 7.3.3 and is compiled using JDK 11 (but to a Java 8 target). 
 
 To get a copy of the Nucleus source, ensure you have Git installed, and run the following commands from a command prompt
 or terminal:

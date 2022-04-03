@@ -350,7 +350,7 @@ public final class PlayerTeleporterService implements ServiceBase, IReloadableSe
                                 "teleport.prep.cancel",
                                 serviceCollection.economyServiceProvider().getCurrencySymbol(cost)));
 
-                final User user = op.map(x -> (User) x).orElseGet(() -> Sponge.server().userManager().find(requester).orElse(null));
+                final User user = op.map(x -> (User) x).orElseGet(() -> Sponge.server().userManager().load(requester).join().orElse(null));
                 if (user != null) {
                     serviceCollection.economyServiceProvider().depositInPlayer(user.uniqueId(), cost);
                 }

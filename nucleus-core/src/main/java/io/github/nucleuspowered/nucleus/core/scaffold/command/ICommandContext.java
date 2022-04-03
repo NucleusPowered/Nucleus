@@ -17,7 +17,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.world.server.ServerWorld;
-import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -71,21 +70,25 @@ public interface ICommandContext {
 
     ServerPlayer getCommandSourceAsPlayerUnchecked();
 
+    Optional<User> getOptionalUserFromUUID(final Parameter.Key<? extends UUID> key);
+
+    Optional<User> getOptionalUserFromUUID(final Parameter.Value<? extends UUID> key);
+
     default User getUserFromArgs() throws CommandException {
         return this.getUserFromArgs(NucleusParameters.ONE_USER, "command.playeronly");
     }
 
-    default User getUserFromArgs(final Parameter.Key<? extends User> key) throws CommandException {
+    default User getUserFromArgs(final Parameter.Key<? extends UUID> key) throws CommandException {
         return this.getUserFromArgs(key, "command.playeronly");
     }
 
-    default User getUserFromArgs(final Parameter.Value<? extends User> key) throws CommandException {
+    default User getUserFromArgs(final Parameter.Value<? extends UUID> key) throws CommandException {
         return this.getUserFromArgs(key, "command.playeronly");
     }
 
-    User getUserFromArgs(Parameter.Value<? extends User> key, String errorKey) throws CommandException;
+    User getUserFromArgs(Parameter.Value<? extends UUID> key, String errorKey) throws CommandException;
 
-    User getUserFromArgs(Parameter.Key<? extends User> key, String errorKey) throws CommandException;
+    User getUserFromArgs(Parameter.Key<? extends UUID> key, String errorKey) throws CommandException;
 
     boolean hasFlag(String name);
 
@@ -139,6 +142,8 @@ public interface ICommandContext {
 
     boolean testPermission(String permission);
 
+    boolean testPermissionFor(UUID uuid, String permission);
+
     boolean testPermissionFor(Subject subject, String permission);
 
     String getMessageString(String key, Object... replacements);
@@ -173,7 +178,13 @@ public interface ICommandContext {
 
     boolean is(User x);
 
+    boolean is(UUID x);
+
     default boolean isNot(final User x) {
+        return !this.is(x);
+    }
+
+    default boolean isNot(final UUID x) {
         return !this.is(x);
     }
 
@@ -228,6 +239,8 @@ public interface ICommandContext {
      * @return if the level is okay to proceed
      */
     boolean isPermissionLevelOkay(Subject actee, String key, String permissionIfNoLevel, boolean isSameLevel);
+
+    boolean isPermissionLevelOkay(UUID actee, String key, String permissionIfNoLevel, boolean isSameLevel);
 
     void removeModifier(String modifierId);
 

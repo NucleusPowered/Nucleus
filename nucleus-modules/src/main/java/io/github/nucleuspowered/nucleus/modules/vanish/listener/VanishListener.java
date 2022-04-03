@@ -51,7 +51,8 @@ public class VanishListener implements IReloadableService.Reloadable, ListenerBa
         if (this.vanishConfig.isTryHidePlayers()) {
             final UUID uuid = auth.profile().uuid();
             Sponge.server().userManager()
-                                .find(uuid)
+                                .load(uuid)
+                                .join()
                                 .flatMap(x -> x.get(Keys.LAST_DATE_PLAYED))
                                 .ifPresent(y -> this.service.setLastVanishedTime(uuid, y));
         }

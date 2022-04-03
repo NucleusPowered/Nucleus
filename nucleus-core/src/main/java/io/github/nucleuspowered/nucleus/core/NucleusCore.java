@@ -46,6 +46,8 @@ import io.leangen.geantyref.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Client;
+import org.spongepowered.api.Engine;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -187,8 +189,6 @@ public final class NucleusCore {
                 factoryMap.put(CoreKeys.LOCALE_PREFERENCE_KEY.getKey(), CoreKeys.LOCALE_PREFERENCE_KEY);
                 return factoryMap;
             });
-            // now we can post init the UPS
-            this.serviceCollection.userPreferenceService().postInit();
             event.register(Registry.Keys.COMMAND_MODIFIER_FACTORY_KEY, false, () -> {
                 final Map<ResourceKey, CommandModifierFactory> factoryMap = new HashMap<>();
 
@@ -311,7 +311,7 @@ public final class NucleusCore {
         }
         this.onStartedActions.forEach(Action::action);
         this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
-        Sponge.asyncScheduler().createExecutor(this.pluginContainer)
+        Sponge.asyncScheduler().executor(this.pluginContainer)
                 .submit(() -> this.serviceCollection.userCacheService().startFilewalkIfNeeded());
         this.serviceCollection.platformService().setGameStartedTime();
     }
@@ -394,7 +394,7 @@ public final class NucleusCore {
                     this.serviceCollection.reloadableService().registerReloadable((IReloadableService.Reloadable) taskBase);
                 }
                 this.onStartedActions.add(() -> Sponge.asyncScheduler()
-                        .createExecutor(this.pluginContainer)
+                        .executor(this.pluginContainer)
                         .scheduleAtFixedRate(
                                 taskBase,
                                 taskBase.interval().getSeconds(),

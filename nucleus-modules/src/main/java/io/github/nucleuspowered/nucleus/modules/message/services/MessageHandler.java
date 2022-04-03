@@ -104,7 +104,7 @@ public class MessageHandler implements NucleusPrivateMessagingService, IReloadab
     @Override
     public int getSocialSpyLevel(final UUID uuid) {
         if (this.useLevels) {
-            final User user = Sponge.server().userManager().find(uuid).orElseThrow(() -> new IllegalArgumentException("Cannot get user with "
+            final User user = Sponge.server().userManager().load(uuid).join().orElseThrow(() -> new IllegalArgumentException("Cannot get user with "
                     + "UUID " + uuid.toString()));
             return this.serviceCollection.permissionService().getPositiveIntOptionFromSubject(user, MessagePermissions.SOCIALSPY_LEVEL_KEY).orElse(0);
         }

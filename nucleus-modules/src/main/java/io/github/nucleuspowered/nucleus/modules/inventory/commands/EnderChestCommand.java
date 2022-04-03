@@ -52,7 +52,7 @@ import java.util.function.Function;
 public class EnderChestCommand implements ICommandExecutor {
 
     private final Parameter.Value<ServerPlayer> onlinePlayerParameter;
-    private final Parameter.Value<User> offlinePlayerParameter;
+    private final Parameter.Value<UUID> offlinePlayerParameter;
 
     @Inject
     public EnderChestCommand(final IPermissionService permissionService) {
@@ -78,7 +78,7 @@ public class EnderChestCommand implements ICommandExecutor {
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final ServerPlayer currentPlayer = context.requirePlayer();
         final Either<ServerPlayer, User> either;
-        final Optional<User> userTarget = context.getOne(this.offlinePlayerParameter);
+        final Optional<User> userTarget = context.getOptionalUserFromUUID(this.offlinePlayerParameter);
         if (userTarget.isPresent()) {
             either = Either.right(userTarget.get());
         } else {

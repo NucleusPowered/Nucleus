@@ -319,7 +319,7 @@ public final class JailService implements NucleusJailService, IReloadableService
     }
 
     private Either<ServerPlayer, User> getUserEither(final UUID uuid) {
-        return Sponge.server().userManager().find(uuid).<Either<ServerPlayer, User>>map(Either::right).orElse(null);
+        return Sponge.server().userManager().load(uuid).join().<Either<ServerPlayer, User>>map(Either::right).orElse(null);
     }
 
     private ServerLocation eitherToLocation(final Either<ServerPlayer, User> either) {

@@ -44,7 +44,7 @@ public class MailListener implements ListenerBase {
     @Listener
     public void onPlayerJoin(final ServerSideConnectionEvent.Join event, @Getter("player") final ServerPlayer player) {
         final UUID uuid = player.uniqueId();
-        Sponge.asyncScheduler().createExecutor(this.pluginContainer).schedule(() -> {
+        Sponge.asyncScheduler().executor(this.pluginContainer).schedule(() -> {
             final int mailCount = this.handler.getMailInternal(uuid).size();
             if (mailCount > 0) {
                 this.messageProvider.sendMessageTo(player, "mail.login", String.valueOf(mailCount));

@@ -45,7 +45,7 @@ public class PlayerMetadataService implements NucleusPlayerMetadataService, Serv
     }
 
     @Override public Optional<Result> getUserData(final UUID uuid) {
-        final Optional<User> user = Sponge.server().userManager().find(uuid);
+        final Optional<User> user = Sponge.server().userManager().load(uuid).join();
         final boolean isEligible;
         if (user.isPresent()) {
             final User u = user.get();

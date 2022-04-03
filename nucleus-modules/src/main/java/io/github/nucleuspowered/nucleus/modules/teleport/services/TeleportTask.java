@@ -79,7 +79,7 @@ public class TeleportTask implements CancellableTask {
         // Teleport them
         final ServerPlayer teleportingPlayer = Sponge.server().player(this.toTeleport).orElse(null);
         final ServerPlayer targetPlayer = Sponge.server().player(this.target).orElse(null);
-        @Nullable final User source = Sponge.server().userManager().find(this.requester).orElse(null);
+        @Nullable final User source = Sponge.server().userManager().load(this.requester).join().orElse(null);
         final Audience receiver = source != null ? source.player().map(x -> (Audience) x).orElseGet(Sponge::systemSubject) : Sponge.systemSubject();
         if (teleportingPlayer != null && targetPlayer != null) {
             // If safe, get the teleport mode

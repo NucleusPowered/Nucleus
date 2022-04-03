@@ -21,12 +21,14 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.service.ban.Ban;
 import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.service.ban.BanTypes;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 
 @Command(
         aliases = "tempban",
@@ -59,16 +61,17 @@ public class TempBanCommand implements ICommandExecutor, IReloadableService.Relo
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final User u = context.requireOne(NucleusParameters.ONE_USER);
+        final UUID u = context.requireOne(NucleusParameters.ONE_USER);
         final Duration time = context.requireOne(NucleusParameters.DURATION);
         final String reason = context.getOne(NucleusParameters.OPTIONAL_REASON)
                 .orElseGet(() -> context.getMessageString("ban.defaultreason"));
 
+        final String name = Sponge.server().gameProfileManager().cache().findById(u).flatMap(GameProfile::name).orElse("unknown");
         if (!context.isConsoleAndBypass() && context.testPermissionFor(u, BanPermissions.TEMPBAN_EXEMPT_TARGET)) {
-            return context.errorResult("command.tempban.exempt", u.name());
+            return context.errorResult("command.tempban.exempt", name);
         }
 
-        if (!u.isOnline() && !context.testPermission(BanPermissions.TEMPBAN_OFFLINE)) {
+        if (!Sponge.server().player(u).isPresent() && !context.testPermission(BanPermissions.TEMPBAN_OFFLINE)) {
             return context.errorResult("command.tempban.offline.noperms");
         }
 
@@ -82,8 +85,9 @@ public class TempBanCommand implements ICommandExecutor, IReloadableService.Relo
         final BanService service = Sponge.server().serviceProvider().banService();
 
         // TODO: Fix joins to be async
-        if (service.banFor(u.profile()).join().isPresent()) {
-            return context.errorResult("command.ban.alreadyset", u.name());
+        final GameProfile profile = Sponge.server().gameProfileManager().basicProfile(u).join();
+        if (service.find(profile).join().isPresent()) {
+            return context.errorResult("command.ban.alreadyset", profile.name());
         }
 
         if (this.banConfig.getLevelConfig().isUseLevels() &&
@@ -92,7 +96,7 @@ public class TempBanCommand implements ICommandExecutor, IReloadableService.Relo
                         BanPermissions.BASE_TEMPBAN,
                         this.banConfig.getLevelConfig().isCanAffectSameLevel())) {
             // Failure.
-            return context.errorResult("command.modifiers.level.insufficient", u.name());
+            return context.errorResult("command.modifiers.level.insufficient", profile.name());
         }
 
         // Expiration date
@@ -101,20 +105,20 @@ public class TempBanCommand implements ICommandExecutor, IReloadableService.Relo
         // Create the ban.
         final Component src = context.getDisplayName();
         final Component r = LegacyComponentSerializer.legacyAmpersand().deserialize(reason);
-        final Ban bp = Ban.builder().type(BanTypes.PROFILE).profile(u.profile()).source(src).expirationDate(date).reason(r).build();
-        service.addBan(bp);
+        final Ban bp = Ban.builder().type(BanTypes.PROFILE).profile(profile).source(src).expirationDate(date).reason(r).build();
+        service.add(bp);
 
         final Audience send = Audience.audience(
                 context.audience(),
                 context.getServiceCollection().permissionService().permissionMessageChannel(BanPermissions.BAN_NOTIFY)
         );
         send.sendMessage(context.getMessage("command.tempban.applied",
-                        context.getDisplayName(u.uniqueId()),
+                        context.getDisplayName(profile.uuid()),
                         context.getTimeString(time),
                         src));
         send.sendMessage(context.getMessage("standard.reasoncoloured", reason));
 
-        Sponge.server().player(u.uniqueId()).ifPresent(x -> x.kick(r));
+        Sponge.server().player(profile.uniqueId()).ifPresent(x -> x.kick(r));
         return context.successResult();
     }
 }

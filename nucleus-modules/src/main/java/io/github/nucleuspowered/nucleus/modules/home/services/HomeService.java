@@ -176,7 +176,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
 
     @Override
     public int getMaximumHomes(final UUID uuid) throws IllegalArgumentException {
-        final Optional<User> user = Sponge.server().userManager().find(uuid);
+        final Optional<User> user = Sponge.server().userManager().load(uuid).join();
         if (!user.isPresent()) {
             throw new IllegalArgumentException("user does not exist.");
         }

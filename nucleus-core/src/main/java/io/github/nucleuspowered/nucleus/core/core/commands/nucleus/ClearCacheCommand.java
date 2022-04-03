@@ -12,7 +12,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.Command;
 
 @Command(
-        aliases = "nucleus",
+        aliases = "clearcache",
         basePermission = CorePermissions.BASE_NUCLEUS_CLEARCACHE,
         commandDescriptionKey = "nucleus.clearcache",
         parentCommand = NucleusCommand.class

@@ -4,10 +4,10 @@
  */
 package io.github.nucleuspowered.nucleus.modules.mail.parameter;
 
-import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.mail.NucleusMailService;
-import io.github.nucleuspowered.nucleus.modules.mail.services.MailHandler;
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
+import io.github.nucleuspowered.nucleus.modules.mail.services.MailHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandCompletion;
 import org.spongepowered.api.command.exception.ArgumentParseException;
@@ -15,7 +15,6 @@ import org.spongepowered.api.command.parameter.ArgumentReader;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.ValueParameter;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.util.Identifiable;
 
 import java.time.Instant;
@@ -44,8 +43,7 @@ public class MailFilterParameter implements ValueParameter<NucleusMailService.Ma
             return Optional.of(Util.CONSOLE_FAKE_UUID);
         }
 
-        final Optional<User> ou = Sponge.server().userManager().find(text);
-        return ou.map(Identifiable::uniqueId);
+        return Sponge.server().gameProfileManager().cache().findByName(text).map(Identifiable::uniqueId);
     }
 
     @Override

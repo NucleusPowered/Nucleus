@@ -41,7 +41,7 @@ public class KitResetUsageCommand implements ICommandExecutor {
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         final Kit kitInfo = context.requireOne(KitService.KIT_KEY);
-        final User u = context.requireOne(NucleusParameters.ONE_USER);
+        final User u = context.getUserFromArgs(NucleusParameters.ONE_USER);
         final IStorageManager storageManager = context.getServiceCollection().storageManager();
         final IUserDataObject userDataObject = storageManager.getUserService().getOrNewOnThread(u.uniqueId());
         final Map<String, Instant> data = userDataObject.getNullable(KitKeys.REDEEMED_KITS);

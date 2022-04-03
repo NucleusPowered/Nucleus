@@ -19,6 +19,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.util.Locale;
+import java.util.UUID;
 
 @Command(
         aliases = { "setnucleuslanguage", "setnuclang" },
@@ -32,7 +33,7 @@ public class SetNucleusLanguageCommand implements ICommandExecutor {
     private final IPlayerDisplayNameService displayNameService;
 
     private final Parameter.Value<Locale> localeParameter;
-    private final Parameter.Value<User> userParameter;
+    private final Parameter.Value<UUID> userParameter;
 
     @Inject
     public SetNucleusLanguageCommand(final INucleusServiceCollection serviceCollection) {

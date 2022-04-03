@@ -122,7 +122,7 @@ public class RTPConfig {
         if (this.lazyLoadProhbitedBiomes == null) {
             this.lazyLoadProhbitedBiomes = this.prohibitedBiomes.stream()
                     .map(ResourceKey::resolve)
-                    .map(x -> Sponge.server().registries().findRegistry(RegistryTypes.BIOME).flatMap(r -> (Optional<Biome>) r.findValue(x)).orElse(null))
+                    .map(x -> Sponge.server().findRegistry(RegistryTypes.BIOME).flatMap(r -> (Optional<Biome>) r.findValue(x)).orElse(null))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
         }

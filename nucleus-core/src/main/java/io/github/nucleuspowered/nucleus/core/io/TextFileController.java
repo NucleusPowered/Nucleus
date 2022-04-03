@@ -9,18 +9,29 @@ import io.github.nucleuspowered.nucleus.api.text.NucleusTextTemplate;
 import io.github.nucleuspowered.nucleus.core.services.impl.texttemplatefactory.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.INucleusTextTemplateFactory;
 import io.github.nucleuspowered.nucleus.core.util.AdventureUtils;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.spongepowered.api.asset.Asset;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.resource.Resource;
+import org.spongepowered.api.resource.ResourcePath;
+import org.spongepowered.api.resource.pack.Pack;
+import org.spongepowered.api.resource.pack.PackType;
 import org.spongepowered.api.service.pagination.PaginationList;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,9 +39,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.plugin.PluginContainer;
 
 /**
  * Handles loading and reading text files.
@@ -47,9 +60,9 @@ public final class TextFileController {
     );
 
     /**
-     * The internal {@link Asset} that represents the default file.
+     * The internal {@link ResourcePath} that represents the default file.
      */
-    @Nullable private final Asset asset;
+    @Nullable private final Supplier<ResourcePath> resourcePath;
 
     /**
      * Holds the file location.
@@ -67,24 +80,34 @@ public final class TextFileController {
     private final List<NucleusTextTemplateImpl> textTemplates = new ArrayList<>();
     private final boolean getTitle;
     private final INucleusTextTemplateFactory textTemplateFactory;
+    private final PluginContainer pluginContainer;
 
     private long fileTimeStamp = 0;
     @Nullable private NucleusTextTemplate title;
 
-    public TextFileController(final INucleusTextTemplateFactory textTemplateFactory, final Path fileLocation, final boolean getTitle) {
-        this(textTemplateFactory, null, fileLocation, getTitle);
+    public TextFileController(final PluginContainer pluginContainer,
+            final INucleusTextTemplateFactory textTemplateFactory, final Path fileLocation, final boolean getTitle) {
+        this(pluginContainer, textTemplateFactory, null, fileLocation, getTitle);
     }
 
-    public TextFileController(final INucleusTextTemplateFactory textTemplateFactory, @Nullable final Asset asset, final Path fileLocation) {
-        this(textTemplateFactory, asset, fileLocation, false);
+    public TextFileController(
+            final PluginContainer pluginContainer,
+            final INucleusTextTemplateFactory textTemplateFactory, @Nullable final String path, final Path fileLocation) {
+        this(pluginContainer, textTemplateFactory, path == null ? null : () -> {
+            final Pack pluginPack = Sponge.server().packRepository().pack(pluginContainer);
+            return ResourcePath.of(pluginPack.id(), path);
+        }, fileLocation, false);
     }
 
     private TextFileController(
-            final INucleusTextTemplateFactory textTemplateFactory, @Nullable final Asset asset, final Path fileLocation, final boolean getTitle) {
+            final PluginContainer pluginContainer,
+            final INucleusTextTemplateFactory textTemplateFactory, @Nullable final Supplier<ResourcePath> resourcePath, final Path fileLocation,
+            final boolean getTitle) {
         this.textTemplateFactory = textTemplateFactory;
-        this.asset = asset;
+        this.resourcePath = resourcePath;
         this.fileLocation = fileLocation;
         this.getTitle = getTitle;
+        this.pluginContainer = pluginContainer;
     }
 
     /**
@@ -93,9 +116,15 @@ public final class TextFileController {
      * @throws IOException Thrown if there is an issue getting the file.
      */
     public void load() throws IOException {
-        if (this.asset != null && !Files.exists(this.fileLocation)) {
+        if (this.resourcePath != null && !Files.exists(this.fileLocation)) {
+            final Pack pluginPack = Sponge.server().packRepository().pack(this.pluginContainer);
             // Create the file
-            this.asset.copyToFile(this.fileLocation);
+            final Optional<Resource> o = pluginPack.contents().resource(PackType.server(), this.resourcePath.get());
+            if (o.isPresent()) {
+                try (final Resource resource = o.get()) {
+                    Files.copy(resource.inputStream(), this.fileLocation);
+                }
+            }
         }
 
         final List<String> fileContents = new ArrayList<>();

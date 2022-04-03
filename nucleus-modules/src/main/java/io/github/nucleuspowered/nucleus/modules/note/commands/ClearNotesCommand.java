@@ -19,6 +19,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.util.Identifiable;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 @Command(
         aliases = {"clearnotes", "removeallnotes"},
@@ -34,7 +35,7 @@ public class ClearNotesCommand implements ICommandExecutor {
     }
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final UUID user = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Identifiable::uniqueId, Identifiable::uniqueId);
+        final UUID user = NucleusParameters.Composite.parseUserOrGameProfile(context).fold(Function.identity(), Identifiable::uniqueId);
         final Component name = context.getDisplayName(user);
         final NoteHandler handler = context.getServiceCollection().getServiceUnchecked(NoteHandler.class);
 

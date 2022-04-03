@@ -32,6 +32,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @EssentialsEquivalent(value = {"tp", "tele", "tp2p", "teleport", "tpo"}, isExact = false,
@@ -63,10 +64,10 @@ import java.util.function.Supplier;
 )
 public class TeleportCommand implements ICommandExecutor, IReloadableService.Reloadable {
 
-    private final Parameter.Value<User> userToWarp;
+    private final Parameter.Value<UUID> userToWarp;
     private final Parameter.Value<ServerPlayer> playerToWarp;
 
-    private final Parameter.Value<User> userToWarpTo;
+    private final Parameter.Value<UUID> userToWarpTo;
     private final Parameter.Value<ServerPlayer> playerToWarpTo;
 
     private final Parameter.Value<Boolean> quietOption = Parameter.bool().key("quiet").build();
@@ -126,9 +127,10 @@ public class TeleportCommand implements ICommandExecutor, IReloadableService.Rel
     @Override
     public Optional<ICommandResult> preExecute(final ICommandContext context) {
         @Nullable final User source =
-                context.getOne(this.userToWarp).orElseGet(() -> context.getOne(this.playerToWarp).map(ServerPlayer::user).orElse(null));
+                context.getOptionalUserFromUUID(this.userToWarp)
+                        .orElseGet(() -> context.getOne(this.playerToWarp).map(ServerPlayer::user).orElse(null));
         final boolean isOther = source != null && context.uniqueId().filter(x -> !x.equals(source.uniqueId())).isPresent();
-        final User to = context.getOne(this.userToWarpTo).orElseGet(() -> context.requireOne(this.playerToWarpTo).user());
+        final User to = context.getOptionalUserFromUUID(this.userToWarpTo).orElseGet(() -> context.requireOne(this.playerToWarpTo).user());
         return context.getServiceCollection()
                     .getServiceUnchecked(PlayerTeleporterService.class)
                     .canTeleportTo(context.audience(), source, to, isOther) ?
@@ -138,7 +140,7 @@ public class TeleportCommand implements ICommandExecutor, IReloadableService.Rel
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
         @Nullable final User externalSource =
-                context.getOne(this.userToWarp)
+                context.getOptionalUserFromUUID(this.userToWarp)
                         .orElseGet(() -> context.getOne(this.playerToWarp).map(ServerPlayer::user).orElse(null));
         @NonNull final User source;
         if (externalSource != null) {
@@ -147,7 +149,7 @@ public class TeleportCommand implements ICommandExecutor, IReloadableService.Rel
             source = context.requirePlayer().user();
         }
         final boolean isOther = source != null && context.uniqueId().filter(x -> !x.equals(source.uniqueId())).isPresent();
-        final User to = context.getOne(this.userToWarpTo).orElseGet(() -> context.requireOne(this.playerToWarpTo).user());
+        final User to = context.getOptionalUserFromUUID(this.userToWarpTo).orElseGet(() -> context.requireOne(this.playerToWarpTo).user());
 
         final boolean beQuiet = context.getOne(this.quietOption).orElse(this.isDefaultQuiet);
 

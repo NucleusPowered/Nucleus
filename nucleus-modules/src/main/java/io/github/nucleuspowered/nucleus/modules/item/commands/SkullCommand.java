@@ -37,6 +37,7 @@ import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResu
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @EssentialsEquivalent({"skull", "playerskull", "head"})
 @Command(
@@ -52,7 +53,7 @@ import java.util.List;
 )
 public class SkullCommand implements ICommandExecutor, IReloadableService.Reloadable {
 
-    private final Parameter.Value<User> userParameter;
+    private final Parameter.Value<UUID> userParameter;
     private final Parameter.Value<Integer> amountParameter = Parameter.builder(Integer.class)
             .key("amount")
             .addParser(VariableValueParameters.integerRange().min(1).build())

@@ -35,8 +35,7 @@ public class SendMailCommand implements ICommandExecutor {
 
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final User pl = context.getOne(NucleusParameters.ONE_USER)
-                .orElseThrow(() -> context.createException("args.user.none"));
+        final User pl = context.getUserFromArgs(NucleusParameters.ONE_USER);
 
         // Only send mails to players that can read them.
         if (!context.testPermissionFor(pl, MailPermissions.BASE_MAIL)) {

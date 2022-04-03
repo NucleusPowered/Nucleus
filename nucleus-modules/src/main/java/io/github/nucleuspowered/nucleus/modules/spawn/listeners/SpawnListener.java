@@ -101,7 +101,7 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
         }
 
         // Throw them to the default world spawn if the config suggests so.
-        final User user = Sponge.server().userManager().findOrCreate(loginEvent.profile());
+        final User user = Sponge.server().userManager().loadOrCreate(loginEvent.profile().uuid()).join();
         if (this.spawnConfig.isSpawnOnLogin() && !this.serviceCollection.permissionService().hasPermission(user, SpawnPermissions.SPAWN_EXEMPT_LOGIN)) {
 
             ServerWorld world = loginEvent.fromLocation().world();
@@ -170,7 +170,7 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
                 .get(event.destinationWorld().key())
                 .thenAccept(x -> {
                     x.flatMap(y -> y.get(SpawnKeys.WORLD_SPAWN_ROTATION)).ifPresent(y -> {
-                        Sponge.server().scheduler().createExecutor(this.serviceCollection.pluginContainer())
+                        Sponge.server().scheduler().executor(this.serviceCollection.pluginContainer())
                                 .execute(() -> player.setRotation(y));
                     });
                 });

@@ -61,7 +61,7 @@ public class RepairCommand implements ICommandExecutor, IReloadableService.Reloa
         final RepairConfig config = serviceCollection.configProvider().getModuleConfig(ItemConfig.class).getRepairConfig();
         this.whitelist = config.isWhitelist();
         this.restrictions = config.getRestrictions().stream()
-                .map(x -> Sponge.game().registries().registry(RegistryTypes.ITEM_TYPE).findValue(x).orElse(null))
+                .map(x -> Sponge.game().registry(RegistryTypes.ITEM_TYPE).findValue(x).orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

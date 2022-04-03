@@ -22,6 +22,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @ImplementedBy(NucleusPermissionService.class)
 public interface IPermissionService {
@@ -67,6 +68,8 @@ public interface IPermissionService {
     }
 
     boolean isPermissionLevelOkay(Subject actor, Subject actee, String key, String permission, boolean isSameOkay);
+
+    CompletableFuture<Boolean> isPermissionLevelOkay(Subject actor, UUID actee, String key, String permission, boolean isSameOkay);
 
     void setContext(Subject subject, Context context);
 

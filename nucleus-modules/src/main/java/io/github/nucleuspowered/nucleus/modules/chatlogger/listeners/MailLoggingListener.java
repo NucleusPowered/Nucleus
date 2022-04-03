@@ -14,6 +14,7 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.profile.GameProfile;
 
 public class MailLoggingListener extends AbstractLoggerListener {
 
@@ -25,7 +26,7 @@ public class MailLoggingListener extends AbstractLoggerListener {
     @Listener(order = Order.LAST)
     public void onCommand(final NucleusSendMailEvent event, @First final ServerPlayer source) {
         final String message = this.messageProviderService.getMessageString("chatlog.mail",
-            source.name(), Sponge.server().userManager().find(event.getRecipient()).map(User::name).orElse("null"),
+            source.name(), Sponge.server().gameProfileManager().cache().findById(event.getRecipient()).flatMap(GameProfile::name).orElse("null"),
                 event.getMessage());
         this.handler.queueEntry(message);
     }

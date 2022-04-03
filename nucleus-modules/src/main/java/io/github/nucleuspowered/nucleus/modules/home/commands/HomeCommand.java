@@ -58,7 +58,7 @@ public class HomeCommand implements ICommandExecutor, IReloadableService.Reloada
     private boolean isOnlySameDimension = false;
 
     private final Parameter.Value<Home> parameter;
-    private final Parameter.Value<User> userParameter;
+    private final Parameter.Value<UUID> userParameter;
 
     @Inject
     public HomeCommand(final INucleusServiceCollection serviceCollection) {
@@ -96,7 +96,7 @@ public class HomeCommand implements ICommandExecutor, IReloadableService.Reloada
         final ServerPlayer invokingPlayer = context.getIfPlayer();
         final boolean isOther;
         if (context.hasAny(this.userParameter)) {
-            user = context.requireOne(this.userParameter);
+            user = context.getUserFromArgs(this.userParameter);
             target = user.uniqueId();
             isOther = true;
         } else {
