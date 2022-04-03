@@ -19,7 +19,6 @@ import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.query.IQueryObject;
 import io.github.nucleuspowered.storage.util.KeyedObject;
 import io.vavr.Tuple2;
-import io.vavr.Value;
 import io.vavr.collection.Stream;
 import io.vavr.control.Try;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -28,7 +27,6 @@ import org.spongepowered.plugin.PluginContainer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -85,9 +83,7 @@ public abstract class AbstractKeyedService<K, Q extends IQueryObject<K, Q>, D ex
 
     protected Map<K, D> getAllFromQuery(final Q query) throws DataQueryException, DataLoadException {
         return Stream.ofAll(this.storageRepositorySupplier.get().getAll(query).entrySet())
-                .map(x -> Try.of(() -> new Tuple2<>(x.getKey(), this.dataTranslator.get().fromDataAccessObject(x.getValue()))))
-                .map(Value::getOrNull)
-                .reject(Objects::isNull)
+                .flatMap(x -> Try.of(() -> new Tuple2<>(x.getKey(), this.dataTranslator.get().fromDataAccessObject(x.getValue()))))
                 .collect(
                         Collectors.toMap(
                                 x -> x._1,
