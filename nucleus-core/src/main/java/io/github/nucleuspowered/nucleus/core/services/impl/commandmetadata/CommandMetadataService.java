@@ -23,7 +23,6 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.IConfigurateHel
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
-import io.github.nucleuspowered.nucleus.core.util.functional.Action;
 import io.leangen.geantyref.TypeToken;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
@@ -370,7 +369,7 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
     }
 
     private void setupData() {
-        final List<Action> postponeAction = new ArrayList<>();
+        final List<Runnable> postponeAction = new ArrayList<>();
         this.controlToAliases.keySet().forEach(control -> {
             final CommentedConfigurationNode node;
             if (control.isModifierKeyRedirected()) {
@@ -388,7 +387,7 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
             }
         });
 
-        postponeAction.forEach(Action::action);
+        postponeAction.forEach(Runnable::run);
     }
 
     private CommandControl construct(@Nullable final CommandControl parent, final CommandMetadata metadata, final INucleusServiceCollection serviceCollection) {

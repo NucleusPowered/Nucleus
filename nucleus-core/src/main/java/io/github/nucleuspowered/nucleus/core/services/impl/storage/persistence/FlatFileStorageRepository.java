@@ -4,7 +4,6 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.persistence;
 
-import io.github.nucleuspowered.nucleus.core.util.functional.ThrownFunction;
 import io.github.nucleuspowered.storage.exceptions.DataDeleteException;
 import io.github.nucleuspowered.storage.exceptions.DataLoadException;
 import io.github.nucleuspowered.storage.exceptions.DataQueryException;
@@ -12,6 +11,10 @@ import io.github.nucleuspowered.storage.exceptions.DataSaveException;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.query.IQueryObject;
 import io.github.nucleuspowered.storage.util.KeyedObject;
+import io.vavr.CheckedFunction1;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
@@ -21,9 +24,21 @@ import org.spongepowered.api.data.persistence.DataFormats;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -65,7 +80,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
                 // Read the file.
                 return FlatFileStorageRepository.readFromFile(path);
             } catch (final Exception e) {
-                throw new DataLoadException("Could not load file at " + path.toAbsolutePath().toString(), e);
+                throw new DataLoadException("Could not load file at " + path.toAbsolutePath(), e);
             }
         }
 
@@ -124,13 +139,13 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
             extends FlatFileStorageRepository
             implements Keyed<K, Q, DataContainer> {
 
-        private final ThrownFunction<Q, Path, DataQueryException> FILENAME_RESOLVER;
+        private final CheckedFunction1<Q, Path> FILENAME_RESOLVER;
         protected final Supplier<Path> BASE_PATH;
         private final Function<K, Path> KEY_FILENAME_RESOLVER;
 
         AbstractKeyed(
                 final Logger logger,
-                final ThrownFunction<Q, Path, DataQueryException> filename_resolver,
+                final CheckedFunction1<Q, Path> filename_resolver,
                 final Function<K, Path> uuid_filename_resolver,
                 final Supplier<Path> basePath) {
             super(logger);
@@ -141,22 +156,17 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
 
         @Override
         public boolean exists(final Q query) {
-            try {
-                return this.existsInternal(query) != null;
-            } catch (final DataQueryException e) {
-                e.printStackTrace();
+            return this.existsInternal(query).fold(thr -> {
+                thr.printStackTrace();
                 return false;
-            }
+            }, Option::isDefined);
         }
 
         @Override
         public Optional<KeyedObject<K, DataContainer>> get(final Q query) throws DataLoadException {
-            final Path path;
-            try {
-                path = this.existsInternal(query);
-            } catch (final Exception e) {
-                throw new DataLoadException("Query not valid", e);
-            }
+            final Path path = this.existsInternal(query)
+                    .getOrElseThrow(thr -> new DataLoadException("Query not valid", thr))
+                    .orNull();
 
             return this.get(path).map(x -> new KeyedObject<>(query.keys().iterator().next(), x));
         }
@@ -230,14 +240,15 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
             }
         }
 
-        @Nullable
-        private Path existsInternal(final Q query) throws DataQueryException {
-            final Path path = this.FILENAME_RESOLVER.apply(query);
-            if (Files.exists(this.FILENAME_RESOLVER.apply(query))) {
-                return path;
-            }
+        private Either<Throwable, Option<Path>> existsInternal(final Q query) {
+            return Try.of(() -> {
+                final Path path = this.FILENAME_RESOLVER.apply(query);
+                if (Files.exists(this.FILENAME_RESOLVER.apply(query))) {
+                    return Option.of(path);
+                }
 
-            return null;
+                return Option.<Path>none();
+            }).toEither();
         }
     }
 
@@ -246,7 +257,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
     final static class ResourceKeyed<Q extends IQueryObject<ResourceKey, Q>> extends AbstractKeyed<ResourceKey, Q> {
 
         ResourceKeyed(final Logger logger,
-                final ThrownFunction<Q, Path, DataQueryException> filename_resolver,
+                final CheckedFunction1<Q, Path> filename_resolver,
                 final Function<ResourceKey, Path> uuid_filename_resolver, final Supplier<Path> basePath) {
             super(logger, filename_resolver, uuid_filename_resolver, basePath);
         }
@@ -270,14 +281,14 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
         private static class FileWalker extends SimpleFileVisitor<Path> {
 
             private final Set<ResourceKey> keys = new HashSet<>();
-            @Nullable private String inDirectory;
+            private Option<String> inDirectory;
 
             @Override
             public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-                if (this.inDirectory == null) {
+                if (this.inDirectory.isEmpty()) {
                     final FileVisitResult result = super.preVisitDirectory(dir, attrs);
                     if (result == FileVisitResult.CONTINUE) {
-                        this.inDirectory = dir.getFileName().toString();
+                        this.inDirectory = Option.some(dir.getFileName().toString());
                     }
                     return result;
                 }
@@ -299,7 +310,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
                     if (file.endsWith(".json")) {
                         final String f = file.getFileName().toString();
                         try {
-                            this.keys.add(ResourceKey.of(this.inDirectory, f.replace(".json", "")));
+                            this.keys.add(ResourceKey.of(this.inDirectory.getOrElseThrow(RuntimeException::new), f.replace(".json", "")));
                         } catch (final Exception e) {
                             // ignored
                         }
@@ -317,7 +328,7 @@ abstract class FlatFileStorageRepository implements IStorageRepository {
     final static class UUIDKeyed<Q extends IQueryObject<UUID, Q>> extends AbstractKeyed<UUID, Q> {
 
         UUIDKeyed(final Logger logger,
-                final ThrownFunction<Q, Path, DataQueryException> filename_resolver,
+                final CheckedFunction1<Q, Path> filename_resolver,
                 final Function<UUID, Path> uuid_filename_resolver, final Supplier<Path> basePath) {
             super(logger, filename_resolver, uuid_filename_resolver, basePath);
         }

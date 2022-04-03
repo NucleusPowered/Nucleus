@@ -75,7 +75,7 @@ public interface IStorageRepository {
          *
          * @param object The object to save
          */
-        void save(O object) throws ConfigurateException, DataSaveException;
+        void save(O object) throws DataSaveException;
     }
 
     /**

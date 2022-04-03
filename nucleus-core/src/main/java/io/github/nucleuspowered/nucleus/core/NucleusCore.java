@@ -41,7 +41,6 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableServ
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusConfigException;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
-import io.github.nucleuspowered.nucleus.core.util.functional.Action;
 import io.leangen.geantyref.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -102,7 +101,7 @@ public final class NucleusCore {
     private final Injector injector;
     private final IModuleProvider provider;
     private final boolean runDocGen = NucleusJavaProperties.RUN_DOCGEN;
-    private final List<Action> onStartedActions = new LinkedList<>();
+    private final List<Runnable> onStartedActions = new LinkedList<>();
     private final IPluginInfo pluginInfo;
 
     @Nullable private Path dataDirectory;
@@ -314,7 +313,7 @@ public final class NucleusCore {
             this.game.server().shutdown();
             return;
         }
-        this.onStartedActions.forEach(Action::action);
+        this.onStartedActions.forEach(Runnable::run);
         this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
         this.game.asyncScheduler().executor(this.pluginContainer)
                 .submit(() -> this.serviceCollection.userCacheService().startFilewalkIfNeeded());
