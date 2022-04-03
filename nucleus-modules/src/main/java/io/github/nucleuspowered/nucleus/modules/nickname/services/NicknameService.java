@@ -219,12 +219,11 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         final Optional<User> user = Sponge.server().userManager().load(uuid).join();
         if (user.isPresent()) {
             final Optional<ServerPlayer> player = user.get().player();
-            final DataTransactionResult result;
             if (player.isPresent()) {
                 this.messageProviderService.sendMessageTo(player.get(), "command.delnick.success.base");
-                result = player.get().remove(Keys.CUSTOM_NAME);
+                player.get().remove(Keys.CUSTOM_NAME);
             } else {
-                result = user.get().remove(Keys.CUSTOM_NAME);
+                user.get().remove(Keys.CUSTOM_NAME);
             }
         }
     }
