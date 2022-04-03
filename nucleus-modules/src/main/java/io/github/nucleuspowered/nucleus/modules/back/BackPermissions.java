@@ -12,7 +12,7 @@ public final class BackPermissions {
         throw new AssertionError("Nope");
     }
 
-    @PermissionMetadata(descriptionKey = "permission.base", replacements = { "back" }, level = SuggestedLevel.USER)
+    @PermissionMetadata(descriptionKey = "permission.base", replacements = { "back" }, level = SuggestedLevel.ADMIN)
     public static final String BASE_BACK = "nucleus.back.base";
 
     @PermissionMetadata(descriptionKey = "permission.base", replacements = { "clearback" }, level = SuggestedLevel.ADMIN)
