@@ -56,8 +56,8 @@ public final class KitDataTranslator extends AbstractDataContainerDataTranslator
     }
 
     @Override
-    public DataView saveToDataContainer(final IKitDataObject obj, final DataView view) throws InvalidDataException {
-        DataView container = view;
+    public DataContainer saveToDataContainer(final IKitDataObject obj) throws InvalidDataException {
+        DataContainer container = DataContainer.createNew();
         for (final Map.Entry<String, Kit> kit : obj.getKitMap().entrySet()) {
             container = container.set(DataQuery.of(kit.getKey()), kit.getValue());
         }

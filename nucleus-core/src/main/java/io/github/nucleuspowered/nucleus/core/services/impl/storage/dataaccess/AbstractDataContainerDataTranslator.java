@@ -72,14 +72,13 @@ public abstract class AbstractDataContainerDataTranslator<R extends IDataObject>
 
     @Override
     public final DataContainer translate(final R obj) throws InvalidDataException {
-        final DataContainer container = DataContainer.createNew();
+        final DataContainer container = this.saveToDataContainer(obj);
         container.set(Queries.CONTENT_VERSION, this.version());
-        this.saveToDataContainer(obj, container);
         return container;
     }
 
     protected abstract R loadFromDataContainer(final DataView dataView) throws InvalidDataException;
 
-    protected abstract DataView saveToDataContainer(final R obj, final DataView dataView) throws InvalidDataException;
+    protected abstract DataContainer saveToDataContainer(final R obj) throws InvalidDataException;
 
 }

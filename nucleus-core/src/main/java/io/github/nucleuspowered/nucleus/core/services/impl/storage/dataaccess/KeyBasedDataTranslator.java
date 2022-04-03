@@ -7,9 +7,7 @@ package io.github.nucleuspowered.nucleus.core.services.impl.storage.dataaccess;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.AbstractKeyBasedDataObject;
 import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 import io.leangen.geantyref.TypeToken;
-import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.DataContainer;
-import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 
@@ -33,9 +31,9 @@ public class KeyBasedDataTranslator<K extends IKeyedDataObject<K>, T extends Abs
     }
 
     @Override
-    protected DataView saveToDataContainer(final K obj, final DataView dataView) throws InvalidDataException {
+    protected DataContainer saveToDataContainer(final K obj) throws InvalidDataException {
         if (obj instanceof AbstractKeyBasedDataObject<?>) {
-            return dataView.set(DataQuery.of(), ((AbstractKeyBasedDataObject<?>) obj).data());
+            return ((AbstractKeyBasedDataObject<?>) obj).data().copy();
         }
         throw new InvalidDataException(obj.getClass().getName() + "is not of type AbstractKeyBasedDataObject");
     }

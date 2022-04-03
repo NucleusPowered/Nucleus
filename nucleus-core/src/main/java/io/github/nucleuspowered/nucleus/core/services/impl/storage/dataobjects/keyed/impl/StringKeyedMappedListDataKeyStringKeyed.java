@@ -36,7 +36,7 @@ public class StringKeyedMappedListDataKeyStringKeyed<V, O extends IKeyedDataObje
 
     private static <Value> Type createMapListToken(
             final TypeToken<Value> valueToken) {
-        return TypeFactory.parameterizedClass(Map.class, TypeFactory.parameterizedClass(List.class, valueToken.getType()));
+        return TypeFactory.parameterizedClass(Map.class, String.class, TypeFactory.parameterizedClass(List.class, valueToken.getType()));
     }
 
     @SuppressWarnings("unchecked")

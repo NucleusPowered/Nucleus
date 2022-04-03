@@ -27,7 +27,7 @@ public abstract class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> 
     }
 
     protected AbstractKeyBasedDataObject(final DataView view) {
-        this.data = DataContainer.createNew().set(DataQuery.of(), view);
+        this.data = view.copy(DataView.SafetyMode.NO_DATA_CLONED);
     }
 
     public final DataContainer data() {
@@ -76,7 +76,7 @@ public abstract class AbstractKeyBasedDataObject<T extends IKeyedDataObject<T>> 
     @SuppressWarnings("unchecked")
     public <V> Optional<V> get(final DataKey<V, ? extends T> dataKey) {
         if (this.dataHolder.containsKey(dataKey)) { // might have a null value, can't just assume no value needs to hit the container
-            return Optional.of((V) this.dataHolder.get(dataKey));
+            return Optional.ofNullable((V) this.dataHolder.get(dataKey));
         }
         dataKey.performTransformation(this.data);
         final Optional<V> v = dataKey.getFromDataView(this.data);
