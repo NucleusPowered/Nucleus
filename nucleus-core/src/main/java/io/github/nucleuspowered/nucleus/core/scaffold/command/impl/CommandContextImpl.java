@@ -379,7 +379,7 @@ public final class CommandContextImpl implements ICommandContext {
             return this.cause.location().map(Location::world);
         }
 
-        return Optional.empty();
+        return optionalWorldProperties;
     }
 
     @Override
