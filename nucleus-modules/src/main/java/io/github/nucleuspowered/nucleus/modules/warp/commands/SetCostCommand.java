@@ -44,15 +44,15 @@ public class SetCostCommand implements ICommandExecutor, IReloadableService.Relo
             return context.errorResult("command.warp.costset.arg");
         }
 
-        if (cost == -1 && warpService.setWarpCost(warpData.getName(), -1)) {
-            context.sendMessage("command.warp.costset.reset", warpData.getName(), String.valueOf(this.defaultCost));
+        if (cost == -1 && warpService.setWarpCost(warpData.getNamedLocation().getName(), -1)) {
+            context.sendMessage("command.warp.costset.reset", warpData.getNamedLocation().getName(), String.valueOf(this.defaultCost));
             return context.successResult();
-        } else if (warpService.setWarpCost(warpData.getName(), cost)) {
-            context.sendMessage("command.warp.costset.success", warpData.getName(), cost);
+        } else if (warpService.setWarpCost(warpData.getNamedLocation().getName(), cost)) {
+            context.sendMessage("command.warp.costset.success", warpData.getNamedLocation().getName(), cost);
             return context.successResult();
         }
 
-        return context.errorResult("command.warp.costset.failed", warpData.getName());
+        return context.errorResult("command.warp.costset.failed", warpData.getNamedLocation().getName());
     }
 
     @Override public void onReload(final INucleusServiceCollection serviceCollection) {

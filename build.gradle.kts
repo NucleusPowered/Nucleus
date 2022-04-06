@@ -283,6 +283,7 @@ tasks {
             include(project(":nucleus-core"))
             include(project(":nucleus-modules"))
             include(project(":nucleus-bootstrap"))
+            include(project(":nucleus-storage-api"))
             include(dependency("io.vavr:vavr:$vavrVersion"))
         }
 
@@ -295,6 +296,7 @@ tasks {
             exclude(project(":nucleus-core"))
             exclude(project(":nucleus-modules"))
             exclude(project(":nucleus-bootstrap"))
+            include(project(":nucleus-storage-api"))
         }
 
         exclude("io/github/nucleuspowered/nucleus/api/NucleusAPIMod.class")

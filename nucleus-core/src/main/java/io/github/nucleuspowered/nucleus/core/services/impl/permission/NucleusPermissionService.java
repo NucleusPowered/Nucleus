@@ -17,6 +17,7 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.data.SuggestedL
 import io.github.nucleuspowered.nucleus.core.util.PermissionMessageChannel;
 import io.github.nucleuspowered.nucleus.core.util.PrettyPrinter;
 import io.github.nucleuspowered.nucleus.core.util.functional.ThrownFunction;
+import io.vavr.CheckedFunction1;
 import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.Level;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -190,13 +191,13 @@ public class NucleusPermissionService implements IPermissionService, IReloadable
                 options);
     }
 
-    private <T> T getTypedObjectFromSubject(final ThrownFunction<String, T, Exception> conversion, final T empty, final Subject player, final String... options) {
+    private <T> T getTypedObjectFromSubject(final CheckedFunction1<String, T> conversion, final T empty, final Subject player, final String... options) {
         try {
             final Optional<String> optional = this.getOptionFromSubject(player, options);
             if (optional.isPresent()) {
                 return conversion.apply(optional.get());
             }
-        } catch (final Exception e) {
+        } catch (final Throwable e) {
             // ignored
         }
 

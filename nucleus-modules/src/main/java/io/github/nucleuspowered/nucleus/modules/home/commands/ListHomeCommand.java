@@ -4,12 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.home.commands;
 
-import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.home.data.Home;
-import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
-import io.github.nucleuspowered.nucleus.modules.home.HomePermissions;
-import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfig;
-import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
+import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -18,6 +14,9 @@ import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
+import io.github.nucleuspowered.nucleus.modules.home.HomePermissions;
+import io.github.nucleuspowered.nucleus.modules.home.config.HomeConfig;
+import io.github.nucleuspowered.nucleus.modules.home.services.HomeService;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -78,15 +77,15 @@ public class ListHomeCommand implements ICommandExecutor, IReloadableService.Rel
         }
 
         final IPermissionService permissionService = context.getServiceCollection().permissionService();
-        final List<Component> lt = msw.stream().sorted(Comparator.comparing(NamedLocation::getName)).map(x -> {
-            final Optional<ServerLocation> olw = x.getLocation();
+        final List<Component> lt = msw.stream().sorted(Comparator.comparing(x -> x.getLocation().getName())).map(x -> {
+            final Optional<ServerLocation> olw = x.getLocation().getLocation();
             if (!olw.isPresent()) {
                 return Component.text().append(
                                 Component.text()
-                                        .content(x.getName())
+                                        .content(x.getLocation().getName())
                                         .color(NamedTextColor.RED)
                                         .hoverEvent(HoverEvent.showText(
-                                                messageProviderService.getMessageFor(audience, "home.warphoverinvalid", x.getName())))
+                                                messageProviderService.getMessageFor(audience, "home.warphoverinvalid", x.getLocation().getName())))
                                         .build())
                         .build();
             } else {
@@ -100,10 +99,10 @@ public class ListHomeCommand implements ICommandExecutor, IReloadableService.Rel
                     if (!lw.worldKey().equals(player.world().key())) {
                         if (!context.isConsoleAndBypass() && !permissionService.hasPermission(user, HomePermissions.HOME_EXEMPT_SAMEDIMENSION)) {
                             return Component.text()
-                                       .append(Component.text().content(x.getName())
+                                       .append(Component.text().content(x.getLocation().getName())
                                                    .color(NamedTextColor.LIGHT_PURPLE)
                                                    .hoverEvent(HoverEvent.showText(
-                                                           messageProviderService.getMessageFor(audience, "home.warphoverotherdimension", x.getName())))
+                                                           messageProviderService.getMessageFor(audience, "home.warphoverotherdimension", x.getLocation().getName())))
                                                    .build())
                                        .append(textMessage)
                                        .build();
@@ -113,11 +112,11 @@ public class ListHomeCommand implements ICommandExecutor, IReloadableService.Rel
 
                 return Component.text()
                            .append(
-                                Component.text().content(x.getName())
+                                Component.text().content(x.getLocation().getName())
                                     .color(NamedTextColor.GREEN).style(Style.style(TextDecoration.UNDERLINED))
-                                    .hoverEvent(HoverEvent.showText(messageProviderService.getMessageFor(audience, "home.warphover", x.getName())))
-                                    .clickEvent(ClickEvent.runCommand(other ? "/nucleus:home " + user.name() + " " + x.getName()
-                                                                          : "/nucleus:home " + x.getName()))
+                                    .hoverEvent(HoverEvent.showText(messageProviderService.getMessageFor(audience, "home.warphover", x.getLocation().getName())))
+                                    .clickEvent(ClickEvent.runCommand(other ? "/nucleus:home " + user.name() + " " + x.getLocation().getName()
+                                                                          : "/nucleus:home " + x.getLocation().getName()))
                                     .build())
                            .append(textMessage)
                            .build();

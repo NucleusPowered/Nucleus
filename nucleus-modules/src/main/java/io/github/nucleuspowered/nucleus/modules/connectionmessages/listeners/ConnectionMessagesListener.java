@@ -49,6 +49,7 @@ public class ConnectionMessagesListener implements IReloadableService.Reloadable
         if (joinEvent.isMessageCancelled() || (this.cmc.isDisableWithPermission() &&
                 this.permissionService.hasPermission(pl, ConnectionMessagesPermissions.CONNECTIONMESSSAGES_DISABLE))) {
             joinEvent.setMessageCancelled(true);
+            joinEvent.setAudience(null);
             return;
         }
 
@@ -69,6 +70,7 @@ public class ConnectionMessagesListener implements IReloadableService.Reloadable
         if (this.cmc.isModifyLoginMessage()) {
             if (this.cmc.getLoginMessage().isEmpty()) {
                 joinEvent.setMessageCancelled(true);
+                joinEvent.setAudience(null);
             } else {
                 joinEvent.setMessage(this.loginMessage.getForObject(pl));
             }
@@ -85,15 +87,20 @@ public class ConnectionMessagesListener implements IReloadableService.Reloadable
 
     @Listener
     public void onPlayerQuit(final ServerSideConnectionEvent.Disconnect leaveEvent, @Getter("player") final ServerPlayer pl) {
-        if (leaveEvent.message() != Component.empty() || (this.cmc.isDisableWithPermission() &&
-                this.permissionService.hasPermission(pl, ConnectionMessagesPermissions.CONNECTIONMESSSAGES_DISABLE))) {
-            leaveEvent.setMessage(Component.empty());
+        if (leaveEvent.message() == Component.empty()) {
+            leaveEvent.setAudience(null);
+            return;
+        }
+
+        if (this.cmc.isDisableWithPermission() &&
+                this.permissionService.hasPermission(pl, ConnectionMessagesPermissions.CONNECTIONMESSSAGES_DISABLE)) {
+            leaveEvent.setAudience(null);
             return;
         }
 
         if (this.cmc.isModifyLogoutMessage()) {
             if (this.cmc.getLogoutMessage().isEmpty()) {
-                leaveEvent.setMessage(Component.empty());
+                leaveEvent.setAudience(null);
             } else {
                 leaveEvent.setMessage(this.logoutMessage.getForObject(pl));
             }

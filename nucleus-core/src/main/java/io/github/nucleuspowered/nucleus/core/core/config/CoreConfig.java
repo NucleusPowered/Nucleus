@@ -4,7 +4,6 @@
  */
 package io.github.nucleuspowered.nucleus.core.core.config;
 
-import io.github.nucleuspowered.nucleus.core.services.impl.texttemplatefactory.NucleusTextTemplateImpl;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.annotation.configuratehelper.LocalisedComment;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
@@ -82,6 +81,14 @@ public class CoreConfig {
     @Setting(value = "check-first-date-played-on-first-joined")
     @LocalisedComment("config.core.firstdateplayed")
     private boolean checkFirstDatePlayed = true;
+
+    @Setting(value = "data-storage")
+    @LocalisedComment("config.core.datastorage")
+    private StorageConfig storageConfig = new StorageConfig();
+
+    public StorageConfig getStorageConfig() {
+        return this.storageConfig;
+    }
 
     public String getDataFileLocation() {
         return this.dataFileLocation;

@@ -11,6 +11,7 @@ import io.github.nucleuspowered.nucleus.core.IPluginInfo;
 import io.github.nucleuspowered.nucleus.core.NucleusCore;
 import io.github.nucleuspowered.nucleus.bootstrap.error.ConfigErrorHandler;
 import io.github.nucleuspowered.nucleus.core.NucleusJavaProperties;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusCoreDatatypeRegistration;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusConfigException;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
 import io.github.nucleuspowered.nucleus.modules.NucleusModuleProvider;
@@ -18,6 +19,7 @@ import io.github.nucleuspowered.nucleus.bootstrap.error.InvalidVersionErrorHandl
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.spongepowered.api.Game;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
@@ -42,13 +44,16 @@ public class NucleusBootstrapper {
     private final Logger logger;
     private final Path configDirectory;
     private final Injector injector;
+    private final Game game;
 
     @Inject
     public NucleusBootstrapper(
+            final Game game,
             final PluginContainer pluginContainer,
             final Logger logger,
             @ConfigDir(sharedRoot = false) final Path configDirectory,
             final Injector injector) {
+        this.game = game;
         this.pluginContainer = pluginContainer;
         this.logger = logger;
         this.configDirectory = configDirectory;
@@ -125,8 +130,14 @@ public class NucleusBootstrapper {
                         Sponge.platform().container(Platform.Component.IMPLEMENTATION).metadata().version());
                 this.logger.info("Nucleus is starting...");
                 final NucleusCore core =
-                        new NucleusCore(this.pluginContainer, this.configDirectory, this.logger, this.injector, new NucleusModuleProvider(),
+                        new NucleusCore(this.game,
+                                this.pluginContainer,
+                                this.configDirectory,
+                                this.logger,
+                                this.injector,
+                                new NucleusModuleProvider(),
                                 pluginInfo);
+                NucleusCoreDatatypeRegistration.registerDataTypes(this.game.dataManager());
                 core.init();
                 Sponge.eventManager().registerListeners(this.pluginContainer, core);
                 this.logger.info("Nucleus has completed initialisation successfully. Awaiting Sponge lifecycle events.");

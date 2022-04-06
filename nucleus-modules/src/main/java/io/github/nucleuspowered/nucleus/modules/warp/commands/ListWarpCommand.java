@@ -29,7 +29,6 @@ import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.Comparator;
 import java.util.List;
@@ -77,7 +76,7 @@ public class ListWarpCommand implements ICommandExecutor, IReloadableService.Rel
 
     private ICommandResult categories(final WarpService service, final ICommandContext context) {
         // Get the warp list.
-        final Map<WarpCategory, List<Warp>> warps = service.getWarpsWithCategories(x -> this.canView(context, x.getName()));
+        final Map<WarpCategory, List<Warp>> warps = service.getWarpsWithCategories(x -> this.canView(context, x.getNamedLocation().getName()));
         this.createMain(context, warps);
         return context.successResult();
     }
@@ -113,8 +112,8 @@ public class ListWarpCommand implements ICommandExecutor, IReloadableService.Rel
         final boolean econExists = context.getServiceCollection().economyServiceProvider().serviceExists();
         final Component name = category == null ? Component.text(this.defaultName) : category.getDisplayName();
 
-        final List<Component> lt = warpDataList.get(category).stream().sorted(Comparator.comparing(Warp::getName))
-            .map(s -> this.createWarp(s, s.getName(), econExists, this.defaultCost, context)).collect(Collectors.toList());
+        final List<Component> lt = warpDataList.get(category).stream().sorted(Comparator.comparing(x -> x.getNamedLocation().getName()))
+            .map(s -> this.createWarp(s, s.getNamedLocation().getName(), econExists, this.defaultCost, context)).collect(Collectors.toList());
 
         Util.getPaginationBuilder(context.audience())
             .title(context.getMessage("command.warps.list.category", name)).padding(ListWarpCommand.DASH)
@@ -143,9 +142,12 @@ public class ListWarpCommand implements ICommandExecutor, IReloadableService.Rel
 
     private TextComponent createWarp(@Nullable final Warp data, final String name, final boolean econExists, final double defaultCost,
             final ICommandContext context) {
+        if (data == null) {
+            return Component.text("No warp exists with the name " + name, NamedTextColor.RED);
+        }
 
-        final String pos = data.getLocation().map(Location::blockPosition).orElseGet(() -> data.getPosition().toInt()).toString();
-        final String worldName = data.getResourceKey().asString();
+        final String pos = data.getNamedLocation().getLocation().map(Location::blockPosition).orElseGet(() -> data.getNamedLocation().getPosition().toInt()).toString();
+        final String worldName = data.getNamedLocation().getWorldResourceKey().asString();
 
         final TextComponent.Builder inner = Component.text().content(name).color(NamedTextColor.GREEN).style(Style.style(TextDecoration.ITALIC))
                 .clickEvent(ClickEvent.runCommand("/warp \"" + name + "\""));

@@ -6,6 +6,7 @@ package io.github.nucleuspowered.nucleus.modules.mute.listeners;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.module.mute.data.Mute;
+import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
 import io.github.nucleuspowered.nucleus.modules.mute.config.MuteConfig;
 import io.github.nucleuspowered.nucleus.modules.mute.services.MuteService;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
@@ -58,7 +59,7 @@ public class MuteCommandListener implements ListenerBase.Conditional {
         // If the command is in the list, block it.
         if (this.blockedCommands.stream().map(String::toLowerCase).anyMatch(cmd::contains)) {
             final Mute muteData = this.handler.getPlayerMuteInfo(player.uniqueId()).orElse(null);
-            if (muteData == null || muteData.expired()) {
+            if (muteData == null || muteData.getTimedEntry().map(TimedEntry::expired).orElse(false)) {
                 this.handler.unmutePlayer(player.uniqueId());
             } else {
                 this.handler.onMute(muteData, player);
@@ -74,7 +75,8 @@ public class MuteCommandListener implements ListenerBase.Conditional {
     }
 
     // will also act as the reloadable.
-    @Override public boolean shouldEnable(final INucleusServiceCollection serviceCollection) {
+    @Override
+    public boolean shouldEnable(final INucleusServiceCollection serviceCollection) {
         this.blockedCommands.clear();
         this.blockedCommands.addAll(serviceCollection.configProvider().getModuleConfig(MuteConfig.class).getBlockedCommands());
         return !this.blockedCommands.isEmpty();

@@ -4,15 +4,15 @@
  */
 package io.github.nucleuspowered.nucleus.modules.note;
 
-import io.github.nucleuspowered.nucleus.modules.note.data.NoteData;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
+import io.github.nucleuspowered.nucleus.api.module.note.data.Note;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.DataKey;
 import io.leangen.geantyref.TypeToken;
 
 public final class NoteKeys {
 
-    public static final TypeToken<NoteData> NOTE_DATA_KEY = TypeToken.get(NoteData.class);
+    public static final TypeToken<Note> NOTE_DATA_KEY = TypeToken.get(Note.class);
 
-    public final static DataKey.ListKey<NoteData, IUserDataObject> NOTE_DATA =
+    public final static DataKey.ListKey<Note, IUserDataObject> NOTE_DATA =
             DataKey.ofList(NoteKeys.NOTE_DATA_KEY, IUserDataObject.class, "notes");
 }

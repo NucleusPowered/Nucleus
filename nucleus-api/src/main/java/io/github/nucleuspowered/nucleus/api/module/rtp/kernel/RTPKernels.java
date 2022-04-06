@@ -32,7 +32,7 @@ public final class RTPKernels {
     }
 
     public final static DefaultedRegistryType<RTPKernel> REGISTRY_TYPE =
-            RegistryType.of(RegistryRoots.SPONGE, ResourceKey.of("nucleus", "rtp")).asDefaultedType(() -> Sponge.game());
+            RegistryType.of(RegistryRoots.SPONGE, ResourceKey.of("nucleus", "rtp_kernel")).asDefaultedType(Sponge::game);
 
     /**
      * The default Nucleus RTP kernel, adjusted to centre around the player,

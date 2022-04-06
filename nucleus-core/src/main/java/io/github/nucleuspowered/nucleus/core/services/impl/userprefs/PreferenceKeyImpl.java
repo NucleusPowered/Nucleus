@@ -6,10 +6,11 @@ package io.github.nucleuspowered.nucleus.core.services.impl.userprefs;
 
 import io.github.nucleuspowered.nucleus.api.core.NucleusUserPreferenceService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.ScalarDataKey;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.util.functional.TriConsumer;
-import io.github.nucleuspowered.storage.dataobjects.keyed.DataKeyImpl;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.impl.AbstractDataKey;
 import io.leangen.geantyref.TypeToken;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 
-public class PreferenceKeyImpl<T> extends DataKeyImpl<T, IUserDataObject> implements NucleusUserPreferenceService.PreferenceKey<T> {
+public class PreferenceKeyImpl<T> extends ScalarDataKey<T, IUserDataObject> implements NucleusUserPreferenceService.PreferenceKey<T> {
 
     private final ResourceKey key;
     @Nullable private final T def;
@@ -68,7 +69,7 @@ public class PreferenceKeyImpl<T> extends DataKeyImpl<T, IUserDataObject> implem
             final BiPredicate<INucleusServiceCollection, UUID> canAccess,
             final String descriptionKey,
             final TriConsumer<INucleusServiceCollection, UUID, T> onSet) {
-        super(new String[] { "user-prefs", key.asString() }, TypeToken.get(clazz).getType(), IUserDataObject.class, def);
+        super(new String[] { "user-prefs", key.asString() }, TypeToken.get(clazz).getType(), IUserDataObject.class, def, null);
         this.key = key;
         this.def = def;
         this.clazz = clazz;

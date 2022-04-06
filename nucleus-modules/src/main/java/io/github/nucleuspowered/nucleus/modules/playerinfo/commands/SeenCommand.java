@@ -14,7 +14,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.NucleusParameters;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.Command;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.annotation.EssentialsEquivalent;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPlayerInformationService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPlayerOnlineService;
 import io.github.nucleuspowered.nucleus.modules.misc.commands.SpeedCommand;
@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 @EssentialsEquivalent("seen")
 @Command(

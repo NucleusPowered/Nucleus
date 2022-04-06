@@ -7,6 +7,7 @@ package io.github.nucleuspowered.nucleus.api.module.kit.data;
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.module.kit.KitRedeemResult;
 import io.github.nucleuspowered.nucleus.api.module.kit.NucleusKitService;
+import org.spongepowered.api.data.persistence.DataSerializable;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -21,7 +22,7 @@ import java.util.UUID;
  *
  * <p>Note that this kit requires explicit saving, see {@link #save()}</p>
  */
-public interface Kit {
+public interface Kit extends DataSerializable {
 
     /**
      * Creates a {@link Kit}.
@@ -56,18 +57,6 @@ public interface Kit {
      * @return This {@link Kit}, for chaining.
      */
     Kit setStacks(List<ItemStackSnapshot> stacks);
-
-    /**
-     * Gets the cooldown time for the kit, or {@link Duration#ZERO}
-     * if there is no cooldown.
-     *
-     * @return The {@link Duration}
-     * @deprecated Use {@link #getCooldown()}
-     */
-    @Deprecated
-    default Duration getInterval() {
-        return this.getCooldown().orElse(Duration.ZERO);
-    }
 
     /**
      * Gets the cooldown time for the kit.

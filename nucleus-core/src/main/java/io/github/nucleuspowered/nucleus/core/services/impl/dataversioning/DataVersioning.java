@@ -6,11 +6,12 @@ package io.github.nucleuspowered.nucleus.core.services.impl.dataversioning;
 
 import com.google.inject.Singleton;
 import io.github.nucleuspowered.nucleus.core.core.CoreKeys;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IGeneralDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IWorldDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IGeneralDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IWorldDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IDataVersioning;
 
+// Used for actual data migrations, rather than structural.
 @Singleton
 public final class DataVersioning implements IDataVersioning {
 

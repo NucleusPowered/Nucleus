@@ -6,22 +6,20 @@ package io.github.nucleuspowered.nucleus.modules.jail.listeners;
 
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.EventContexts;
-import io.github.nucleuspowered.nucleus.api.module.jail.data.Jail;
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jailing;
 import io.github.nucleuspowered.nucleus.api.teleport.event.NucleusTeleportEvent;
-import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
 import io.github.nucleuspowered.nucleus.core.core.events.NucleusOnLoginEvent;
-import io.github.nucleuspowered.nucleus.modules.jail.JailPermissions;
-import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
-import io.github.nucleuspowered.nucleus.modules.jail.services.JailService;
-import io.github.nucleuspowered.nucleus.modules.jail.services.JailingEntry;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.core.util.PermissionMessageChannel;
+import io.github.nucleuspowered.nucleus.modules.jail.JailPermissions;
+import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
+import io.github.nucleuspowered.nucleus.modules.jail.services.JailService;
+import io.github.nucleuspowered.nucleus.modules.jail.services.NucleusJailing;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.spongepowered.api.Sponge;
@@ -40,6 +38,7 @@ import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.api.event.network.ServerSideConnectionEvent;
 import org.spongepowered.api.util.Nameable;
 import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +66,7 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
             return;
         }
 
-        final Optional<Jail> jail = this.handler.getJail(jailing.getJailName()).filter(x -> x.getLocation().isPresent());
+        final Optional<ServerLocation> jail = this.handler.getJail(jailing.getJailName()).flatMap(x -> x.getLocation().getLocation());
         if (!jail.isPresent()) {
             new PermissionMessageChannel(this.permissionService, JailPermissions.JAIL_NOTIFY)
                     .sendMessage(Component.text("WARNING: No jail is defined for " + user.name() + " - they're going free!", NamedTextColor.RED));
@@ -76,7 +75,7 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
         }
 
         // always send the player back to the jail location
-        event.setTo(jail.get().getLocation().get());
+        event.setTo(jail.get());
     }
 
     /**
@@ -87,11 +86,11 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
     @Listener(order = Order.LATE)
     public void onPlayerJoin(final ServerSideConnectionEvent.Join event, @Getter("player") final ServerPlayer serverPlayer) {
         final Optional<Jailing> jailing = this.handler.getPlayerJailData(serverPlayer.uniqueId());
-        if (!jailing.filter(x -> x instanceof JailingEntry).isPresent()) {
+        if (!jailing.filter(x -> x instanceof NucleusJailing).isPresent()) {
             return;
         }
 
-        final JailingEntry entry = jailing.map(x -> (JailingEntry) x).get();
+        final NucleusJailing entry = jailing.map(x -> (NucleusJailing) x).get();
         this.handler.onJail(entry, serverPlayer);
     }
 
@@ -157,13 +156,16 @@ public class JailListener implements IReloadableService.Reloadable, ListenerBase
 
     @Listener(order = Order.LAST)
     public void onSpawn(final RespawnPlayerEvent.SelectWorld event, @Getter("entity") final ServerPlayer player) {
-        this.handler.getPlayerJail(player.uniqueId()).flatMap(NamedLocation::getLocation).map(Location::world)
+        this.handler.getPlayerJail(player.uniqueId())
+                .flatMap(x -> x.getLocation().getLocation())
+                .map(Location::world)
                 .ifPresent(event::setDestinationWorld);
     }
 
     @Listener(order = Order.LAST)
     public void onSpawn(final RespawnPlayerEvent.Recreate event, @Getter("entity") final ServerPlayer player) {
-        this.handler.getPlayerJail(player.uniqueId()).flatMap(NamedLocation::getLocation)
+        this.handler.getPlayerJail(player.uniqueId())
+                .flatMap(x -> x.getLocation().getLocation())
                 .filter(x -> x.world().equals(event.destinationWorld()))
                 .map(Location::position)
                 .ifPresent(event::setDestinationPosition);

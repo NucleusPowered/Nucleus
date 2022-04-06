@@ -33,7 +33,7 @@ public class JailParameter implements ValueParameter<Jail> {
     public List<CommandCompletion> complete(final CommandContext context, final String currentInput) {
         return this.handler.getJails().entrySet().stream().filter(x -> x.getKey().startsWith(currentInput))
                 .map(x ->
-                    x.getValue().getLocation()
+                    x.getValue().getLocation().getLocation()
                             .map(loc -> CommandCompletion.of(x.getKey(), Component.text(loc.toString())))
                             .orElseGet(() -> CommandCompletion.of(x.getKey()))
                 )

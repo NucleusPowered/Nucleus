@@ -4,10 +4,9 @@
  */
 package io.github.nucleuspowered.nucleus.core.services.impl.storage.persistence;
 
-import com.google.gson.JsonObject;
 import io.github.nucleuspowered.nucleus.core.guice.DataDirectory;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects.IUserQueryObject;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.queryobjects.IWorldQueryObject;
+import io.github.nucleuspowered.storage.query.IUserQueryObject;
+import io.github.nucleuspowered.storage.query.IWorldQueryObject;
 import io.github.nucleuspowered.storage.exceptions.DataQueryException;
 import io.github.nucleuspowered.storage.persistence.IStorageRepository;
 import io.github.nucleuspowered.storage.persistence.IStorageRepositoryFactory;
@@ -21,11 +20,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.data.persistence.DataContainer;
 
 @Singleton
 public final class FlatFileStorageRepositoryFactory implements IStorageRepositoryFactory {
-
-    private final ResourceKey key = ResourceKey.of("nucleus", "flat_file");
 
     private static final String WORLD_DATA_DIRECTORY = "worlddata";
     private static final String USER_DATA_DIRECTORY = "userdata";
@@ -41,7 +39,7 @@ public final class FlatFileStorageRepositoryFactory implements IStorageRepositor
     }
 
     @Override
-    public IStorageRepository.Keyed<ResourceKey, IWorldQueryObject, JsonObject> worldRepository() {
+    public IStorageRepository.Keyed<ResourceKey, IWorldQueryObject, DataContainer> worldRepository() {
         return new FlatFileStorageRepository.ResourceKeyed<>(this.logger, query -> {
             if (query.keys().size() == 1) {
                 final Collection<ResourceKey> keys = query.keys();
@@ -56,7 +54,7 @@ public final class FlatFileStorageRepositoryFactory implements IStorageRepositor
     }
 
     @Override
-    public IStorageRepository.Keyed<UUID, IUserQueryObject, JsonObject> userRepository() {
+    public IStorageRepository.Keyed<UUID, IUserQueryObject, DataContainer> userRepository() {
         return new FlatFileStorageRepository.UUIDKeyed<>(this.logger, query -> {
             if (query.keys().size() == 1) {
                 final Collection<UUID> uuids = query.keys();
@@ -71,12 +69,12 @@ public final class FlatFileStorageRepositoryFactory implements IStorageRepositor
     }
 
     @Override
-    public IStorageRepository.Single<JsonObject> generalRepository() {
+    public IStorageRepository.Single<DataContainer> generalRepository() {
         return new FlatFileStorageRepository.Single(this.logger, () -> this.dataPath.get().resolve(GENERAL_FILE));
     }
 
     @Override
-    public IStorageRepository.Single<JsonObject> kitsRepository() {
+    public IStorageRepository.Single<DataContainer> kitsRepository() {
         return new FlatFileStorageRepository.Single(this.logger, () -> this.dataPath.get().resolve(KITS_FILE));
     }
 

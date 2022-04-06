@@ -15,7 +15,7 @@ import io.github.nucleuspowered.nucleus.modules.kit.KitPermissions;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfig;
 import io.github.nucleuspowered.nucleus.modules.kit.events.KitEvent;
 import io.github.nucleuspowered.nucleus.modules.kit.misc.KitRedeemResultImpl;
-import io.github.nucleuspowered.nucleus.modules.kit.misc.SingleKit;
+import io.github.nucleuspowered.nucleus.modules.kit.data.SingleKit;
 import io.github.nucleuspowered.nucleus.modules.kit.parameters.KitParameter;
 import io.github.nucleuspowered.nucleus.modules.kit.storage.IKitDataObject;
 import io.github.nucleuspowered.nucleus.modules.kit.storage.KitStorageModule;
@@ -27,7 +27,7 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.INucleusTextTem
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager;
-import io.github.nucleuspowered.storage.services.IStorageService;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.services.IStorageService;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.apache.logging.log4j.Logger;
@@ -61,8 +61,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.swing.text.html.Option;
 
 @APIService(NucleusKitService.class)
 public class KitService implements NucleusKitService, IReloadableService.Reloadable, ServiceBase {

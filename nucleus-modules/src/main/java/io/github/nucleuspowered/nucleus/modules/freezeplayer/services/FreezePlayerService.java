@@ -11,8 +11,8 @@ import io.github.nucleuspowered.nucleus.modules.freezeplayer.FreezePlayerKeys;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.storage.dataobjects.keyed.IKeyedDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.IKeyedDataObject;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

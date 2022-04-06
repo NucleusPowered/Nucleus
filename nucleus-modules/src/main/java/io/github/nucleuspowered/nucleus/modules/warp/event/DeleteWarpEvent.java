@@ -16,7 +16,7 @@ public class DeleteWarpEvent extends AbstractWarpEvent implements NucleusWarpEve
     private final Warp warp;
 
     public DeleteWarpEvent(final Cause cause, final Warp warp) {
-        super(cause, warp.getName());
+        super(cause, warp.getNamedLocation().getName());
         this.warp = warp;
     }
 
@@ -25,6 +25,6 @@ public class DeleteWarpEvent extends AbstractWarpEvent implements NucleusWarpEve
     }
 
     @Override public Optional<ServerLocation> getLocation() {
-        return this.warp.getLocation();
+        return this.warp.getNamedLocation().getLocation();
     }
 }

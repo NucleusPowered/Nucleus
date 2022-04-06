@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.kit;
 
+import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.KitAutoRedeemCommand;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.KitCommand;
@@ -30,6 +31,7 @@ import io.github.nucleuspowered.nucleus.modules.kit.commands.command.KitClearCom
 import io.github.nucleuspowered.nucleus.modules.kit.commands.command.KitCommandCommand;
 import io.github.nucleuspowered.nucleus.modules.kit.commands.command.KitRemoveCommandCommand;
 import io.github.nucleuspowered.nucleus.modules.kit.config.KitConfig;
+import io.github.nucleuspowered.nucleus.modules.kit.data.KitDataBuilder;
 import io.github.nucleuspowered.nucleus.modules.kit.listeners.KitAutoRedeemListener;
 import io.github.nucleuspowered.nucleus.modules.kit.listeners.KitListener;
 import io.github.nucleuspowered.nucleus.modules.kit.services.KitService;
@@ -38,6 +40,11 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.task.TaskBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataRegistration;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.lifecycle.RegisterDataEvent;
+import org.spongepowered.api.event.lifecycle.RegisterRegistryValueEvent;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,6 +65,8 @@ public class KitModule implements IModule.Configurable<KitConfig> {
         serviceCollection.storageManager().register(new KitStorageModule(serviceCollection));
         final KitService kitService = new KitService(serviceCollection);
         serviceCollection.registerService(KitService.class, kitService, false);
+        // Data
+        serviceCollection.game().dataManager().registerBuilder(Kit.class, new KitDataBuilder());
     }
 
     @Override
@@ -112,4 +121,5 @@ public class KitModule implements IModule.Configurable<KitConfig> {
     public Collection<Class<? extends TaskBase>> getAsyncTasks() {
         return Collections.emptyList();
     }
+
 }

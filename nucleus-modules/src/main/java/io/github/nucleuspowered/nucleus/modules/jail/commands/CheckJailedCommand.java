@@ -60,11 +60,11 @@ public class CheckJailedCommand implements ICommandExecutor {
 
         //
         final IUserCacheService userCacheService = context.getServiceCollection().userCacheService();
-        final List<UUID> usersInJail = jail.map(x -> userCacheService.getJailedIn(x.getName()))
+        final List<UUID> usersInJail = jail.map(x -> userCacheService.getJailedIn(x.getLocation().getName()))
                 .orElseGet(userCacheService::getJailed);
         //
 
-        final String jailName = jail.map(NamedLocation::getName).orElseGet(() -> context.getMessageString("standard.alljails"));
+        final String jailName = jail.map(x -> x.getLocation().getName()).orElseGet(() -> context.getMessageString("standard.alljails"));
 
         if (usersInJail.isEmpty()) {
             context.sendMessage("command.checkjailed.none", jailName);

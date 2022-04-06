@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.core.core.events;
 
 import com.google.common.base.Preconditions;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cause;

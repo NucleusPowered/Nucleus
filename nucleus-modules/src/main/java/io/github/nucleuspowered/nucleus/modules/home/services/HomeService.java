@@ -12,6 +12,7 @@ import io.github.nucleuspowered.nucleus.api.module.home.exception.HomeException;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
 import io.github.nucleuspowered.nucleus.core.configurate.datatypes.LocationNode;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusNamedLocation;
 import io.github.nucleuspowered.nucleus.modules.home.HomeKeys;
 import io.github.nucleuspowered.nucleus.modules.home.HomePermissions;
 import io.github.nucleuspowered.nucleus.modules.home.events.AbstractHomeEvent;
@@ -22,7 +23,7 @@ import io.github.nucleuspowered.nucleus.modules.home.events.UseHomeEvent;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.INucleusLocationService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IPermissionService;
 import net.kyori.adventure.audience.Audience;
@@ -60,12 +61,12 @@ public class HomeService implements NucleusHomeService, ServiceBase {
     @Override
     public List<Home> getHomes(final UUID user) {
         final Optional<IUserDataObject> service = this.serviceCollection.storageManager().getUserOnThread(user); //.get().getHome;
-        return service.map(modularUserService -> this.getHomes(user, modularUserService)).orElseGet(Collections::emptyList);
+        return service.map(this::getHomes).orElseGet(Collections::emptyList);
 
     }
 
-    private List<Home> getHomes(final UUID user, final IUserDataObject userDataObject) {
-        return this.getHomesFrom(user, userDataObject.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap));
+    private List<Home> getHomes(final IUserDataObject userDataObject) {
+        return this.getHomesFrom(userDataObject.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap));
     }
 
     public Collection<String> getHomeNames(final UUID user) {
@@ -75,7 +76,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
 
     @Override public Optional<Home> getHome(final UUID user, final String name) {
         final Optional<IUserDataObject> service = this.serviceCollection.storageManager().getUser(user).join();
-        return service.flatMap(modularUserService -> this.getHome(name, user, modularUserService.get(HomeKeys.HOMES).orElse(null)));
+        return service.flatMap(modularUserService -> this.getHome(name, modularUserService.get(HomeKeys.HOMES).orElse(null)));
 
     }
 
@@ -95,7 +96,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
 
         final int max = this.getMaximumHomes(user);
         final IUserDataObject udo = this.serviceCollection.storageManager().getOrCreateUserOnThread(user);
-        final Map<String, LocationNode> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
+        final Map<String, Home> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
         if (m.size() >= max) {
             throw new HomeException(
                     this.serviceCollection.messageProvider().getMessageFor(cause.first(Audience.class).orElseGet(Sponge::systemSubject),
@@ -138,13 +139,13 @@ public class HomeService implements NucleusHomeService, ServiceBase {
         this.postEvent(event);
 
         final IUserDataObject udo = this.serviceCollection.storageManager().getOrCreateUserOnThread(home.getOwnersUniqueId());
-        final Map<String, LocationNode> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
-        if (!this.setHome(home.getOwnersUniqueId(), m, home.getName(), location, rotation, true)) {
+        final Map<String, Home> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
+        if (!this.setHome(home.getOwnersUniqueId(), m, home.getLocation().getName(), location, rotation, true)) {
             throw new HomeException(
                     this.serviceCollection.messageProvider().getMessageFor(
                             cause.first(Audience.class).orElseGet(Sponge::systemSubject),
                             "command.sethome.seterror",
-                            home.getName()
+                            home.getLocation().getName()
                     ),
                     HomeException.Reasons.UNKNOWN);
         }
@@ -162,13 +163,13 @@ public class HomeService implements NucleusHomeService, ServiceBase {
             this.postEvent(event);
 
             final IUserDataObject udo = this.serviceCollection.storageManager().getOrCreateUserOnThread(home.getOwnersUniqueId());
-            final Map<String, LocationNode> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
-            if (!this.deleteHome(home.getOwnersUniqueId(), m, home.getName())) {
+            final Map<String, Home> m = udo.get(HomeKeys.HOMES).orElseGet(Collections::emptyMap);
+            if (!this.deleteHome(home.getOwnersUniqueId(), m, home.getLocation().getName())) {
                 throw new HomeException(
                         this.serviceCollection.messageProvider().getMessageFor(
                                 cause.first(Audience.class).orElseGet(Sponge::systemSubject),
                                 "command.home.delete.fail",
-                                home.getName()),
+                                home.getLocation().getName()),
                         HomeException.Reasons.UNKNOWN);
             }
         }
@@ -196,16 +197,16 @@ public class HomeService implements NucleusHomeService, ServiceBase {
     }
 
     public TeleportResult warpToHome(final ServerPlayer src, final Home home, final boolean safeTeleport) throws HomeException {
-        Sponge.server().worldManager().world(home.getResourceKey())
+        Sponge.server().worldManager().world(home.getLocation().getWorldResourceKey())
                 .orElseThrow(() ->
                         new HomeException(
-                                this.serviceCollection.messageProvider().getMessageFor(src, "command.home.invalid", home.getName()),
+                                this.serviceCollection.messageProvider().getMessageFor(src, "command.home.invalid", home.getLocation().getName()),
                                 HomeException.Reasons.INVALID_LOCATION
                         ));
 
-        final ServerLocation targetLocation = home.getLocation().orElseThrow((() ->
+        final ServerLocation targetLocation = home.getLocation().getLocation().orElseThrow((() ->
                         new HomeException(
-                                this.serviceCollection.messageProvider().getMessageFor(src, "command.home.invalid", home.getName()),
+                                this.serviceCollection.messageProvider().getMessageFor(src, "command.home.invalid", home.getLocation().getName()),
                                 HomeException.Reasons.INVALID_LOCATION
                         )));
                 // ReturnMessageException.fromKey("command.home.invalid", home.getName()));
@@ -221,7 +222,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
         return teleportService.teleportPlayer(
                         src,
                         targetLocation,
-                        home.getRotation(),
+                        home.getLocation().getRotation(),
                         false,
                         TeleportScanners.NO_SCAN.get(),
                         filter
@@ -239,27 +240,18 @@ public class HomeService implements NucleusHomeService, ServiceBase {
         }
     }
 
-    private List<Home> getHomesFrom(final UUID uuid, final Map<String, LocationNode> msln) {
-        final List<Home> i = new ArrayList<>();
-        for (final Map.Entry<String, LocationNode> entry : msln.entrySet()) {
-            i.add(this.getHomeFrom(entry.getKey(), uuid, entry.getValue()));
-        }
-
-        return Collections.unmodifiableList(i);
+    private List<Home> getHomesFrom(final Map<String, Home> msln) {
+        return Collections.unmodifiableList(new ArrayList<>(msln.values()));
     }
 
-    private Home getHomeFrom(final String string, final UUID user, final LocationNode node) {
-        return new NucleusHome(string, user, node);
-    }
-
-    private Optional<Home> getHome(final String home, final UUID uuid, @Nullable final Map<String, LocationNode> homeData) {
+    private Optional<Home> getHome(final String home, @Nullable final Map<String, Home> homeData) {
         if (homeData == null) {
             return Optional.empty();
         }
-        return Util.getValueIgnoreCase(homeData, home).map(x -> this.getHomeFrom(home, uuid, x));
+        return Util.getValueIgnoreCase(homeData, home);
     }
 
-    private boolean setHome(final UUID uuid, Map<String, LocationNode> m, final String home, final ServerLocation location, final Vector3d rotation,
+    private boolean setHome(final UUID uuid, Map<String, Home> m, final String home, final ServerLocation location, final Vector3d rotation,
             final boolean overwrite) {
         final Pattern warpName = Pattern.compile("^[a-zA-Z][a-zA-Z0-9]{1,15}$");
 
@@ -276,12 +268,12 @@ public class HomeService implements NucleusHomeService, ServiceBase {
             }
         }
 
-        m.put(home, new LocationNode(location, rotation));
+        m.put(home, new NucleusHome(uuid, new NucleusNamedLocation(home, location.worldKey(), location.position(), rotation)));
         this.setAndSave(uuid, m);
         return true;
     }
 
-    private boolean deleteHome(final Map<String, LocationNode> m, final String home) {
+    private boolean deleteHome(final Map<String, Home> m, final String home) {
         if (m == null || m.isEmpty()) {
             return false;
         }
@@ -295,7 +287,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
         return false;
     }
 
-    private boolean deleteHome(final UUID uuid, Map<String, LocationNode> m, final String home) {
+    private boolean deleteHome(final UUID uuid, Map<String, Home> m, final String home) {
         if (m == null || m.isEmpty()) {
             return false;
         }
@@ -311,7 +303,7 @@ public class HomeService implements NucleusHomeService, ServiceBase {
         return false;
     }
 
-    private void setAndSave(final UUID uuid, final Map<String, LocationNode> map) {
+    private void setAndSave(final UUID uuid, final Map<String, Home> map) {
         this.serviceCollection.storageManager().getUserService().setAndSave(uuid, HomeKeys.HOMES, map);
     }
 }

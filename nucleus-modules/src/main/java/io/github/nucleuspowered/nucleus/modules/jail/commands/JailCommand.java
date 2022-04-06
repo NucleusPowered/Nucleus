@@ -120,13 +120,13 @@ public class JailCommand implements ICommandExecutor, IReloadableService.Reloada
         if (success) {
             if (duration.isPresent()) {
                 final IMessageProviderService messageProviderService = context.getServiceCollection().messageProvider();
-                message = context.getMessage("command.checkjail.jailedfor", user.name(), jail.getName(),
+                message = context.getMessage("command.checkjail.jailedfor", user.name(), jail.getLocation().getName(),
                         context.getName(), messageProviderService.getTimeString(context.audience(), duration.get()));
-                messageTo = context.getMessage("command.jail.jailedfor", jail.getName(), context.getName(),
+                messageTo = context.getMessage("command.jail.jailedfor", jail.getLocation().getName(), context.getName(),
                         messageProviderService.getTimeString(context.getLocale(), duration.get()));
             } else {
-                message = context.getMessage("command.checkjail.jailedperm", user.name(), jail.getName(), context.getName());
-                messageTo = context.getMessage("command.jail.jailedperm", jail.getName(), context.getName());
+                message = context.getMessage("command.checkjail.jailedperm", user.name(), jail.getLocation().getName(), context.getName());
+                messageTo = context.getMessage("command.jail.jailedperm", jail.getLocation().getName(), context.getName());
             }
 
             final Audience audience = Audience.audience(

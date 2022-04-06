@@ -16,7 +16,7 @@ public class ModifyHomeEvent extends AbstractHomeEvent implements NucleusHomeEve
     private final Home home;
 
     public ModifyHomeEvent(final Cause cause, final Home home, final ServerLocation newLocation) {
-        super(home.getName(), home.getOwnersUniqueId(), cause, newLocation);
+        super(home.getLocation().getName(), home.getOwnersUniqueId(), cause, newLocation);
         this.home = home;
     }
 
@@ -25,6 +25,6 @@ public class ModifyHomeEvent extends AbstractHomeEvent implements NucleusHomeEve
     }
 
     @Override public Optional<ServerLocation> getOriginalLocation() {
-        return this.home.getLocation();
+        return this.home.getLocation().getLocation();
     }
 }

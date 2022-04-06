@@ -20,14 +20,13 @@ import io.github.nucleuspowered.nucleus.modules.warp.commands.category.CategoryD
 import io.github.nucleuspowered.nucleus.modules.warp.commands.category.CategoryRemoveDescriptionCommand;
 import io.github.nucleuspowered.nucleus.modules.warp.commands.category.CategoryRemoveDisplayNameCommand;
 import io.github.nucleuspowered.nucleus.modules.warp.commands.category.ListCategoryCommand;
-import io.github.nucleuspowered.nucleus.modules.warp.config.WarpCategorySerialiser;
 import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfig;
-import io.github.nucleuspowered.nucleus.modules.warp.config.WarpSerialiser;
+import io.github.nucleuspowered.nucleus.modules.warp.data.NucleusWarp;
+import io.github.nucleuspowered.nucleus.modules.warp.data.NucleusWarpCategory;
 import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,10 +40,8 @@ public final class WarpModule implements IModule.Configurable<WarpConfig> {
     @Override
     public void init(final INucleusServiceCollection serviceCollection) {
         serviceCollection.registerService(WarpService.class, new WarpService(serviceCollection), false);
-        serviceCollection.configurateHelper().addTypeSerialiser(TypeSerializerCollection.builder()
-                .register(WarpCategory.class, new WarpCategorySerialiser())
-                .register(Warp.class, WarpSerialiser.INSTANCE)
-                .build());
+        serviceCollection.game().dataManager().registerBuilder(Warp.class, new NucleusWarp.DataBuilder());
+        serviceCollection.game().dataManager().registerBuilder(WarpCategory.class, new NucleusWarpCategory.DataBuilder());
     }
 
     @Override public Collection<Class<? extends ICommandExecutor>> getCommands() {

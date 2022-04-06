@@ -6,8 +6,8 @@ package io.github.nucleuspowered.nucleus.modules.note.commands;
 
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.modules.note.NotePermissions;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
-import io.github.nucleuspowered.nucleus.modules.note.services.UserNote;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
+import io.github.nucleuspowered.nucleus.modules.note.services.NucleusNote;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -48,9 +48,9 @@ public class NoteCommand implements ICommandExecutor {
         final String note = context.requireOne(NucleusParameters.MESSAGE);
 
         final UUID noter = context.uniqueId().orElse(Util.CONSOLE_FAKE_UUID);
-        final UserNote noteData = new UserNote(noter, note, Instant.now());
+        final NucleusNote noteData = new NucleusNote(noter, note, Instant.now());
 
-        context.getServiceCollection().getServiceUnchecked(NoteHandler.class).addNote(user.uniqueId(), noteData).thenAccept(x -> {
+        context.getServiceCollection().getServiceUnchecked(NoteService.class).addNote(user.uniqueId(), noteData).thenAccept(x -> {
             if (x) {
                 final Audience messageChannel =
                         Audience.audience(

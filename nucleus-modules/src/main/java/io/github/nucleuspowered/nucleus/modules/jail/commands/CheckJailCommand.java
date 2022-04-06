@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.jail.commands;
 
 import com.google.inject.Inject;
+import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jailing;
 import io.github.nucleuspowered.nucleus.modules.jail.JailPermissions;
@@ -62,11 +63,11 @@ public class CheckJailCommand implements ICommandExecutor {
         final IMessageProviderService messageProviderService = context.getServiceCollection().messageProvider();
         final Jailing md = jailing.get();
         final Component jailer = context.getServiceCollection().playerDisplayNameService().getName(md.getJailer().orElse(Util.CONSOLE_FAKE_UUID));
-        if (md.getRemainingTime().isPresent()) {
+        if (md.getTimedEntry().map(TimedEntry::getRemainingTime).isPresent()) {
             context.sendMessage("command.checkjail.jailedfor", name, md.getJailName(),
                     jailer, messageProviderService.getTimeString(
                             context.audience(),
-                            md.getRemainingTime().get().getSeconds()));
+                            md.getTimedEntry().get().getRemainingTime().getSeconds()));
         } else {
             context.sendMessage("command.checkjail.jailedperm", name, md.getJailName(), name);
         }

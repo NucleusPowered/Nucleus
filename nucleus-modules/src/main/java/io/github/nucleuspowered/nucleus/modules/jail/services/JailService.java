@@ -6,13 +6,14 @@ package io.github.nucleuspowered.nucleus.modules.jail.services;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
 import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.EventContexts;
 import io.github.nucleuspowered.nucleus.api.module.jail.NucleusJailService;
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jail;
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jailing;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
-import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
+import io.github.nucleuspowered.nucleus.core.datatypes.NucleusTimedEntry;
 import io.github.nucleuspowered.nucleus.modules.jail.JailKeys;
 import io.github.nucleuspowered.nucleus.modules.jail.config.JailConfig;
 import io.github.nucleuspowered.nucleus.modules.jail.events.JailEvent;
@@ -26,6 +27,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Cause;
@@ -33,7 +35,6 @@ import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.util.Identifiable;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
-import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.teleport.TeleportHelperFilters;
 import org.spongepowered.math.vector.Vector3d;
 
@@ -48,6 +49,16 @@ import java.util.UUID;
 public final class JailService implements NucleusJailService, IReloadableService.DataLocationReloadable, IReloadableService.Reloadable {
 
     public static final Jailing NOT_JAILED = new Jailing() {
+        @Override
+        public int contentVersion() {
+            return 0;
+        }
+
+        @Override
+        public DataContainer toContainer() {
+            return null;
+        }
+
         @Override public String getReason() {
             return null;
         }
@@ -68,20 +79,14 @@ public final class JailService implements NucleusJailService, IReloadableService
             return Optional.empty();
         }
 
-        @Override public Optional<Duration> getRemainingTime() {
+        @Override
+        public Optional<TimedEntry> getTimedEntry() {
             return Optional.empty();
         }
 
-        @Override public boolean expired() {
-            return false;
-        }
-
-        @Override public boolean isCurrentlyTicking() {
-            return false;
-        }
     };
 
-    private boolean isPopulated = false;
+    private volatile boolean isPopulated = false;
     private boolean isOnlineOnly = false;
 
     private final INucleusServiceCollection serviceCollection;
@@ -91,8 +96,15 @@ public final class JailService implements NucleusJailService, IReloadableService
     public JailService(final INucleusServiceCollection serviceCollection) {
         this.serviceCollection = serviceCollection;
         this.jailings = Caffeine.newBuilder()
-                .build(key -> this.serviceCollection.storageManager().getOrCreateUserOnThread(key).get(JailKeys.JAIL_DATA)
-                        .<Jailing>map(data -> JailingEntry.fromJailingData(key, data, this.isOnlineOnly))
+                .build(key -> this.serviceCollection.storageManager().getOrCreateUserOnThread(key)
+                        .get(JailKeys.JAIL_DATA)
+                        .map(x -> {
+                            if (!this.isOnlineOnly || Sponge.server().player(key).isPresent()) {
+                                return ((NucleusJailing) x).start();
+                            } else {
+                                return ((NucleusJailing) x).stop();
+                            }
+                        })
                         .orElse(JailService.NOT_JAILED));
     }
 
@@ -142,7 +154,7 @@ public final class JailService implements NucleusJailService, IReloadableService
             return false;
         }
 
-        final ServerLocation location = jail.getLocation().orElseThrow(() -> new IllegalArgumentException("Jail does not have a valid location."));
+        final ServerLocation location = jail.getLocation().getLocation().orElseThrow(() -> new IllegalArgumentException("Jail does not have a valid location."));
         if (location.isValid()) {
             this.serviceCollection.schedulerService().runOnMainThread(() -> Sponge.server().worldManager().loadWorld(location.worldKey())).join();
         } else {
@@ -152,16 +164,24 @@ public final class JailService implements NucleusJailService, IReloadableService
         final Cause cause = Sponge.server().causeStackManager().currentCause();
 
         // Create the jailing
-        final JailingEntry jailingEntry = JailingEntry.fromJailingRequest(
-                victim,
+        final @Nullable TimedEntry entry;
+        if (duration == null) {
+            entry = null;
+        } else if (this.isOnlineOnly && !Sponge.server().player(victim).isPresent()) {
+            entry = new NucleusTimedEntry.Stopped(duration);
+        } else {
+            entry = new NucleusTimedEntry.Ticking(Instant.now().plus(duration));
+        }
+        final NucleusJailing nucleusJailing = NucleusJailing.fromJailingRequest(
                 reason,
-                jail.getName(),
+                jail.getLocation().getName(),
                 cause.first(ServerPlayer.class).map(Identifiable::uniqueId).orElse(null),
                 this.eitherToLocation(this.getUserEither(victim)),
                 Instant.now(),
-                duration);
-        this.jailings.put(victim, jailingEntry);
-        this.serviceCollection.storageManager().getUserService().setAndSave(victim, JailKeys.JAIL_DATA, jailingEntry.asJailData(this.isOnlineOnly));
+                entry,
+                this::isOnlineOnly);
+        this.jailings.put(victim, nucleusJailing);
+        this.serviceCollection.storageManager().getUserService().setAndSave(victim, JailKeys.JAIL_DATA, nucleusJailing);
         // Time to jail
         final Optional<ServerPlayer> serverPlayer = Sponge.server().player(victim);
         if (serverPlayer.isPresent()) {
@@ -170,10 +190,10 @@ public final class JailService implements NucleusJailService, IReloadableService
                 try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
                     frame.addContext(EventContexts.IS_JAILING_ACTION, true);
                     player.setLocation(location);
-                    player.setRotation(jail.getRotation());
+                    player.setRotation(jail.getLocation().getRotation());
                     player.offer(Keys.IS_FLYING, false);
                     player.offer(Keys.CAN_FLY, false);
-                    this.onJail(jailingEntry, player);
+                    this.onJail(nucleusJailing, player);
                 }
             });
         }
@@ -181,9 +201,9 @@ public final class JailService implements NucleusJailService, IReloadableService
         Sponge.eventManager().post(new JailEvent.Jailed(
                 victim,
                 cause,
-                jail.getName(),
+                jail.getLocation().getName(),
                 LegacyComponentSerializer.legacySection().deserialize(reason),
-                jailingEntry.getRemainingTime().orElse(null)));
+                nucleusJailing.getTimedEntry().map(TimedEntry::getRemainingTime).orElse(null)));
 
         return true;
     }
@@ -243,8 +263,8 @@ public final class JailService implements NucleusJailService, IReloadableService
         final Jailing jailData = this.jailings.get(player);
         if (jailData == JailService.NOT_JAILED) {
             this.serviceCollection.storageManager().getUserService().removeAndSave(player, JailKeys.JAIL_DATA);
-        } if (jailData instanceof JailingEntry) {
-            this.serviceCollection.storageManager().getUserService().setAndSave(player, JailKeys.JAIL_DATA, ((JailingEntry) jailData).asJailData(this.isOnlineOnly));
+        } else if (jailData instanceof NucleusJailing) {
+            this.serviceCollection.storageManager().getUserService().setAndSave(player, JailKeys.JAIL_DATA, jailData);
         }
         this.jailings.invalidate(player);
     }
@@ -266,23 +286,20 @@ public final class JailService implements NucleusJailService, IReloadableService
             synchronized (this) {
                 if (!this.isPopulated) {
                     this.jails.clear();
-                    for (final Map.Entry<String, NamedLocation> entry :
-                            this.serviceCollection.storageManager().getGeneral().get(JailKeys.JAILS).orElseGet(Collections::emptyMap).entrySet()) {
-                        this.jails.put(entry.getKey(), new JailLocationEntry(entry.getValue()));
-                    }
+                    this.jails.putAll(this.serviceCollection.storageManager().getGeneral().get(JailKeys.JAILS).orElseGet(Collections::emptyMap));
                     this.isPopulated = true;
                 }
             }
         }
     }
 
-    public void onJail(final JailingEntry entry, final ServerPlayer serverPlayer) {
+    public void onJail(final NucleusJailing entry, final ServerPlayer serverPlayer) {
         final IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
         final IPlayerDisplayNameService playerDisplayNameService = this.serviceCollection.playerDisplayNameService();
         try (final CauseStackManager.StackFrame frame = Sponge.server().causeStackManager().pushCauseFrame()) {
             frame.addContext(EventContexts.IS_JAILING_ACTION, true);
             // It exists.
-            final Optional<Duration> timeLeft = entry.getRemainingTime();
+            final Optional<Duration> timeLeft = entry.getTimedEntry().map(TimedEntry::getRemainingTime);
             final Component message = timeLeft.map(duration ->
                     messageProviderService.getMessageFor(
                             serverPlayer,
@@ -302,7 +319,7 @@ public final class JailService implements NucleusJailService, IReloadableService
     public void notify(final ServerPlayer user) {
         this.getPlayerJailData(user.uniqueId()).ifPresent(entry -> {
             final IMessageProviderService messageProviderService = this.serviceCollection.messageProvider();
-            final Optional<Duration> timeLeft = entry.getRemainingTime();
+            final Optional<Duration> timeLeft = entry.getTimedEntry().map(TimedEntry::getRemainingTime);
             if (timeLeft.isPresent()) {
                 messageProviderService.sendMessageTo(
                         user, "jail.playernotify.time",
@@ -333,7 +350,7 @@ public final class JailService implements NucleusJailService, IReloadableService
     public void checkExpiry() {
         for (final ServerPlayer uuid : Sponge.server().onlinePlayers()) {
             final Jailing jailing = this.jailings.get(uuid.uniqueId());
-            if (jailing != null && jailing != JailService.NOT_JAILED && jailing.expired()) {
+            if (jailing != null && jailing != JailService.NOT_JAILED && jailing.getTimedEntry().map(TimedEntry::expired).orElse(false)) {
                 this.serviceCollection.schedulerService().runOnMainThread(() -> this.unjailPlayer(uuid.uniqueId()));
             }
         }
@@ -346,5 +363,9 @@ public final class JailService implements NucleusJailService, IReloadableService
     @Override
     public void onReload(final INucleusServiceCollection serviceCollection) {
         this.isOnlineOnly = serviceCollection.configProvider().getModuleConfig(JailConfig.class).isJailOnlineOnly();
+    }
+
+    public boolean isOnlineOnly() {
+        return this.isOnlineOnly;
     }
 }

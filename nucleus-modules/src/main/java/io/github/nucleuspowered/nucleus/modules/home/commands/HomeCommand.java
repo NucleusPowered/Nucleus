@@ -124,15 +124,15 @@ public class HomeCommand implements ICommandExecutor, IReloadableService.Reloada
             wl = home.get();
         }
 
-        Sponge.server().worldManager().world(wl.getWorld().get().key())
-                .orElseThrow(() -> context.createException("command.home.invalid", wl.getName()));
+        Sponge.server().worldManager().world(wl.getLocation().getWorld().get().key())
+                .orElseThrow(() -> context.createException("command.home.invalid", wl.getLocation().getName()));
 
-        final ServerLocation targetLocation = wl.getLocation().orElseThrow(() -> context.createException("command.home.invalid", wl.getName()));
+        final ServerLocation targetLocation = wl.getLocation().getLocation().orElseThrow(() -> context.createException("command.home.invalid", wl.getLocation().getName()));
 
         if (this.isOnlySameDimension) {
             if (!targetLocation.worldKey().equals(user.worldKey())) {
                 if (!context.testPermission(HomePermissions.HOME_EXEMPT_SAMEDIMENSION)) {
-                    return context.errorResult("command.home.invalid", wl.getName());
+                    return context.errorResult("command.home.invalid", wl.getLocation().getName());
                 }
             }
         }
@@ -161,24 +161,24 @@ public class HomeCommand implements ICommandExecutor, IReloadableService.Reloada
         if (isOther) {
             // Warp to it safely.
             if (result.isSuccessful()) {
-                context.sendMessage("command.homeother.success", user.name(), wl.getName());
+                context.sendMessage("command.homeother.success", user.name(), wl.getLocation().getName());
                 return context.successResult();
             } else {
-                return context.errorResult("command.homeother.fail", user.name(), wl.getName());
+                return context.errorResult("command.homeother.fail", user.name(), wl.getLocation().getName());
             }
         }
 
         // Warp to it safely.
         if (result.isSuccessful()) {
-            if (!wl.getName().equalsIgnoreCase(NucleusHomeService.DEFAULT_HOME_NAME)) {
-                context.sendMessage("command.home.success", wl.getName());
+            if (!wl.getLocation().getName().equalsIgnoreCase(NucleusHomeService.DEFAULT_HOME_NAME)) {
+                context.sendMessage("command.home.success", wl.getLocation().getName());
             } else {
                 context.sendMessage("command.home.successdefault");
             }
 
             return context.successResult();
         } else {
-            return context.errorResult("command.home.fail", wl.getName());
+            return context.errorResult("command.home.fail", wl.getLocation().getName());
         }
     }
 

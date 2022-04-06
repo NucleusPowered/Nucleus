@@ -55,12 +55,12 @@ public class JailsCommand implements ICommandExecutor {
     }
 
     private Component createJail(final ICommandContext context, @Nullable final Jail data, final String name) {
-        if (data == null || !data.getLocation().isPresent()) {
+        if (data == null || !data.getLocation().getLocation().isPresent()) {
             return Component.text().content(name).color(NamedTextColor.RED)
                     .hoverEvent(HoverEvent.showText(context.getMessage("command.jails.unavailable"))).build();
         }
 
-        final ServerLocation world = data.getLocation().get();
+        final ServerLocation world = data.getLocation().getLocation().get();
         final TextComponent.Builder inner = Component.text().content(name).color(NamedTextColor.GREEN).style(Style.style(TextDecoration.ITALIC))
                 .clickEvent(ClickEvent.runCommand("/jails tp " + name))
                 .hoverEvent(HoverEvent.showText(context.getMessage("command.jails.warpprompt", name)));

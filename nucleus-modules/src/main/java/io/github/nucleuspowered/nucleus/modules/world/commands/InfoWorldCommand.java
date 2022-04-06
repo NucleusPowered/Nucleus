@@ -31,13 +31,12 @@ public class InfoWorldCommand implements ICommandExecutor {
 
     @Override public Parameter[] parameters(final INucleusServiceCollection serviceCollection) {
         return new Parameter[] {
-                NucleusParameters.ONLINE_WORLD
+                NucleusParameters.ONLINE_WORLD_OPTIONAL
         };
     }
 
     @Override public ICommandResult execute(final ICommandContext context) throws CommandException {
-        final ServerWorld wp = context.getWorldPropertiesOrFromSelfOptional(NucleusParameters.ONLINE_WORLD)
-                .orElseThrow(() -> context.createException("command.world.player"));
+        final ServerWorld wp = context.getWorldPropertiesOrFromSelf(NucleusParameters.ONLINE_WORLD_OPTIONAL);
         final List<Component> listContent = new ArrayList<>();
         final boolean canSeeSeeds = context.testPermission(WorldPermissions.WORLD_SEED);
         ListWorldCommand.getWorldInfo(context, listContent, wp, canSeeSeeds);

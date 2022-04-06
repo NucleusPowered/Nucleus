@@ -4,20 +4,22 @@
  */
 package io.github.nucleuspowered.nucleus.api.util.data;
 
+import org.spongepowered.api.data.persistence.DataSerializable;
+
 import java.time.Duration;
 import java.util.Optional;
 
 /**
  * Indicates that there might be a time limit on this entry.
  */
-public interface TimedEntry {
+public interface TimedEntry extends DataSerializable {
 
     /**
      * The amount of time remaining before this entry expires, if applicable.
      *
      * @return The remaining amount of time.
      */
-    Optional<Duration> getRemainingTime();
+    Duration getRemainingTime();
 
     /**
      * Returns whether this entry can be considered expired.
@@ -33,4 +35,18 @@ public interface TimedEntry {
      * @return <code>true</code> if so.
      */
     boolean isCurrentlyTicking();
+
+    /**
+     * Returns a {@link TimedEntry} that is currently ticking.
+     *
+     * @return An entry that represents something that's ticking down.
+     */
+    TimedEntry start();
+
+    /**
+     * Returns a {@link TimedEntry} that is currently not ticking.
+     *
+     * @return An entry that represents something that is not ticking down.
+     */
+    TimedEntry stop();
 }

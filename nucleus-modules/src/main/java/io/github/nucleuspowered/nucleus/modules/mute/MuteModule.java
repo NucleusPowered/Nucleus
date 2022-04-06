@@ -4,6 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.modules.mute;
 
+import io.github.nucleuspowered.nucleus.api.module.mute.data.Mute;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
 import io.github.nucleuspowered.nucleus.modules.mute.commands.CheckMuteCommand;
 import io.github.nucleuspowered.nucleus.modules.mute.commands.CheckMutedCommand;
@@ -22,6 +23,7 @@ import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.task.TaskBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
+import io.github.nucleuspowered.nucleus.modules.mute.services.NucleusMute;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.spongepowered.api.ResourceKey;
@@ -39,7 +41,8 @@ public class MuteModule implements IModule.Configurable<MuteConfig> { // Configu
 
     @Override
     public void init(final INucleusServiceCollection serviceCollection) {
-        serviceCollection.registerService(MuteService.class, new MuteService(serviceCollection), false);
+        final MuteService service = new MuteService(serviceCollection);
+        serviceCollection.registerService(MuteService.class, service, false);
         serviceCollection.userCacheService().setMutedProcessor(x -> x.get(MuteKeys.MUTE_DATA).isPresent());
         serviceCollection.placeholderService().registerToken(
                 "muted",
@@ -53,6 +56,8 @@ public class MuteModule implements IModule.Configurable<MuteConfig> { // Configu
                             return Component.empty();
                         }).build()
         );
+
+        serviceCollection.game().dataManager().registerBuilder(Mute.class, new NucleusMute.DataBuilder(service::isOnlineOnly));
     }
 
     @Override

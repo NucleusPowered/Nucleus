@@ -23,14 +23,19 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableServ
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.ITextStyleService;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.LinearComponents;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataHolder;
+import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -113,10 +118,6 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         return Optional.empty();
     }
 
-    public Map<String, UUID> getAllCached() {
-        return new HashMap<>(this.cache.inverse());
-    }
-
     public Map<Player, Component> getFromSubstring(final String search) {
         final String prefix = search.toLowerCase();
         final Collection<UUID> uuidCollection;
@@ -143,11 +144,6 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         return Collections.unmodifiableMap(mapToReturn);
     }
 
-    public Map<String, UUID> startsWithGetMap(final String text) {
-        return this.cache.inverse().entrySet().stream().filter(x -> x.getKey().startsWith(text.toLowerCase()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
     public Map<UUID, String> startsWithUUIDStringMap(final String text) {
         return this.cache.inverse().entrySet().stream().filter(x -> x.getKey().startsWith(text.toLowerCase()))
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
@@ -168,12 +164,12 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
 
     @Override
     public Optional<Component> getNicknameWithPrefix(final UUID user) {
-        return this.getNickname(user).map(x -> Component.join(this.prefix, x));
+        return this.getNickname(user).map(x -> Component.join(JoinConfiguration.separator(this.prefix), x));
     }
 
     @Override
     public Optional<Component> getNicknameWithPrefix(final User user) {
-        return this.getNickname(user).map(x -> Component.join(this.prefix, x));
+        return this.getNickname(user).map(x -> Component.join(JoinConfiguration.separator(this.prefix), x));
     }
 
     @Override
@@ -233,7 +229,7 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
     }
 
     public void setNick(final UUID pl, final Component nickname, final boolean bypass) throws NicknameException {
-        final String plain = PlainComponentSerializer.plain().serialize(nickname).trim();
+        final String plain = PlainTextComponentSerializer.plainText().serialize(nickname).trim();
         if (plain.isEmpty()) {
             throw new NicknameException(
                     this.messageProviderService.getMessage("command.nick.tooshort"),
@@ -343,7 +339,4 @@ public class NicknameService implements NucleusNicknameService, IReloadableServi
         }
     }
 
-    public Component getNickPrefix() {
-        return this.prefix;
-    }
 }

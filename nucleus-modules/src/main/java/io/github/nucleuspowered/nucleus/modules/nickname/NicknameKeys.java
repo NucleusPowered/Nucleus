@@ -4,8 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.modules.nickname;
 
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
-import io.github.nucleuspowered.storage.dataobjects.keyed.DataKey;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.keyed.DataKey;
 import io.leangen.geantyref.TypeToken;
 
 public final class NicknameKeys {

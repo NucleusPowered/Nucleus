@@ -26,6 +26,7 @@ val vavrVersion: String by rootProject
 
 dependencies {
     api(project(":nucleus-api"))
+    api(project(":nucleus-storage-api"))
 
     val dep = "org.spongepowered:spongeapi:$spongeApiVersion"
     annotationProcessor(dep)

@@ -45,9 +45,9 @@ public class DeleteWarpCommand implements ICommandExecutor {
                     .orElseGet(() -> context.errorResult("nucleus.eventcancelled"));
         }
 
-        if (qs.removeWarp(warp.getName())) {
+        if (qs.removeWarp(warp.getNamedLocation().getName())) {
             // Worked. Tell them.
-            context.sendMessage("command.warps.del", warp.getName());
+            context.sendMessage("command.warps.del", warp.getNamedLocation().getName());
             return context.successResult();
         }
 

@@ -14,7 +14,6 @@ import io.github.nucleuspowered.nucleus.core.configurate.typeserialisers.Nucleus
 import io.github.nucleuspowered.nucleus.core.configurate.typeserialisers.PatternTypeSerialiser;
 import io.github.nucleuspowered.nucleus.core.configurate.typeserialisers.Vector3dTypeSerialiser;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.DataObjectTranslator;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IConfigurateHelper;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.annotation.configuratehelper.LocalisedComment;
 import io.github.nucleuspowered.nucleus.core.util.TypeTokens;
@@ -139,7 +138,6 @@ public class ConfigurateHelper implements IConfigurateHelper {
                 new NucleusTextTemplateTypeSerialiser(serviceCollection.textTemplateFactory()));
         typeSerializerCollection.register(TypeToken.get(Instant.class), new InstantTypeSerialiser());
 
-        typeSerializerCollection.register(TypeTokens.ABSTRACT_DATA_OBJECT_TYPE_TOKEN, DataObjectTranslator.INSTANCE);
         typeSerializerCollection.register(TypeTokens.NAMED_LOCATION, new NamedLocationSerialiser());
         typeSerializerCollection.register(TypeTokens.LOCALE, new LocaleSerialiser());
 

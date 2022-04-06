@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.note.infoprovider;
 
 import io.github.nucleuspowered.nucleus.modules.note.NotePermissions;
-import io.github.nucleuspowered.nucleus.modules.note.services.NoteHandler;
+import io.github.nucleuspowered.nucleus.modules.note.services.NoteService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.playerinformation.NucleusProvider;
 import net.kyori.adventure.text.Component;
@@ -26,7 +26,7 @@ public class NoteInfoProvider implements NucleusProvider {
     @Override
     public Optional<Component> get(final User user, final CommandCause source, final INucleusServiceCollection serviceCollection) {
         if (serviceCollection.permissionService().hasPermission(source, NotePermissions.BASE_CHECKNOTES)) {
-            final int active = serviceCollection.getServiceUnchecked(NoteHandler.class).getNotes(user.uniqueId()).join().size();
+            final int active = serviceCollection.getServiceUnchecked(NoteService.class).getNotes(user.uniqueId()).join().size();
 
             final Component r = serviceCollection.messageProvider().getMessageFor(source.audience(), "seen.notes", active);
             if (active > 0) {

@@ -4,6 +4,8 @@
  */
 package io.github.nucleuspowered.nucleus.api.module.note.data;
 
+import org.spongepowered.api.data.persistence.DataSerializable;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,7 +13,7 @@ import java.util.UUID;
 /**
  * Represents a note on a user's account.
  */
-public interface Note {
+public interface Note extends DataSerializable {
 
     /**
      * The contents of the note.

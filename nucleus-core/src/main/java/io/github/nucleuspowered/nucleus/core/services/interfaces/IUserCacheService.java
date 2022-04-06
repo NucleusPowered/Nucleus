@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.core.services.interfaces;
 
 import com.google.inject.ImplementedBy;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.impl.usercache.UserCacheService;
 
 import java.util.List;

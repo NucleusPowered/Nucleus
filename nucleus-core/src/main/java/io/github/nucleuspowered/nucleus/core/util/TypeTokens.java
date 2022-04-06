@@ -4,10 +4,11 @@
  */
 package io.github.nucleuspowered.nucleus.core.util;
 
+import io.github.nucleuspowered.nucleus.api.module.home.data.Home;
+import io.github.nucleuspowered.nucleus.api.module.jail.data.Jail;
 import io.github.nucleuspowered.nucleus.api.module.mail.data.MailMessage;
 import io.github.nucleuspowered.nucleus.api.util.data.NamedLocation;
 import io.github.nucleuspowered.nucleus.core.configurate.datatypes.LocationNode;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.configurate.AbstractConfigurateBackedDataObject;
 import io.leangen.geantyref.TypeToken;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
@@ -17,15 +18,11 @@ import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 public final class TypeTokens {
-
-    public static final TypeToken<AbstractConfigurateBackedDataObject> ABSTRACT_DATA_OBJECT_TYPE_TOKEN =
-            TypeToken.get(AbstractConfigurateBackedDataObject.class);
 
     public static final TypeToken<Boolean> BOOLEAN = TypeToken.get(Boolean.class);
 
@@ -41,17 +38,13 @@ public final class TypeTokens {
 
     public static final TypeToken<NamedLocation> NAMED_LOCATION = TypeToken.get(NamedLocation.class);
 
-    public static final TypeToken<Map<String, LocationNode>> LOCATION_NODES_MAP = new TypeToken<Map<String, LocationNode>>() { };
+    public static final TypeToken<Map<String, Home>> HOMES_MAP = new TypeToken<Map<String, Home>>() { };
 
     public static final TypeToken<ResourceKey> RESOURCE_KEY = TypeToken.get(ResourceKey.class);
 
     public static final TypeToken<String> STRING = TypeToken.get(String.class);
 
     public static final TypeToken<UUID> UUID = TypeToken.get(UUID.class);
-
-    public static final TypeToken<List<java.util.UUID>> UUID_LIST = new TypeToken<List<UUID>>() {};
-
-    public static final TypeToken<NamedLocation> NAMEDLOCATION = TypeToken.get(NamedLocation.class);
 
     public static final TypeToken<Vector3d> VECTOR_3D = TypeToken.get(Vector3d.class);
 
@@ -62,6 +55,8 @@ public final class TypeTokens {
     public static final TypeToken<Difficulty> DIFFICULTY = TypeToken.get(Difficulty.class);
 
     public static final TypeToken<WorldType> WORLD_TYPE = TypeToken.get(WorldType.class);
+
+    public static final TypeToken<Jail> JAIL = TypeToken.get(Jail.class);
 
     private TypeTokens() {
         // no-op

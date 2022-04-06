@@ -11,7 +11,7 @@ import io.github.nucleuspowered.nucleus.modules.message.events.InternalNucleusHe
 import io.github.nucleuspowered.nucleus.modules.mute.MutePermissions;
 import io.github.nucleuspowered.nucleus.modules.mute.config.MuteConfig;
 import io.github.nucleuspowered.nucleus.modules.mute.services.MuteService;
-import io.github.nucleuspowered.nucleus.modules.mute.services.MutedEntry;
+import io.github.nucleuspowered.nucleus.modules.mute.services.NucleusMute;
 import io.github.nucleuspowered.nucleus.core.scaffold.listener.ListenerBase;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
@@ -105,8 +105,8 @@ public class MuteListener implements IReloadableService.Reloadable, ListenerBase
 
     private boolean isMutedNotify(final ServerPlayer player) {
         final Optional<Mute> mute = this.handler.getPlayerMuteInfo(player.uniqueId());
-        if (mute.filter(x -> x instanceof MutedEntry).isPresent()) {
-            this.handler.onMute((MutedEntry) mute.get(), player);
+        if (mute.filter(x -> x instanceof NucleusMute).isPresent()) {
+            this.handler.onMute((NucleusMute) mute.get(), player);
             return true;
         }
         return false;

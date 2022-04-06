@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.jail.infoprovider;
 
 import io.github.nucleuspowered.nucleus.api.module.jail.data.Jailing;
+import io.github.nucleuspowered.nucleus.api.util.data.TimedEntry;
 import io.github.nucleuspowered.nucleus.modules.jail.JailPermissions;
 import io.github.nucleuspowered.nucleus.modules.jail.services.JailService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
@@ -34,7 +35,7 @@ public final class JailInfoProvider implements NucleusProvider {
             if (jailing.isPresent()) {
                 final Jailing jd = jailing.get();
                 final Component m;
-                final Optional<Duration> duration = jd.getRemainingTime();
+                final Optional<Duration> duration = jd.getTimedEntry().map(TimedEntry::getRemainingTime);
                 if (duration.isPresent()) {
                     m = serviceCollection.messageProvider().getMessageFor(source.audience(), "seen.isjailed.temp",
                             serviceCollection.messageProvider().getTimeString(source.audience(), duration.get()));

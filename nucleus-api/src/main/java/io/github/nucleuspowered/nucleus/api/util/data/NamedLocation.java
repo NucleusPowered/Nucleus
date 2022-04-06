@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.api.util.data;
 
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.data.persistence.DataSerializable;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
@@ -17,14 +18,14 @@ import java.util.Optional;
 /**
  * Represents a location that has a name attached to it.
  */
-public interface NamedLocation {
+public interface NamedLocation extends DataSerializable {
 
     /**
      * Gets the world {@link ResourceKey} that this location targets
      *
-     * @return The world identifer
+     * @return The world identifier
      */
-    ResourceKey getResourceKey();
+    ResourceKey getWorldResourceKey();
 
     /**
      * Gets the {@link ServerWorld} that this location points to, if the world exists.

@@ -48,11 +48,12 @@ public class DeleteJailCommand implements ICommandExecutor {
     @Override
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final Jail wl = context.requireOne(this.parameter);
-        if (context.getServiceCollection().getServiceUnchecked(JailService.class).removeJail(wl.getName())) {
-            context.sendMessage("command.jails.del.success", wl.getName());
+        final String name = wl.getLocation().getName();
+        if (context.getServiceCollection().getServiceUnchecked(JailService.class).removeJail(name)) {
+            context.sendMessage("command.jails.del.success", name);
             return context.successResult();
         }
 
-        return context.errorResult("command.jails.del.error", wl.getName());
+        return context.errorResult("command.jails.del.error", name);
     }
 }

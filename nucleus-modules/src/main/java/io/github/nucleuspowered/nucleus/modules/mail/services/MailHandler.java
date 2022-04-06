@@ -9,13 +9,13 @@ import io.github.nucleuspowered.nucleus.core.Util;
 import io.github.nucleuspowered.nucleus.api.module.mail.NucleusMailService;
 import io.github.nucleuspowered.nucleus.api.module.mail.data.MailMessage;
 import io.github.nucleuspowered.nucleus.modules.mail.MailKeys;
-import io.github.nucleuspowered.nucleus.modules.mail.data.MailData;
+import io.github.nucleuspowered.nucleus.modules.mail.data.NucleusMailMessage;
 import io.github.nucleuspowered.nucleus.modules.mail.events.InternalNucleusSendMailEvent;
 import io.github.nucleuspowered.nucleus.modules.mail.parameter.MailFilterParameter;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
-import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.modular.IUserDataObject;
+import io.github.nucleuspowered.nucleus.core.services.impl.storage.dataobjects.IUserDataObject;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager;
 import net.kyori.adventure.text.Component;
@@ -118,12 +118,12 @@ public class MailHandler implements NucleusMailService, ServiceBase {
         }
 
         final List<MailMessage> messages = dataObject.get(MailKeys.MAIL_DATA).orElseGet(ArrayList::new);
-        final MailData md = new MailData(playerFrom == null ? Util.CONSOLE_FAKE_UUID : playerFrom, Instant.now(), message);
+        final NucleusMailMessage md = new NucleusMailMessage(playerFrom == null ? Util.CONSOLE_FAKE_UUID : playerFrom, Instant.now(), message);
         messages.add(md);
         dataObject.set(MailKeys.MAIL_DATA, messages);
         this.serviceCollection.storageManager().getUserService().save(playerTo, dataObject);
 
-        final Component from = this.serviceCollection.playerDisplayNameService().getDisplayName(md.getUuid());
+        final Component from = this.serviceCollection.playerDisplayNameService().getDisplayName(md.getSenderUUID());
         Sponge.server().player(playerTo).ifPresent(x ->
                 x.sendMessage(LinearComponents.linear(messageProvider.getMessageFor(x, "mail.youvegotmail"), Component.space(), from)));
     }

@@ -35,9 +35,9 @@ public class MuteInfoProvider implements NucleusProvider {
                 final Mute jd = jh.getPlayerMuteInfo(user.uniqueId()).get();
                 // Lightweight checkban.
                 final Component m;
-                if (jd.getRemainingTime().isPresent()) {
+                if (jd.getTimedEntry().isPresent()) {
                     m = messageProviderService.getMessageFor(audience, "seen.ismuted.temp",
-                            messageProviderService.getTimeString(audience, jd.getRemainingTime().get().getSeconds()));
+                            messageProviderService.getTimeString(audience, jd.getTimedEntry().get().getRemainingTime().getSeconds()));
                 } else {
                     m = messageProviderService.getMessageFor(audience, "seen.ismuted.perm");
                 }

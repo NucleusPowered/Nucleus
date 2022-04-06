@@ -7,10 +7,6 @@ package io.github.nucleuspowered.nucleus.modules.warp.commands;
 import io.github.nucleuspowered.nucleus.api.module.warp.data.Warp;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
-import io.github.nucleuspowered.nucleus.modules.warp.WarpPermissions;
-import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfig;
-import io.github.nucleuspowered.nucleus.modules.warp.event.UseWarpEvent;
-import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandContext;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandExecutor;
 import io.github.nucleuspowered.nucleus.core.scaffold.command.ICommandResult;
@@ -22,6 +18,10 @@ import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IEconomyServiceProvider;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.INucleusLocationService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
+import io.github.nucleuspowered.nucleus.modules.warp.WarpPermissions;
+import io.github.nucleuspowered.nucleus.modules.warp.config.WarpConfig;
+import io.github.nucleuspowered.nucleus.modules.warp.event.UseWarpEvent;
+import io.github.nucleuspowered.nucleus.modules.warp.services.WarpService;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.spongepowered.api.Sponge;
@@ -30,8 +30,6 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.CauseStackManager;
-import org.spongepowered.api.world.server.ServerWorld;
-import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.teleport.TeleportHelperFilter;
 
 import java.util.Optional;
@@ -110,15 +108,15 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
 
         final String costWithUnit = economyServiceProvider.getCurrencySymbol(cost);
         if (economyServiceProvider.hasBalance(target.uniqueId(), cost)) {
-            final String command = String.format("/nucleus:warp -y %s", wd.getName());
-            context.sendMessage("command.warp.cost.details", wd.getName(), costWithUnit);
+            final String command = String.format("/nucleus:warp -y %s", wd.getNamedLocation().getName());
+            context.sendMessage("command.warp.cost.details", wd.getNamedLocation().getName(), costWithUnit);
             context.sendMessageText(
                     context.getMessage("command.warp.cost.clickaccept")
                             .clickEvent(ClickEvent.runCommand(command)).hoverEvent(
                                     HoverEvent.showText(context.getMessage("command.warp.cost.clickhover", command)))
                             .append(context.getMessage("command.warp.cost.alt")));
         } else {
-            context.sendMessage("command.warp.cost.nomoney", wd.getName(), costWithUnit);
+            context.sendMessage("command.warp.cost.nomoney", wd.getNamedLocation().getName(), costWithUnit);
         }
 
         return Optional.of(context.failResult());
@@ -131,12 +129,9 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
         // Permission checks are done by the parser.
         final WarpService service = context.getServiceCollection().getServiceUnchecked(WarpService.class);
         final Warp wd = context.requireOne(service.warpElement(true));
-        final ServerWorld worldProperties = wd.getWorld().orElseThrow(() -> context.createException(
-                "command.warp.worlddoesnotexist"
-        ));
 
         // Load the world in question
-        if (!wd.getLocation().isPresent()) {
+        if (!wd.getNamedLocation().getLocation().isPresent()) {
             return context.errorResult("command.warp.worldnotloaded");
         }
 
@@ -158,7 +153,7 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
                 if (economyServiceProvider.withdrawFromPlayer(player.uniqueId(), cost, false)) {
                     charge = true; // only true for a warp by the current subject.
                 } else {
-                    return context.errorResult("command.warp.cost.nomoney", wd.getName(),
+                    return context.errorResult("command.warp.cost.nomoney", wd.getNamedLocation().getName(),
                             economyServiceProvider.getCurrencySymbol(cost));
                 }
             }
@@ -167,9 +162,9 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
             if (isOther) {
                 context.sendMessage("command.warps.namedstart",
                         context.getDisplayName(player.uniqueId()),
-                        wd.getName());
+                        wd.getNamedLocation().getName());
             } else {
-                context.sendMessage("command.warps.start", wd.getName());
+                context.sendMessage("command.warps.start", wd.getNamedLocation().getName());
             }
 
             // Warp them.
@@ -180,8 +175,8 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
 
             final TeleportResult result = safeLocationService.teleportPlayer(
                     player,
-                    wd.getLocation().get(),
-                    wd.getRotation(),
+                    wd.getNamedLocation().getLocation().get(),
+                    wd.getNamedLocation().getRotation(),
                     false,
                     TeleportScanners.NO_SCAN.get(),
                     filter
@@ -198,7 +193,7 @@ public class WarpCommand implements ICommandExecutor, IReloadableService.Reloada
             }
 
             if (isOther) {
-                context.sendMessageTo(player, "command.warps.warped", wd.getName());
+                context.sendMessageTo(player, "command.warps.warped", wd.getNamedLocation().getName());
             } else if (charge) {
                 context.sendMessage("command.warp.cost.charged", economyServiceProvider.getCurrencySymbol(cost));
             }

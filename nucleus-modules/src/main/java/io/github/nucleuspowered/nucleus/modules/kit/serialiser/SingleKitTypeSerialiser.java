@@ -5,7 +5,7 @@
 package io.github.nucleuspowered.nucleus.modules.kit.serialiser;
 
 import io.github.nucleuspowered.nucleus.api.module.kit.data.Kit;
-import io.github.nucleuspowered.nucleus.modules.kit.misc.SingleKit;
+import io.github.nucleuspowered.nucleus.modules.kit.data.SingleKit;
 import io.leangen.geantyref.TypeToken;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
