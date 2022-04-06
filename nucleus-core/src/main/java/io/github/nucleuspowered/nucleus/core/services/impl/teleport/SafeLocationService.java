@@ -51,7 +51,12 @@ public class SafeLocationService implements INucleusLocationService, IReloadable
             final boolean centreBlock,
             final boolean safe,
             final TeleportScanner scanner) {
-        return this.teleportPlayerSmart(player, location, rotation, centreBlock, safe, scanner);
+        return this.teleportPlayer(player,
+                location,
+                rotation,
+                centreBlock,
+                scanner,
+                this.getAppropriateFilter(player,safe));
     }
 
     @Override
