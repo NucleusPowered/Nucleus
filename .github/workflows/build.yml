@@ -24,7 +24,12 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew build
-
+    - name: Publish to GitHub Packages
+      run: ./gradlew publish
+      env:
+        USER: ${{ github.actor }}
+        KEY: ${{ secrets.GITHUB_TOKEN }}
+        REPO: "NucleusPowered/Nucleus"
     - name: Upload Plugin
       uses: actions/upload-artifact@v2
       with:
