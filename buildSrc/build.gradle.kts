@@ -13,6 +13,7 @@ buildscript {
 }
 plugins {
     java
+    `kotlin-dsl`
 }
 
 apply(plugin = "org.jetbrains.kotlin.jvm")

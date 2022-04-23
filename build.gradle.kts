@@ -30,6 +30,7 @@ plugins {
     id("org.spongepowered.gradle.plugin") version "0.11.0-SNAPSHOT"
     kotlin("jvm") version "1.3.61"
     id("org.sonarqube") version "2.7"
+    id("nucleus-publishing-convention")
 }
 apply {
     plugin("kotlin")
@@ -280,17 +281,6 @@ publishing {
             version = versionString
             groupId = project.properties["groupId"]?.toString()!!
             artifactId = project.properties["artifactId"]?.toString()!!
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri(project.findProperty("gpr.uri") as String? ?: "${project.properties["ghUri"]?.toString()!!}${System.getenv("REPO")}")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USER")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("KEY")
-            }
         }
     }
 }
