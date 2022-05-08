@@ -49,6 +49,7 @@ public class SpawnListener implements IReloadableService.Reloadable, ListenerBas
     @Inject
     public SpawnListener(final INucleusServiceCollection serviceCollection) {
         this.serviceCollection = serviceCollection;
+        this.spawnConfig = serviceCollection.configProvider().getModuleConfig(SpawnConfig.class);
     }
 
     @Listener
