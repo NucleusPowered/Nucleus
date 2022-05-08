@@ -4,7 +4,7 @@
  */
 package io.github.nucleuspowered.nucleus.api.module.back;
 
-import io.github.nucleuspowered.nucleus.api.util.WorldPositionRotation;
+import io.github.nucleuspowered.nucleus.api.util.WorldTransform;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
@@ -28,7 +28,7 @@ public interface NucleusBackService {
      * @param user The {@link UUID} of the user
      * @return If it exists, an {@link Optional} containing the {@link ServerLocation}
      */
-    Optional<WorldPositionRotation> getLastLocation(UUID user);
+    Optional<WorldTransform> getLastLocation(UUID user);
 
     /**
      * Sets the location that the subject will be warped to if they execute /back

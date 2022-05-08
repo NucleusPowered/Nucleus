@@ -102,73 +102,56 @@ public final class NucleusModuleProvider implements IModuleProvider {
 
     private final Collection<ModuleContainer> moduleContainers = NucleusModuleProvider.createContainers();
 
-    private static ModuleContainer createContainer(
-            final String id,
-            final String name,
-            final Class<? extends IModule> moduleClass
-    ) {
-        return new ModuleContainer(id, name, false, moduleClass);
-    }
-
-    private static <T> ModuleContainer.Configurable<T> createContainer(
-            final String id,
-            final String name,
-            final Class<? extends IModule.Configurable<T>> moduleClass,
-            final Class<T> configurableClass
-    ) {
-        return new ModuleContainer.Configurable<>(id, name, false, moduleClass, configurableClass);
-    }
-
     private static Collection<ModuleContainer> createContainers() {
         final ArrayList<ModuleContainer> containers = new ArrayList<>();
-        containers.add(NucleusModuleProvider.createContainer(AdminModule.ID, "Admin", AdminModule.class, AdminConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(AFKModule.ID, "AFK", AFKModule.class, AFKConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(BackModule.ID, "Back", BackModule.class, BackConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(BanModule.ID, "Ban", BanModule.class, BanConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ChatModule.ID, "Chat", ChatModule.class, ChatConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ChatLoggerModule.ID, "Chat Logger", ChatLoggerModule.class));
-        containers.add(NucleusModuleProvider.createContainer(CommandLoggerModule.ID, "Command Logger", CommandLoggerModule.class, CommandLoggerConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(CommandSpyModule.ID, "Command Spy", CommandSpyModule.class, CommandSpyConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ConnectionModule.ID, "Connection", ConnectionModule.class, ConnectionConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ConnectionMessagesModule.ID, "Connection Messages", ConnectionMessagesModule.class, ConnectionMessagesConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(CraftingGuiModule.ID, "Crafting GUI", CraftingGuiModule.class));
-        containers.add(NucleusModuleProvider.createContainer(DeathMessageModule.ID, "Death Message", DeathMessageModule.class, DeathMessageConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(EnvironmentModule.ID, "Environment", EnvironmentModule.class, EnvironmentConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ExperienceModule.ID, "Experience", ExperienceModule.class));
-        containers.add(NucleusModuleProvider.createContainer(FlyModule.ID, "Flying", FlyModule.class, FlyConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(FreezePlayerModule.ID, "Freeze Player", FreezePlayerModule.class));
-        containers.add(NucleusModuleProvider.createContainer(FunModule.ID, "Fun", FunModule.class));
-        containers.add(NucleusModuleProvider.createContainer(HomeModule.ID, "Home", HomeModule.class, HomeConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(InfoModule.ID, "Info", InfoModule.class, InfoConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(InventoryModule.ID, "Inventory", InventoryModule.class));
-        containers.add(NucleusModuleProvider.createContainer(InvulnerabilityModule.ID, "Invulnerability", InvulnerabilityModule.class));
-        containers.add(NucleusModuleProvider.createContainer(ItemModule.ID, "Item", ItemModule.class, ItemConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(JailModule.ID, "Jail", JailModule.class, JailConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(JumpModule.ID, "Jump", JumpModule.class, JumpConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(KickModule.ID, "Kick", KickModule.class, KickConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(KitModule.ID, "Kit", KitModule.class, KitConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(MailModule.ID, "Mail", MailModule.class));
-        containers.add(NucleusModuleProvider.createContainer(MessageModule.ID, "Private Message", MessageModule.class, MessageConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(MiscModule.ID, "Miscellaneous", MiscModule.class, MiscConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(MobModule.ID, "Mob", MobModule.class, MobConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(MuteModule.ID, "Mute", MuteModule.class, MuteConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(NameBanModule.ID, "Name Ban", NameBanModule.class, NameBanConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(NicknameModule.ID, "Nickname", NicknameModule.class, NicknameConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(NoteModule.ID, "Notes", NoteModule.class, NoteConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(NotificationModule.ID, "Nickname", NotificationModule.class, NotificationConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(PlayerInfoModule.ID, "Player Info", PlayerInfoModule.class, PlayerInfoConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(PowertoolModule.ID, "Powertools", PowertoolModule.class));
-        containers.add(NucleusModuleProvider.createContainer(ProtectionModule.ID, "Protection", ProtectionModule.class, ProtectionConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(RTPModule.ID, "RTP", RTPModule.class, RTPConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(RulesModule.ID, "Rules", RulesModule.class, RulesConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(ServerListModule.ID, "Server List module", ServerListModule.class, ServerListConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(SignModule.ID, "Sign", SignModule.class));
-        containers.add(NucleusModuleProvider.createContainer(SpawnModule.ID, "Spawn", SpawnModule.class, SpawnConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(StaffChatModule.ID, "Staff Chat", StaffChatModule.class, StaffChatConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(TeleportModule.ID, "Teleport", TeleportModule.class, TeleportConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(VanishModule.ID, "Vanish", VanishModule.class, VanishConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(WarpModule.ID, "Warp", WarpModule.class, WarpConfig.class));
-        containers.add(NucleusModuleProvider.createContainer(WorldModule.ID, "World", WorldModule.class, WorldConfig.class));
+        containers.add(ModuleContainer.createContainer(AdminModule.ID, "Admin", AdminModule.class, AdminConfig.class));
+        containers.add(ModuleContainer.createContainer(AFKModule.ID, "AFK", AFKModule.class, AFKConfig.class));
+        containers.add(ModuleContainer.createContainer(BackModule.ID, "Back", BackModule.class, BackConfig.class));
+        containers.add(ModuleContainer.createContainer(BanModule.ID, "Ban", BanModule.class, BanConfig.class));
+        containers.add(ModuleContainer.createContainer(ChatModule.ID, "Chat", ChatModule.class, ChatConfig.class));
+        containers.add(ModuleContainer.createContainer(ChatLoggerModule.ID, "Chat Logger", ChatLoggerModule.class));
+        containers.add(ModuleContainer.createContainer(CommandLoggerModule.ID, "Command Logger", CommandLoggerModule.class, CommandLoggerConfig.class));
+        containers.add(ModuleContainer.createContainer(CommandSpyModule.ID, "Command Spy", CommandSpyModule.class, CommandSpyConfig.class));
+        containers.add(ModuleContainer.createContainer(ConnectionModule.ID, "Connection", ConnectionModule.class, ConnectionConfig.class));
+        containers.add(ModuleContainer.createContainer(ConnectionMessagesModule.ID, "Connection Messages", ConnectionMessagesModule.class, ConnectionMessagesConfig.class));
+        containers.add(ModuleContainer.createContainer(CraftingGuiModule.ID, "Crafting GUI", CraftingGuiModule.class));
+        containers.add(ModuleContainer.createContainer(DeathMessageModule.ID, "Death Message", DeathMessageModule.class, DeathMessageConfig.class));
+        containers.add(ModuleContainer.createContainer(EnvironmentModule.ID, "Environment", EnvironmentModule.class, EnvironmentConfig.class));
+        containers.add(ModuleContainer.createContainer(ExperienceModule.ID, "Experience", ExperienceModule.class));
+        containers.add(ModuleContainer.createContainer(FlyModule.ID, "Flying", FlyModule.class, FlyConfig.class));
+        containers.add(ModuleContainer.createContainer(FreezePlayerModule.ID, "Freeze Player", FreezePlayerModule.class));
+        containers.add(ModuleContainer.createContainer(FunModule.ID, "Fun", FunModule.class));
+        containers.add(ModuleContainer.createContainer(HomeModule.ID, "Home", HomeModule.class, HomeConfig.class));
+        containers.add(ModuleContainer.createContainer(InfoModule.ID, "Info", InfoModule.class, InfoConfig.class));
+        containers.add(ModuleContainer.createContainer(InventoryModule.ID, "Inventory", InventoryModule.class));
+        containers.add(ModuleContainer.createContainer(InvulnerabilityModule.ID, "Invulnerability", InvulnerabilityModule.class));
+        containers.add(ModuleContainer.createContainer(ItemModule.ID, "Item", ItemModule.class, ItemConfig.class));
+        containers.add(ModuleContainer.createContainer(JailModule.ID, "Jail", JailModule.class, JailConfig.class));
+        containers.add(ModuleContainer.createContainer(JumpModule.ID, "Jump", JumpModule.class, JumpConfig.class));
+        containers.add(ModuleContainer.createContainer(KickModule.ID, "Kick", KickModule.class, KickConfig.class));
+        containers.add(ModuleContainer.createContainer(KitModule.ID, "Kit", KitModule.class, KitConfig.class));
+        containers.add(ModuleContainer.createContainer(MailModule.ID, "Mail", MailModule.class));
+        containers.add(ModuleContainer.createContainer(MessageModule.ID, "Private Message", MessageModule.class, MessageConfig.class));
+        containers.add(ModuleContainer.createContainer(MiscModule.ID, "Miscellaneous", MiscModule.class, MiscConfig.class));
+        containers.add(ModuleContainer.createContainer(MobModule.ID, "Mob", MobModule.class, MobConfig.class));
+        containers.add(ModuleContainer.createContainer(MuteModule.ID, "Mute", MuteModule.class, MuteConfig.class));
+        containers.add(ModuleContainer.createContainer(NameBanModule.ID, "Name Ban", NameBanModule.class, NameBanConfig.class));
+        containers.add(ModuleContainer.createContainer(NicknameModule.ID, "Nickname", NicknameModule.class, NicknameConfig.class));
+        containers.add(ModuleContainer.createContainer(NoteModule.ID, "Notes", NoteModule.class, NoteConfig.class));
+        containers.add(ModuleContainer.createContainer(NotificationModule.ID, "Nickname", NotificationModule.class, NotificationConfig.class));
+        containers.add(ModuleContainer.createContainer(PlayerInfoModule.ID, "Player Info", PlayerInfoModule.class, PlayerInfoConfig.class));
+        containers.add(ModuleContainer.createContainer(PowertoolModule.ID, "Powertools", PowertoolModule.class));
+        containers.add(ModuleContainer.createContainer(ProtectionModule.ID, "Protection", ProtectionModule.class, ProtectionConfig.class));
+        containers.add(ModuleContainer.createContainer(RTPModule.ID, "RTP", RTPModule.class, RTPConfig.class));
+        containers.add(ModuleContainer.createContainer(RulesModule.ID, "Rules", RulesModule.class, RulesConfig.class));
+        containers.add(ModuleContainer.createContainer(ServerListModule.ID, "Server List module", ServerListModule.class, ServerListConfig.class));
+        containers.add(ModuleContainer.createContainer(SignModule.ID, "Sign", SignModule.class));
+        containers.add(ModuleContainer.createContainer(SpawnModule.ID, "Spawn", SpawnModule.class, SpawnConfig.class));
+        containers.add(ModuleContainer.createContainer(StaffChatModule.ID, "Staff Chat", StaffChatModule.class, StaffChatConfig.class));
+        containers.add(ModuleContainer.createContainer(TeleportModule.ID, "Teleport", TeleportModule.class, TeleportConfig.class));
+        containers.add(ModuleContainer.createContainer(VanishModule.ID, "Vanish", VanishModule.class, VanishConfig.class));
+        containers.add(ModuleContainer.createContainer(WarpModule.ID, "Warp", WarpModule.class, WarpConfig.class));
+        containers.add(ModuleContainer.createContainer(WorldModule.ID, "World", WorldModule.class, WorldConfig.class));
         return containers;
     }
 

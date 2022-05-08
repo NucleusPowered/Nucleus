@@ -4,6 +4,9 @@
  */
 package io.github.nucleuspowered.nucleus.core.util.functional;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +57,48 @@ public final class NucleusCollectors {
         };
     }
 
+    public static Collector<Component, List<Component>, Component> joiningComponents(final JoinConfiguration joinConfiguration) {
+        return new ComponentJoiningCollector(joinConfiguration);
+    }
+
     private NucleusCollectors() {
     }
+
+    static class ComponentJoiningCollector implements Collector<Component, List<Component>, Component> {
+
+        private final JoinConfiguration joinConfiguration;
+
+        ComponentJoiningCollector(final JoinConfiguration joinConfiguration) {
+            this.joinConfiguration = joinConfiguration;
+        }
+
+        @Override
+        public Supplier<List<Component>> supplier() {
+            return ArrayList::new;
+        }
+
+        @Override
+        public BiConsumer<List<Component>, Component> accumulator() {
+            return List::add;
+        }
+
+        @Override
+        public BinaryOperator<List<Component>> combiner() {
+            return (a, b) -> {
+                a.addAll(b);
+                return a;
+            };
+        }
+
+        @Override
+        public Function<List<Component>, Component> finisher() {
+            return in -> Component.join(this.joinConfiguration, in);
+        }
+
+        @Override
+        public Set<Collector.Characteristics> characteristics() {
+            return Collections.emptySet();
+        }
+    };
 
 }

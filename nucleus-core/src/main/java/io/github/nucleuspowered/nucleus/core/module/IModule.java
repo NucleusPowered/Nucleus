@@ -24,10 +24,14 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * The definition of a module. This will also be registered as a listener.
+ */
 @DefaultQualifier(NonNull.class)
 public interface IModule {
 
-    void init(INucleusServiceCollection serviceCollection);
+    default void init(INucleusServiceCollection serviceCollection) {
+    }
 
     default void postLoad(final INucleusServiceCollection serviceCollection) {
     }

@@ -10,7 +10,6 @@ import io.github.nucleuspowered.nucleus.core.core.commands.SetNucleusLanguageCom
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.ClearCacheCommand;
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.CompatibilityCommand;
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.DebugCommand;
-import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.DocGenCommand;
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.GetUserCommand;
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.InfoCommand;
 import io.github.nucleuspowered.nucleus.core.core.commands.nucleus.MessagesUpdateCommand;
@@ -58,7 +57,6 @@ public class CoreModule implements IModule.Configurable<CoreConfig> {
                 ClearCacheCommand.class,
                 CompatibilityCommand.class,
                 DebugCommand.class,
-                DocGenCommand.class,
                 GetUserCommand.class,
                 InfoCommand.class,
                 MessagesUpdateCommand.class,

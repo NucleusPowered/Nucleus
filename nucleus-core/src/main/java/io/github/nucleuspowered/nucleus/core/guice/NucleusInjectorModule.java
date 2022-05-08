@@ -8,6 +8,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import io.github.nucleuspowered.nucleus.core.IPluginInfo;
+import io.github.nucleuspowered.nucleus.core.IPropertyHolder;
 import io.github.nucleuspowered.nucleus.core.NucleusCore;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.timing.DummyTimingsService;
@@ -25,18 +26,23 @@ public class NucleusInjectorModule extends AbstractModule {
     private final Supplier<NucleusCore> coreSupplier;
     private final IPluginInfo pluginInfo;
 
+    private final IPropertyHolder propertyHolder;
+
     public NucleusInjectorModule(
             final Supplier<NucleusCore> core,
-            final IPluginInfo pluginInfo
-    ) {
+            final IPluginInfo pluginInfo,
+            final IPropertyHolder propertyHolder
+            ) {
         this.coreSupplier = core;
         this.pluginInfo = pluginInfo;
+        this.propertyHolder = propertyHolder;
     }
 
     @Override
     protected void configure() {
         this.bind(new TypeLiteral<Supplier<Path>>() {}).annotatedWith(DataDirectory.class).toInstance(this.coreSupplier.get()::getDataDirectory);
         this.bind(Path.class).annotatedWith(ConfigDirectory.class).toInstance(this.coreSupplier.get().getConfigDirectory());
+        this.bind(IPropertyHolder.class).toInstance(this.propertyHolder);
         this.bind(IPluginInfo.class).toInstance(this.pluginInfo);
     }
 

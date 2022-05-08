@@ -7,12 +7,11 @@ package io.github.nucleuspowered.nucleus.api.util;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.math.vector.Vector3d;
 
-public interface WorldPositionRotation {
-
+public interface WorldTransform {
 
     Vector3d getPosition();
 
     Vector3d getRotation();
 
-    ResourceKey getResourceKey();
+    ResourceKey getWorldResourceKey();
 }

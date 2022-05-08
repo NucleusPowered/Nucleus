@@ -23,7 +23,6 @@ java {
 
 dependencies {
     api(project(":nucleus-core"))
-    api(project(":nucleus-modules"))
 
     val dep = "org.spongepowered:spongeapi:${rootProject.properties["spongeApiVersion"]}"
     annotationProcessor(dep)
@@ -45,7 +44,6 @@ tasks {
 
     build {
         dependsOn(":nucleus-core:build")
-        dependsOn(":nucleus-modules:build")
     }
 
 }

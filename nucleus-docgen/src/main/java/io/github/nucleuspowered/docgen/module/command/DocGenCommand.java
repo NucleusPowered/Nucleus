@@ -2,10 +2,12 @@
  * This file is part of Nucleus, licensed under the MIT License (MIT). See the LICENSE.txt file
  * at the root of this project for more details.
  */
-package io.github.nucleuspowered.nucleus.core.core.commands.nucleus;
+package io.github.nucleuspowered.docgen.module.command;
 
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import io.github.nucleuspowered.docgen.module.DocgenPermissions;
+import io.github.nucleuspowered.docgen.module.service.DocumentationGenerationService;
 import io.github.nucleuspowered.nucleus.core.core.CorePermissions;
 import io.github.nucleuspowered.nucleus.core.guice.DataDirectory;
 import io.github.nucleuspowered.nucleus.core.core.commands.NucleusCommand;
@@ -26,9 +28,8 @@ import java.util.function.Supplier;
  */
 @Command(
         aliases = "docgen",
-        basePermission = CorePermissions.BASE_DOCGEN,
-        commandDescriptionKey = "docgen",
-        parentCommand = NucleusCommand.class
+        basePermission = DocgenPermissions.BASE_DOCGEN,
+        commandDescriptionKey = "docgen"
 )
 public class DocGenCommand implements ICommandExecutor {
 
@@ -36,9 +37,9 @@ public class DocGenCommand implements ICommandExecutor {
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         context.sendMessage("command.nucleus.docgen.start");
         final INucleusServiceCollection serviceCollection = context.getServiceCollection();
-        final Path dataPath = serviceCollection.injector().getInstance(Key.get(new TypeLiteral<Supplier<Path>>() {}, DataDirectory.class)).get();
+        final Path dataPath = serviceCollection.dataDir().get();
         try {
-            serviceCollection.documentationGenerationService().generate(dataPath);
+            DocumentationGenerationService.Holder.INSTANCE.generate(dataPath, context.getServiceCollection());
         } catch (final IOException e) {
             throw new CommandException(Component.text("Could not generate docs"), e);
         }

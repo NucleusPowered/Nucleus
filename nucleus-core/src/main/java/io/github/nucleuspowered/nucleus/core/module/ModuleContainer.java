@@ -14,6 +14,23 @@ public class ModuleContainer implements Comparable<ModuleContainer> {
     private final boolean isRequired;
     private final Class<? extends IModule> moduleClass;
 
+    public static ModuleContainer createContainer(
+            final String id,
+            final String name,
+            final Class<? extends IModule> moduleClass
+    ) {
+        return new ModuleContainer(id, name, false, moduleClass);
+    }
+
+    public static <T> ModuleContainer.Configurable<T> createContainer(
+            final String id,
+            final String name,
+            final Class<? extends IModule.Configurable<T>> moduleClass,
+            final Class<T> configurableClass
+    ) {
+        return new ModuleContainer.Configurable<>(id, name, false, moduleClass, configurableClass);
+    }
+
     public ModuleContainer(
             final String id,
             final String name,

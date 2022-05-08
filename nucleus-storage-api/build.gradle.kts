@@ -3,7 +3,7 @@ plugins {
     `java-library`
     idea
     eclipse
-    `maven-publish`
+    id("nucleus-publishing-convention")
 }
 
 description = "The Ultimate Essentials Plugin Storage API."
@@ -79,25 +79,12 @@ tasks {
 
 publishing {
     publications {
-        create<MavenPublication>("api") {
+        create<MavenPublication>("storage-api") {
             from(components["java"])
             setArtifacts(listOf(javadocJar.get(), sourcesJar.get(), tasks.jar.get()))
             version = "${rootProject.version}"
             groupId = rootProject.properties["groupId"]?.toString()!!
             artifactId = project.properties["artifactId"]?.toString()!!
-        }
-    }
-
-    repositories {
-        if (!(rootProject.version as String).contains("SNAPSHOT")) {
-            maven {
-                name = "GitHubPackages"
-                url = uri(project.findProperty("gpr.uri") as String? ?: "${rootProject.properties["ghUri"]?.toString()!!}${System.getenv("REPO")}")
-                credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USER")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("KEY")
-                }
-            }
         }
     }
 }

@@ -79,9 +79,6 @@ public final class CorePermissions {
     @PermissionMetadata(descriptionKey = "permission.others", replacements = { "nuserprefs" }, level = SuggestedLevel.ADMIN)
     public static final String OTHERS_NUSERPREFS = "nucleus.userprefs.others";
 
-    @PermissionMetadata(descriptionKey = "permission.base", replacements = { "docgen" }, level = SuggestedLevel.NONE)
-    public static final String BASE_DOCGEN = "nucleus.nucleus.docgen.base";
-
     @PermissionMetadata(descriptionKey = "permission.base", replacements = { "resetfirstjoin" }, level = SuggestedLevel.NONE)
     public static final String BASE_RESET_FIRST_JOIN = "nucleus.nucleus.resetfirstjoin.base";
 

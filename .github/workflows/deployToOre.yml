@@ -1,0 +1,40 @@
+name: Deploy to Ore
+
+on:
+  push:
+    tags:
+    - '[3-9]*'
+  workflow_dispatch:
+
+jobs:
+  buildAndPublish:
+    runs-on: ubuntu-latest
+    environment: ore
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build
+        run: ./gradlew clean build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugin
+          path: 'output/*-plugin.jar'
+          if-no-files-found: error
+      - name: Upload Description
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog
+          path: '*.md'
+          if-no-files-found: error
+      - name: Upload to Ore
+        uses: dualspiral/ore-upload-action@v1
+        with:
+          plugin: plugin
+          description: changelog
+          apiKey: ${{ secrets.ORE_API_KEY }}
+          pluginId: "nucleus"

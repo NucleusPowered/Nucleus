@@ -76,7 +76,7 @@ public class CommandInfoCommand implements ICommandExecutor {
 
         if (owner.map(x -> x.equals(context.getServiceCollection().pluginContainer())).orElse(false)) {
             // we did it, do we have a control for it?
-            this.nucleusCommand(content, context, provider, mapping);
+            this.nucleusCommand(content, context, mapping);
         } else {
             this.lowCommand(content, context, provider, mapping);
         }
@@ -91,12 +91,11 @@ public class CommandInfoCommand implements ICommandExecutor {
     private void nucleusCommand(
             final List<Component> content,
             final ICommandContext context,
-            final IMessageProviderService provider,
-            final CommandMapping mapping) throws CommandException {
+            final CommandMapping mapping) {
         content.add(context.getMessage("command.commandinfo.type", "loc:command.commandinfo.nucleus"));
         content.add(Component.empty());
         final CommandControl control = context.getServiceCollection().commandMetadataService().getControl(mapping.primaryAlias());
-        final Component text = control.getUsage(context);
+        final Component text = control.getUsage(context.cause());
         if (AdventureUtils.isEmpty(text)) {
             content.add(context.getMessage("command.commandinfo.noinfo"));
         } else {

@@ -8,13 +8,12 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.github.nucleuspowered.nucleus.bootstrap.error.InitialisationNucleusErrorHandler;
 import io.github.nucleuspowered.nucleus.core.IPluginInfo;
+import io.github.nucleuspowered.nucleus.core.IPropertyHolder;
 import io.github.nucleuspowered.nucleus.core.NucleusCore;
 import io.github.nucleuspowered.nucleus.bootstrap.error.ConfigErrorHandler;
-import io.github.nucleuspowered.nucleus.core.NucleusJavaProperties;
 import io.github.nucleuspowered.nucleus.core.datatypes.NucleusCoreDatatypeRegistration;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusConfigException;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
-import io.github.nucleuspowered.nucleus.modules.NucleusModuleProvider;
 import io.github.nucleuspowered.nucleus.bootstrap.error.InvalidVersionErrorHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -60,7 +59,7 @@ public class NucleusBootstrapper {
         this.injector = injector;
     }
 
-    private boolean versionCheck(final IPluginInfo pluginInfo) throws IllegalStateException {
+    private boolean versionCheck(final IPropertyHolder propertyHolder, final IPluginInfo pluginInfo) throws IllegalStateException {
         if (System.getProperty(NO_VERSION_CHECK) != null) {
             final Pattern matching = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)");
             final ArtifactVersion v = Sponge.platform().container(Platform.Component.API).metadata().version();
@@ -86,7 +85,7 @@ public class NucleusBootstrapper {
                 this.logger.fatal("Unable to start Nucleus: SpongeAPI major version {} does not match Nucleus expectation of {}", major, maj);
                 new InvalidVersionErrorHandler(
                         this.pluginContainer,
-                        NucleusJavaProperties.RUN_DOCGEN,
+                        propertyHolder.shutdownOnError(),
                         this.logger,
                         NucleusPluginInfo.SPONGE_API_VERSION,
                         pluginInfo
@@ -107,7 +106,7 @@ public class NucleusBootstrapper {
                 this.logger.fatal("Unable to start Nucleus: SpongeAPI version {} is lower than Nucleus' requirement {}", v, version);
                 new InvalidVersionErrorHandler(
                         this.pluginContainer,
-                        NucleusJavaProperties.RUN_DOCGEN,
+                        propertyHolder.shutdownOnError(),
                         this.logger,
                         NucleusPluginInfo.SPONGE_API_VERSION,
                         pluginInfo
@@ -120,8 +119,9 @@ public class NucleusBootstrapper {
 
     @Listener
     public void startPlugin(final ConstructPluginEvent event) {
+        final IPropertyHolder propertyHolder = new NucleusPropertyHolder();
         final IPluginInfo pluginInfo = new NucleusPluginInfo();
-        if (this.versionCheck(pluginInfo)) {
+        if (this.versionCheck(propertyHolder, pluginInfo)) {
             final NucleusErrorHandler errorHandler;
             try {
                 this.logger.info("Nucleus {} running on Sponge API {} ({} version {})", pluginInfo.version(),
@@ -135,8 +135,8 @@ public class NucleusBootstrapper {
                                 this.configDirectory,
                                 this.logger,
                                 this.injector,
-                                new NucleusModuleProvider(),
-                                pluginInfo);
+                                pluginInfo,
+                                propertyHolder);
                 NucleusCoreDatatypeRegistration.registerDataTypes(this.game.dataManager());
                 core.init();
                 Sponge.eventManager().registerListeners(this.pluginContainer, core);
@@ -145,10 +145,12 @@ public class NucleusBootstrapper {
             } catch (final NucleusConfigException e) {
                 errorHandler = new ConfigErrorHandler(this.pluginContainer, e.getWrapped(), e.isDocgen(), this.logger, e.getFileName(), pluginInfo);
             } catch (final Exception e) {
-                errorHandler = new InitialisationNucleusErrorHandler(this.pluginContainer, e,
-                                NucleusJavaProperties.RUN_DOCGEN,
-                                this.logger,
-                                pluginInfo);
+                errorHandler = new InitialisationNucleusErrorHandler(
+                        this.pluginContainer,
+                        e,
+                        propertyHolder.shutdownOnError(),
+                        this.logger,
+                        pluginInfo);
             }
             this.logger.error("Nucleus did not complete initialisation. Nucleus will not boot.");
             errorHandler.generatePrettyPrint(this.logger, Level.ERROR);

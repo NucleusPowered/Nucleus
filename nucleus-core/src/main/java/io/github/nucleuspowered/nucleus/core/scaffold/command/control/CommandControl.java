@@ -17,7 +17,11 @@ import io.github.nucleuspowered.nucleus.core.scaffold.command.modifier.ICommandM
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IReloadableService;
 import io.github.nucleuspowered.nucleus.core.util.PrettyPrinter;
+import io.github.nucleuspowered.nucleus.core.util.functional.NucleusCollectors;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +30,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandCause;
+import org.spongepowered.api.command.CommandCompletion;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.exception.CommandPermissionException;
+import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
@@ -65,6 +71,10 @@ public final class CommandControl {
 
     private final String command;
     private boolean acceptingRegistration = true;
+
+    private org.spongepowered.api.command.Command.@Nullable Parameterized lazy$builtCommand;
+
+    private @Nullable CommandMapping mapping = null;
 
     public CommandControl(
             @Nullable final ICommandExecutor executor,
@@ -117,29 +127,32 @@ public final class CommandControl {
     }
 
     public org.spongepowered.api.command.Command.Parameterized createCommand() {
-        final org.spongepowered.api.command.Command.Builder b = org.spongepowered.api.command.Command.builder();
-        if (this.executor != null) {
-            b.executor(this::process);
-            for (final Parameter parameter : this.executor.parameters(this.serviceCollection)) {
-                b.addParameter(parameter);
-            }
-            for (final Flag flag : this.executor.flags(this.serviceCollection)) {
-                b.addFlag(flag);
-            }
-        }
-        b.executionRequirements(re -> {
-            for (final String perm : this.getPermission()) {
-                if (!this.serviceCollection.permissionService().hasPermission(re, perm)) {
-                    return false;
+        if (this.lazy$builtCommand == null) {
+            final org.spongepowered.api.command.Command.Builder b = org.spongepowered.api.command.Command.builder();
+            if (this.executor != null) {
+                b.executor(this::process);
+                for (final Parameter parameter : this.executor.parameters(this.serviceCollection)) {
+                    b.addParameter(parameter);
+                }
+                for (final Flag flag : this.executor.flags(this.serviceCollection)) {
+                    b.addFlag(flag);
                 }
             }
-            return true;
-        });
-        b.shortDescription(this::getShortDescription).extendedDescription(this::getExtendedDescription);
-        for (final Map.Entry<CommandControl, List<String>> control : this.subcommands.entrySet()) {
-            b.addChild(control.getKey().createCommand(), control.getValue());
+            b.executionRequirements(re -> {
+                for (final String perm : this.getPermission()) {
+                    if (!this.serviceCollection.permissionService().hasPermission(re, perm)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            b.shortDescription(this::getShortDescription).extendedDescription(this::getExtendedDescription);
+            for (final Map.Entry<CommandControl, List<String>> control : this.subcommands.entrySet()) {
+                b.addChild(control.getKey().createCommand(), control.getValue());
+            }
+            this.lazy$builtCommand = b.build();
         }
-        return b.build();
+        return this.lazy$builtCommand;
     }
 
     @NonNull
@@ -208,7 +221,7 @@ public final class CommandControl {
     }
 
     public Component getSubcommandTexts(@Nullable final CommandContext source) {
-        return Component.join(Component.text(", "), this.primarySubcommands.entrySet()
+        return Component.join(JoinConfiguration.separator(Component.text(", ")), this.primarySubcommands.entrySet()
                 .stream()
                 .filter(x -> source == null || x.getValue().testPermission(source))
                 .map(x -> Component.text(x.getKey()))
@@ -424,7 +437,26 @@ public final class CommandControl {
         return Collections.unmodifiableMap(modifiers);
     }
 
-    public Component getUsage(final ICommandContext context) {
+    public Component getUsage(final CommandCause commandCause) {
+        if (this.mapping != null) {
+            try {
+                return this.mapping.registrar()
+                        .complete(commandCause, mapping, this.command, "")
+                        .stream()
+                        .map(completion -> {
+                            final TextComponent.Builder componentBuilder = Component.text().append(Component.text(completion.completion()));
+                            completion.tooltip().ifPresent(x -> componentBuilder.hoverEvent(HoverEvent.showText(x)));
+                            return componentBuilder.build();
+                        })
+                        .collect(NucleusCollectors.joiningComponents(JoinConfiguration.separator(Component.text(" "))));
+            } catch (final CommandException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return Component.empty();
+    }
+
+    public void setMapping(final CommandMapping mapping) {
+        this.mapping = mapping;
     }
 }

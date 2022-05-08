@@ -4,17 +4,17 @@
  */
 package io.github.nucleuspowered.nucleus.core.util;
 
-import io.github.nucleuspowered.nucleus.api.util.WorldPositionRotation;
+import io.github.nucleuspowered.nucleus.api.util.WorldTransform;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.math.vector.Vector3d;
 
-public final class WorldPositionRotationImpl implements WorldPositionRotation {
+public final class WorldTransformImpl implements WorldTransform {
 
     private final Vector3d position;
     private final Vector3d rotation;
     private final ResourceKey resourceKey;
 
-    public WorldPositionRotationImpl(final Vector3d position, final Vector3d rotation, final ResourceKey resourceKey) {
+    public WorldTransformImpl(final Vector3d position, final Vector3d rotation, final ResourceKey resourceKey) {
         this.position = position;
         this.rotation = rotation;
         this.resourceKey = resourceKey;
@@ -28,7 +28,7 @@ public final class WorldPositionRotationImpl implements WorldPositionRotation {
         return this.rotation;
     }
 
-    @Override public ResourceKey getResourceKey() {
+    @Override public ResourceKey getWorldResourceKey() {
         return this.resourceKey;
     }
 }

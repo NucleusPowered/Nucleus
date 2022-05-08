@@ -4,6 +4,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.net.HttpURLConnection
 import java.net.URL
@@ -16,16 +18,22 @@ import java.security.MessageDigest
 
 open class SetupServer : DefaultTask() {
 
+    @InputDirectory
     var directory: Path = Paths.get("run")
+    @Input
     var spongeVanillaFileName: String = "sv.jar"
+    @Input
     var spongeVanillaDownload: URL? = null // = URL("https://repo.spongepowered.org/maven/org/spongepowered/spongevanilla/1.12.2-7.2
     // .2/spongevanilla-1.12.2-7.2.2.jar")
+    @Input
     var spongeVanillaSHA1Hash: String? = null // = "eebec22f58e27fef974e3bc108c70af1b3a47f8e"
+    @Input
     var fileProvider: Provider<RegularFile>? = null
 
     /**
      * This indicates you accept the Minecraft EULA.
      */
+    @Input
     var acceptEula: Boolean = false
 
     @TaskAction

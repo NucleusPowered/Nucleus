@@ -7,6 +7,7 @@ package io.github.nucleuspowered.nucleus.core.services.impl;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import io.github.nucleuspowered.nucleus.core.IPropertyHolder;
 import io.github.nucleuspowered.nucleus.core.guice.ConfigDirectory;
 import io.github.nucleuspowered.nucleus.core.guice.DataDirectory;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
@@ -17,7 +18,6 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.ICommandMetadat
 import io.github.nucleuspowered.nucleus.core.services.interfaces.ICompatibilityService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IConfigurateHelper;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.ICooldownService;
-import io.github.nucleuspowered.nucleus.core.services.interfaces.IDocumentationGenerationService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IEconomyServiceProvider;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IConfigProvider;
@@ -82,11 +82,11 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     private final Supplier<ICompatibilityService> compatibilityServiceProvider;
     private final Supplier<IChatMessageFormatterService> chatMessageFormatterProvider;
     private final Supplier<IPlaceholderService> placeholderServiceProvider;
-    private final Supplier<IDocumentationGenerationService> documentationGenerationServiceProvider;
     private final Supplier<ITextStyleService> textStyleServiceProvider;
     private final Supplier<IModuleReporter> moduleReporterSupplier;
     private final Supplier<ISchedulerService> schedulerServiceProvider;
     private final Supplier<ITimingsService> timingsServiceProvider;
+    private final IPropertyHolder propertyHolder;
     private final Game game;
     private final Injector injector;
     private final PluginContainer pluginContainer;
@@ -100,6 +100,7 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
             final Injector injector,
             final PluginContainer pluginContainer,
             final Logger logger,
+            final IPropertyHolder propertyHolder,
             @DataDirectory final Supplier<Path> dataPath,
             @ConfigDirectory final Path configPath) {
         this.messageProviderService = new LazyLoad<>(this, injector, IMessageProviderService.class);
@@ -126,10 +127,10 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
         this.compatibilityServiceProvider = new LazyLoad<>(this, injector, ICompatibilityService.class);
         this.chatMessageFormatterProvider = new LazyLoad<>(this, injector, IChatMessageFormatterService.class);
         this.placeholderServiceProvider = new LazyLoad<>(this, injector, IPlaceholderService.class);
-        this.documentationGenerationServiceProvider = new LazyLoad<>(this, injector, IDocumentationGenerationService.class);
         this.moduleReporterSupplier = new LazyLoad<>(this, injector, IModuleReporter.class);
         this.schedulerServiceProvider = new LazyLoad<>(this, injector, ISchedulerService.class);
         this.timingsServiceProvider = new LazyLoad<>(this, injector, ITimingsService.class);
+        this.propertyHolder = propertyHolder;
         this.injector = injector;
         this.pluginContainer = pluginContainer;
         this.logger = logger;
@@ -249,10 +250,6 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
         return this.chatMessageFormatterProvider.get();
     }
 
-    @Override public IDocumentationGenerationService documentationGenerationService() {
-        return this.documentationGenerationServiceProvider.get();
-    }
-
     @Override public IModuleReporter moduleReporter() {
         return this.moduleReporterSupplier.get();
     }
@@ -270,6 +267,11 @@ public class NucleusServiceCollection implements INucleusServiceCollection {
     @Override
     public Logger logger() {
         return this.logger;
+    }
+
+    @Override
+    public IPropertyHolder propertyHolder() {
+        return this.propertyHolder;
     }
 
     @Override

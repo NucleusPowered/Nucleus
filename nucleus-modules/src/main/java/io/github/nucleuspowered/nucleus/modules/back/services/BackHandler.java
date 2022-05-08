@@ -5,10 +5,11 @@
 package io.github.nucleuspowered.nucleus.modules.back.services;
 
 import io.github.nucleuspowered.nucleus.api.module.back.NucleusBackService;
-import io.github.nucleuspowered.nucleus.api.util.WorldPositionRotation;
+import io.github.nucleuspowered.nucleus.api.util.WorldTransform;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.ServiceBase;
 import io.github.nucleuspowered.nucleus.core.scaffold.service.annotations.APIService;
-import io.github.nucleuspowered.nucleus.core.util.WorldPositionRotationImpl;
+import io.github.nucleuspowered.nucleus.core.util.WorldTransformImpl;
+import org.spongepowered.api.util.Transform;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
@@ -22,17 +23,17 @@ import java.util.UUID;
 @APIService(NucleusBackService.class)
 public class BackHandler implements NucleusBackService, ServiceBase {
 
-    private final Map<UUID, WorldPositionRotation> lastLocation = new HashMap<>();
+    private final Map<UUID, WorldTransform> lastLocation = new HashMap<>();
     private final Set<UUID> preventLogLastLocation = new HashSet<>();
 
     @Override
-    public Optional<WorldPositionRotation> getLastLocation(final UUID uuid) {
+    public Optional<WorldTransform> getLastLocation(final UUID uuid) {
         return Optional.ofNullable(this.lastLocation.get(uuid));
     }
 
     @Override
     public void setLastLocation(final UUID user, final ServerLocation location, final Vector3d rotation) {
-        this.lastLocation.put(user, new WorldPositionRotationImpl(location.position(), rotation, location.worldKey()));
+        this.lastLocation.put(user, new WorldTransformImpl(location.position(), rotation, location.worldKey()));
     }
 
     @Override

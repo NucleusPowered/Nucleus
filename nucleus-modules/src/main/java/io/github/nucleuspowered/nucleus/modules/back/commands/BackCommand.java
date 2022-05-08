@@ -7,7 +7,7 @@ package io.github.nucleuspowered.nucleus.modules.back.commands;
 import com.google.inject.Inject;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportResult;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
-import io.github.nucleuspowered.nucleus.api.util.WorldPositionRotation;
+import io.github.nucleuspowered.nucleus.api.util.WorldTransform;
 import io.github.nucleuspowered.nucleus.modules.back.BackPermissions;
 import io.github.nucleuspowered.nucleus.modules.back.config.BackConfig;
 import io.github.nucleuspowered.nucleus.modules.back.services.BackHandler;
@@ -67,20 +67,20 @@ public class BackCommand implements ICommandExecutor, IReloadableService.Reloada
     public ICommandResult execute(final ICommandContext context) throws CommandException {
         final BackHandler handler = context.getServiceCollection().getServiceUnchecked(BackHandler.class);
         final ServerPlayer src = context.getIfPlayer();
-        final Optional<WorldPositionRotation> ol = handler.getLastLocation(src.uniqueId());
+        final Optional<WorldTransform> ol = handler.getLastLocation(src.uniqueId());
         if (!ol.isPresent()) {
             return context.errorResult("command.back.noloc");
         }
 
         final boolean border = context.hasFlag("b");
-        final WorldPositionRotation loc = ol.get();
-        if (this.sameDimensionCheck && src.world().key() != loc.getResourceKey()) {
+        final WorldTransform loc = ol.get();
+        if (this.sameDimensionCheck && src.world().key() != loc.getWorldResourceKey()) {
             if (!context.testPermission(BackPermissions.BACK_EXEMPT_SAMEDIMENSION)) {
                 return context.errorResult("command.back.sameworld");
             }
         }
 
-        final ServerWorld world = Sponge.server().worldManager().world(loc.getResourceKey()).get();
+        final ServerWorld world = Sponge.server().worldManager().world(loc.getWorldResourceKey()).get();
         final INucleusLocationService service = context.getServiceCollection().teleportService();
         try (final INucleusLocationService.BorderDisableSession ac = service.temporarilyDisableBorder(border, world)) {
             final TeleportResult result = service.teleportPlayerSmart(

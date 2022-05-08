@@ -5,7 +5,6 @@
 package io.github.nucleuspowered.nucleus.core.services.impl.texttemplatefactory;
 
 import com.google.inject.Inject;
-import io.github.nucleuspowered.nucleus.core.NucleusJavaProperties;
 import io.github.nucleuspowered.nucleus.core.services.INucleusServiceCollection;
 import io.github.nucleuspowered.nucleus.core.services.impl.textstyle.TextStyleService;
 import io.github.nucleuspowered.nucleus.core.services.interfaces.IMessageProviderService;
@@ -137,7 +136,7 @@ public final class TemplateParser implements INucleusTextTemplateFactory {
             return Optional.of(this.createFromAmpersandString(string));
         } catch (final Exception e) {
             this.serviceCollection.logger().warn("Could not parse \"{}\", ignoring.", string);
-            if (NucleusJavaProperties.DEBUG_MODE) {
+            if (this.serviceCollection.propertyHolder().debugMode()) {
                 e.printStackTrace();
             }
             return Optional.empty();

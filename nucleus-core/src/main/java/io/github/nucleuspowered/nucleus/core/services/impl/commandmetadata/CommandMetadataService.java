@@ -26,9 +26,11 @@ import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
 import io.leangen.geantyref.TypeToken;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
+import io.vavr.Tuple4;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
@@ -284,7 +286,7 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
         }
 
         // Now we register all root commands as necessary.
-        final List<Tuple3<String, String[], org.spongepowered.api.command.Command.Parameterized>> builtCommands = new LinkedList<>();
+        final List<Tuple4<String, String[], org.spongepowered.api.command.Command.Parameterized, CommandControl>> builtCommands = new LinkedList<>();
         boolean tripError = false;
         if (parentControl == null) {
             for (final Map.Entry<CommandControl, List<String>> aliases : this.controlToAliases.entrySet()) {
@@ -305,7 +307,7 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
                 final Collection<String> others = orderedAliases.size() > 1 ? orderedAliases.subList(1, orderedAliases.size()) :
                         Collections.emptyList();
                 try {
-                    builtCommands.add(Tuple.of(first, others.toArray(new String[0]), this.createCommand(aliases.getKey())));
+                    builtCommands.add(Tuple.of(first, others.toArray(new String[0]), this.createCommand(aliases.getKey()), aliases.getKey()));
                 } catch (final Exception e) {
                     this.logger.error("Failed to register: {}", first);
                     if (!tripError) {
@@ -318,8 +320,10 @@ public class CommandMetadataService implements ICommandMetadataService, IReloada
 
             if (!tripError) {
                 // Finally, register all commands
-                for (final Tuple3<String, String[], org.spongepowered.api.command.Command.Parameterized> command : builtCommands) {
-                    this.registeredAliases.addAll(event.register(collection.pluginContainer(), command._3, command._1, command._2).mapping().allAliases());
+                for (final Tuple4<String, String[], org.spongepowered.api.command.Command.Parameterized, CommandControl> command : builtCommands) {
+                    final CommandMapping mapping = event.register(collection.pluginContainer(), command._3, command._1, command._2).mapping();
+                    command._4.setMapping(mapping);
+                    this.registeredAliases.addAll(mapping.allAliases());
                 }
 
                 this.registeredCommands.putAll(commands);

@@ -5,6 +5,7 @@
 package io.github.nucleuspowered.nucleus.core.module;
 
 import io.github.nucleuspowered.nucleus.api.core.event.NucleusModuleSelectionEvent;
+import io.github.nucleuspowered.nucleus.core.NucleusCore;
 import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.plugin.PluginContainer;
@@ -17,15 +18,13 @@ import java.util.Set;
 public class ModuleEvent extends AbstractEvent implements NucleusModuleSelectionEvent {
 
     private final Cause cause;
-    private final Map<String, Boolean> moduleStatus = new HashMap<>();
+    private final Map<String, NucleusCore.ModuleState> moduleStatus;
     private final Set<String> allModules;
 
-    public ModuleEvent(final Cause cause, final Set<String> allModules, final Set<String> moduleStatus) {
+    public ModuleEvent(final Cause cause, final Set<String> allModules, final Map<String, NucleusCore.ModuleState> moduleStatus) {
         this.cause = cause;
         this.allModules = Collections.unmodifiableSet(allModules);
-        for (final String s : moduleStatus) {
-            this.moduleStatus.put(s, true);
-        }
+        this.moduleStatus = new HashMap<>(moduleStatus);
     }
 
     @Override
@@ -38,8 +37,8 @@ public class ModuleEvent extends AbstractEvent implements NucleusModuleSelection
         if (!this.allModules.contains(module)) {
             throw new IllegalArgumentException("Module " + module + " does not exist");
         }
-        if (this.moduleStatus.containsKey(module)) {
-            this.moduleStatus.put(module, false);
+        if (this.moduleStatus.get(module) == NucleusCore.ModuleState.TRUE) {
+            this.moduleStatus.put(module, NucleusCore.ModuleState.FALSE);
             return true;
         }
 
@@ -52,7 +51,7 @@ public class ModuleEvent extends AbstractEvent implements NucleusModuleSelection
     }
 
     public boolean shouldLoad(final String id) {
-        return this.moduleStatus.getOrDefault(id, true);
+        return this.moduleStatus.getOrDefault(id, NucleusCore.ModuleState.TRUE).isShouldLoad();
     }
 
 }

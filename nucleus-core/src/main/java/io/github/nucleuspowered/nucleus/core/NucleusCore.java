@@ -10,13 +10,14 @@ import io.github.nucleuspowered.nucleus.api.core.event.NucleusRegisterPreference
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanner;
 import io.github.nucleuspowered.nucleus.api.teleport.data.TeleportScanners;
 import io.github.nucleuspowered.nucleus.core.core.CoreKeys;
-import io.github.nucleuspowered.nucleus.core.core.CoreModule;
+import io.github.nucleuspowered.nucleus.core.core.CoreModuleProvider;
 import io.github.nucleuspowered.nucleus.core.core.config.CoreConfig;
 import io.github.nucleuspowered.nucleus.core.core.services.UniqueUserService;
 import io.github.nucleuspowered.nucleus.core.core.teleport.filters.NoCheckFilter;
 import io.github.nucleuspowered.nucleus.core.core.teleport.filters.WallCheckFilter;
 import io.github.nucleuspowered.nucleus.core.core.teleport.scanners.NoTeleportScanner;
 import io.github.nucleuspowered.nucleus.core.core.teleport.scanners.VerticalTeleportScanner;
+import io.github.nucleuspowered.nucleus.core.event.NucleusRegisterModuleEvent;
 import io.github.nucleuspowered.nucleus.core.event.RegisterPreferenceKeyEvent;
 import io.github.nucleuspowered.nucleus.core.guice.NucleusInjectorModule;
 import io.github.nucleuspowered.nucleus.core.module.IModule;
@@ -42,6 +43,10 @@ import io.github.nucleuspowered.nucleus.core.services.interfaces.IStorageManager
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusConfigException;
 import io.github.nucleuspowered.nucleus.core.startuperror.NucleusErrorHandler;
 import io.leangen.geantyref.TypeToken;
+import io.vavr.Tuple2;
+import io.vavr.collection.HashSet;
+import io.vavr.collection.Set;
+import io.vavr.control.Try;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -50,8 +55,6 @@ import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
-import org.spongepowered.api.data.persistence.DataBuilder;
-import org.spongepowered.api.data.persistence.DataSerializable;
 import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.EventContext;
 import org.spongepowered.api.event.Listener;
@@ -91,7 +94,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public final class NucleusCore {
 
@@ -99,8 +101,8 @@ public final class NucleusCore {
     private final Path configDirectory;
     private final Logger logger;
     private final Injector injector;
-    private final IModuleProvider provider;
-    private final boolean runDocGen = NucleusJavaProperties.RUN_DOCGEN;
+    private final IModuleProvider coreModuleProvider = new CoreModuleProvider();
+    private final IPropertyHolder propertyHolder;
     private final List<Runnable> onStartedActions = new LinkedList<>();
     private final IPluginInfo pluginInfo;
 
@@ -115,20 +117,21 @@ public final class NucleusCore {
             final Path configDirectory,
             final Logger logger,
             final Injector injector,
-            final IModuleProvider provider,
-            final IPluginInfo pluginInfo) {
+            final IPluginInfo pluginInfo,
+            final IPropertyHolder propertyHolder) {
         this.game = game;
         this.pluginContainer = pluginContainer;
         this.configDirectory = configDirectory;
         this.logger = logger;
         this.pluginInfo = pluginInfo;
-        this.injector = injector.createChildInjector(new NucleusInjectorModule(() -> this, pluginInfo));
-        this.provider = provider;
+        this.injector = injector.createChildInjector(new NucleusInjectorModule(() -> this, pluginInfo, propertyHolder));
+        this.propertyHolder = propertyHolder;
         this.serviceCollection = new NucleusServiceCollection(
                 this.game,
                 this.injector,
                 this.pluginContainer,
                 this.logger,
+                this.propertyHolder,
                 this::getDataDirectory,
                 this.configDirectory
         );
@@ -147,7 +150,7 @@ public final class NucleusCore {
             throw new NucleusConfigException(
                     "Could not load Nucleus core config. Aborting initialisation.",
                     provider.getCoreConfigFileName(),
-                    this.runDocGen,
+                    this.propertyHolder.shutdownOnError(),
                     e
             );
         }
@@ -157,7 +160,7 @@ public final class NucleusCore {
             throw new NucleusConfigException(
                     "Could not load Nucleus module config. Aborting initialisation.",
                     provider.getModuleConfigFileName(),
-                    this.runDocGen,
+                    this.propertyHolder.shutdownOnError(),
                     e
             );
         }
@@ -216,7 +219,7 @@ public final class NucleusCore {
             event.register(Registry.Keys.STORAGE_REPOSITORY_KEY, true,
                     () -> Collections.singletonMap(Registry.Keys.FLAT_FILE_STORAGE_KEY, this.serviceCollection.storageManager().getFlatFileRepositoryFactory()));
         } catch (final Exception e) {
-            new NucleusErrorHandler(this.pluginContainer, e, this.runDocGen, this.logger, this.pluginInfo)
+            new NucleusErrorHandler(this.pluginContainer, e, this.propertyHolder.shutdownOnError(), this.logger, this.pluginInfo)
                     .generatePrettyPrint(this.logger, Level.ERROR);
         }
     }
@@ -249,7 +252,7 @@ public final class NucleusCore {
         try {
             this.serviceCollection.registerFactories(event);
         } catch (final Exception e) {
-            new NucleusErrorHandler(this.pluginContainer, e, this.runDocGen, this.logger, this.pluginInfo)
+            new NucleusErrorHandler(this.pluginContainer, e, this.propertyHolder.shutdownOnError(), this.logger, this.pluginInfo)
                     .generatePrettyPrint(this.logger, Level.ERROR);
         }
     }
@@ -261,7 +264,7 @@ public final class NucleusCore {
             metadataService.reset(); // for clients.
             metadataService.completeRegistrationPhase(this.serviceCollection, event);
         } catch (final Exception e) {
-            new NucleusErrorHandler(this.pluginContainer, e, this.runDocGen, this.logger, this.pluginInfo)
+            new NucleusErrorHandler(this.pluginContainer, e, this.propertyHolder.shutdownOnError(), this.logger, this.pluginInfo)
                     .generatePrettyPrint(this.logger, Level.ERROR);
         }
     }
@@ -285,34 +288,6 @@ public final class NucleusCore {
 
     @Listener
     public void serverStarted(final StartedEngineEvent<Server> event) {
-        if (NucleusJavaProperties.DOCGEN_PATH != null) {
-            final Path finalPath;
-            try {
-                final String docgenPath = NucleusJavaProperties.DOCGEN_PATH;
-                if (docgenPath.isEmpty()) {
-                    finalPath = this.getDataDirectory();
-                } else {
-                    final Path path = this.game.gameDirectory().resolve(docgenPath);
-                    boolean isOk = path.toAbsolutePath().startsWith(this.game.gameDirectory().toAbsolutePath());
-                    isOk &= Files.notExists(path) || Files.isDirectory(path);
-                    if (isOk) {
-                        Files.createDirectories(path);
-                        finalPath = path;
-                    } else {
-                        finalPath = this.getDataDirectory();
-                    }
-                }
-                this.logger.info("Starting generation of documentation, saving files to: {}", finalPath.toString());
-                this.serviceCollection.documentationGenerationService().generate(finalPath);
-                this.logger.info("Generation is complete. Server will shut down.");
-            } catch (final Exception ex) {
-                this.logger.error("Could not generate. Server will shut down.");
-                ex.printStackTrace();
-            }
-
-            this.game.server().shutdown();
-            return;
-        }
         this.onStartedActions.forEach(Runnable::run);
         this.serviceCollection.getServiceUnchecked(UniqueUserService.class).resetUniqueUserCount();
         this.game.asyncScheduler().executor(this.pluginContainer)
@@ -337,7 +312,15 @@ public final class NucleusCore {
     // -- Module loading
 
     private LinkedList<Tuple<ModuleContainer, IModule>> startModuleLoading() {
-        final Collection<ModuleContainer> moduleContainerCollection = this.provider.getModules();
+        final io.vavr.collection.Set<ModuleContainer> initialModuleContainerCollection = io.vavr.collection.LinkedHashSet
+                .ofAll(this.coreModuleProvider.getModules());
+
+        // Now ask other plugins for their modules
+        final NucleusRegisterModuleEvent event = new NucleusRegisterModuleEvent(Cause.of(EventContext.empty(), this.pluginContainer));
+        Sponge.eventManager().post(event);
+        final io.vavr.collection.Set<ModuleContainer> moduleContainerCollection = initialModuleContainerCollection
+                .addAll(io.vavr.collection.LinkedHashSet.ofAll(event.getProviders()).flatMap(IModuleProvider::getModules));
+
         final LinkedList<Tuple<ModuleContainer, IModule>> modules = new LinkedList<>();
         for (final ModuleContainer container : this.filterModules(moduleContainerCollection)) {
             final IModule module;
@@ -432,12 +415,7 @@ public final class NucleusCore {
         modules.forEach(tuple -> tuple.second().postLoad(this.serviceCollection));
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends DataSerializable> void registerDataBuilder(final Class<T> clazz, final DataBuilder<?> builder) {
-        this.game.dataManager().registerBuilder(clazz, (DataBuilder<T>) builder);
-    }
-
-    private Collection<ModuleContainer> filterModules(final Collection<ModuleContainer> moduleContainers) {
+    private Collection<ModuleContainer> filterModules(final Set<ModuleContainer> moduleContainers) {
         final CommentedConfigurationNode defaults = this.serviceCollection.configurateHelper().createConfigNode();
         for (final ModuleContainer moduleContainer : moduleContainers) {
             try {
@@ -446,9 +424,8 @@ public final class NucleusCore {
                 // ignored
             }
         }
-        final Collection<String> modules = moduleContainers.stream().map(ModuleContainer::getId).collect(Collectors.toList());
-        modules.add("core");
-        this.serviceCollection.moduleReporter().provideDiscoveredModules(modules);
+        final Set<String> modules = moduleContainers.map(ModuleContainer::getId);
+        this.serviceCollection.moduleReporter().provideDiscoveredModules(modules.toJavaList());
 
         final ConfigurationLoader<CommentedConfigurationNode> moduleConfig = HoconConfigurationLoader.builder()
                 .path(this.configDirectory.resolve("modules.conf"))
@@ -465,22 +442,35 @@ public final class NucleusCore {
         }
 
         final CommentedConfigurationNode finalNode = node;
+        final Set<String> containerIds = HashSet
+                .ofAll(moduleContainers)
+                .map(ModuleContainer::getId)
+                .filter(x -> {
+                    try {
+                        return finalNode.node(x).get(TypeToken.get(ModuleState.class), ModuleState.TRUE).isShouldLoad();
+                    } catch (final SerializationException e) {
+                        return true;
+                    }
+                });
+        final Map<String, ModuleState> stateMap = HashSet
+                .ofAll(moduleContainers)
+                .toJavaMap(container -> {
+                    final String id = container.getId();
+                    final ModuleState state = Try.of(() ->
+                            container.isRequired() ? ModuleState.FORCE :
+                                    finalNode.node(id).get(TypeToken.get(ModuleState.class), ModuleState.TRUE)
+                    ).recover(thr -> ModuleState.TRUE).get();
+                    return new Tuple2<>(id, state);
+                });
+
         final ModuleEvent event = new ModuleEvent(
                 Cause.of(EventContext.empty(), this.pluginContainer),
-                moduleContainers.stream().map(ModuleContainer::getId).collect(Collectors.toSet()),
-                moduleContainers.stream().map(ModuleContainer::getId)
-                        .filter(x -> {
-                            try {
-                                return finalNode.node(x).get(TypeToken.get(ModuleState.class), ModuleState.TRUE) == ModuleState.TRUE;
-                            } catch (final SerializationException e) {
-                                return true;
-                            }
-                        }).collect(Collectors.toSet()));
+                containerIds.toJavaSet(),
+                stateMap);
         this.game.eventManager().post(event);
         final ArrayList<ModuleContainer> containersToReturn = new ArrayList<>();
-        containersToReturn.add(new ModuleContainer("core", "Core", true, CoreModule.class));
         for (final ModuleContainer moduleContainer : moduleContainers) {
-            if (event.shouldLoad(moduleContainer.getId())) {
+            if (event.shouldLoad(moduleContainer.getId())) { // will return true if it doesn't exist - i.e. force load.
                 containersToReturn.add(moduleContainer);
             }
         }
