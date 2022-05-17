@@ -165,7 +165,11 @@ val writeRelNotes by tasks.registering {
 val outputRelNotes by tasks.registering {
     dependsOn(relNotes)
     doLast {
-        Files.write(project.projectDir.toPath().resolve("output").resolve("${nucVersion}.md"),
+        val parentDirectory = project.projectDir.toPath().resolve("output")
+        Files.createDirectories(parentDirectory)
+
+        val filename = System.getenv("NUCLEUS_CHANGELOG_NAME") ?: nucleusVersion
+        Files.write(project.projectDir.toPath().resolve("output").resolve("${filename}.md"),
                 relNotes.get().relNotes!!.toByteArray(StandardCharsets.UTF_8))
     }
 }
