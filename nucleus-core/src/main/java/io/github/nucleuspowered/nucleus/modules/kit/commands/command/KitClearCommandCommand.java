@@ -27,7 +27,7 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
         async = true,
         parentCommand = KitCommandCommand.class
 )
-public class KitClearCommandCommand implements ICommandExecutor<CommandSource> {
+public class KitClearCommandCommand extends KitCommandCommandBase {
 
     @Override public CommandElement[] parameters(INucleusServiceCollection serviceCollection) {
         return new CommandElement[] {
@@ -35,7 +35,7 @@ public class KitClearCommandCommand implements ICommandExecutor<CommandSource> {
         };
     }
 
-    @Override public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
+    @Override public ICommandResult execute0(ICommandContext<? extends CommandSource> context) throws CommandException {
         Kit kitInfo = context.requireOne(KitParameter.KIT_PARAMETER_KEY, Kit.class);
         kitInfo.setCommands(Lists.newArrayList());
         context.getServiceCollection().getServiceUnchecked(KitService.class).saveKit(kitInfo);

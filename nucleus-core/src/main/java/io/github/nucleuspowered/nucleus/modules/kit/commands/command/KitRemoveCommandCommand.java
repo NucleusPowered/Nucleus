@@ -32,7 +32,7 @@ import java.util.List;
         async = true,
         parentCommand = KitCommandCommand.class
 )
-public class KitRemoveCommandCommand implements ICommandExecutor<CommandSource> {
+public class KitRemoveCommandCommand extends KitCommandCommandBase {
 
     private final String index = "index";
 
@@ -43,7 +43,7 @@ public class KitRemoveCommandCommand implements ICommandExecutor<CommandSource> 
         };
     }
 
-    @Override public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
+    @Override public ICommandResult execute0(ICommandContext<? extends CommandSource> context) throws CommandException {
         Kit kitInfo = context.requireOne(KitParameter.KIT_PARAMETER_KEY, Kit.class);
         List<String> commands = kitInfo.getCommands();
 

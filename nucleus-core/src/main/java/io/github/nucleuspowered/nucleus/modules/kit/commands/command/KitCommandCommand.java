@@ -34,7 +34,7 @@ import java.util.List;
         async = true,
         parentCommand = KitCommand.class
 )
-public class KitCommandCommand implements ICommandExecutor<CommandSource> {
+public class KitCommandCommand extends KitCommandCommandBase {
 
     /*private final String removePermission = Nucleus.getNucleus().getPermissionRegistry()
             .getPermissionsForNucleusCommand(KitRemoveCommandCommand.class).getBase(); */
@@ -46,7 +46,7 @@ public class KitCommandCommand implements ICommandExecutor<CommandSource> {
         };
     }
 
-    @Override public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
+    @Override public ICommandResult execute0(ICommandContext<? extends CommandSource> context) throws CommandException {
         // List all commands on a kit.
         Kit kit = context.requireOne(KitParameter.KIT_PARAMETER_KEY, Kit.class);
         List<String> commands = kit.getCommands();

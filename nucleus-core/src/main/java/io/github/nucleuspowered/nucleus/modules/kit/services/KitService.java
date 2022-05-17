@@ -83,6 +83,8 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
     private boolean isProcessTokens = false;
     private boolean isMustGetAll = false;
 
+    private boolean isCommandsEnabled = false;
+
     @Inject
     public KitService(INucleusServiceCollection serviceCollection) {
         this.permissionService = serviceCollection.permissionService();
@@ -330,9 +332,11 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
     }
 
     private void redeemKitCommands(Collection<String> commands, Player player) {
-        ConsoleSource source = Sponge.getServer().getConsole();
-        String playerName = player.getName();
-        commands.forEach(x -> Sponge.getCommandManager().process(source, x.replace("{{player}}", playerName)));
+        if (this.isCommandsEnabled) {
+            ConsoleSource source = Sponge.getServer().getConsole();
+            String playerName = player.getName();
+            commands.forEach(x -> Sponge.getCommandManager().process(source, x.replace("{{player}}", playerName)));
+        }
     }
 
     public boolean checkOneTime(Kit kit, User player) {
@@ -574,6 +578,7 @@ public class KitService implements NucleusKitService, IReloadableService.Reloada
         KitConfig kitConfig = serviceCollection.moduleDataProvider().getModuleConfig(KitConfig.class);
         this.isMustGetAll = kitConfig.isMustGetAll();
         this.isProcessTokens = kitConfig.isProcessTokens();
+        this.isCommandsEnabled = kitConfig.isEnableKitCommands();
     }
 
 }

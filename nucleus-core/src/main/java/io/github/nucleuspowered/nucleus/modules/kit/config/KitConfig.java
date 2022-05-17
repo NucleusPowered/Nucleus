@@ -22,6 +22,10 @@ public class KitConfig {
     @Setting(value = "auto-redeem")
     private AutoRedeem autoRedeem = new AutoRedeem();
 
+    @Setting(value = "enable-kit-commands", comment = "config.kits.enable-commands")
+    private boolean enableKitCommands = false;
+
+
     public boolean isMustGetAll() {
         return this.mustGetAll;
     }
@@ -40,6 +44,10 @@ public class KitConfig {
         }
 
         return this.autoRedeem;
+    }
+
+    public boolean isEnableKitCommands() {
+        return this.enableKitCommands;
     }
 
     public boolean isEnableAutoredeem() {
