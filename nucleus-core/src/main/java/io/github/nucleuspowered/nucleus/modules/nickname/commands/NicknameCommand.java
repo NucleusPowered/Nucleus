@@ -50,9 +50,13 @@ public class NicknameCommand implements ICommandExecutor<CommandSource> {
     @Override
     public CommandElement[] parameters(INucleusServiceCollection serviceCollection) {
         return new CommandElement[] {
-                serviceCollection.commandElementSupplier()
-                    .createOtherUserPermissionElement(false, NicknamePermissions.OTHERS_NICK),
-                GenericArguments.onlyOne(GenericArguments.string(Text.of(this.nickName)))};
+                GenericArguments.firstParsing(
+                    GenericArguments.seq(
+                            serviceCollection.commandElementSupplier().createOtherUserPermissionElement(false, NicknamePermissions.OTHERS_NICK),
+                            GenericArguments.onlyOne(GenericArguments.string(Text.of(this.nickName)))
+                    ),
+                    GenericArguments.onlyOne(GenericArguments.string(Text.of(this.nickName))))
+        };
     }
 
     @Override public ICommandResult execute(ICommandContext<? extends CommandSource> context) throws CommandException {
